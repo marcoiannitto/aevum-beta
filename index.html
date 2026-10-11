@@ -3901,34 +3901,19 @@ function initGoogleSignIn(){
     callback:handleGoogleResponse,
     auto_select:false
   });
-  // Render the Google button as a custom click (we use our own styled button)
-  g('btnGoogle').onclick=()=>{
-    google.accounts.id.prompt((n)=>{
-      // If One Tap doesn't show (e.g. dismissed before), trigger full popup
-      if(n.isNotDisplayed()||n.isSkippedMoment()){
-        // Fall back to the OAuth popup flow
-        const client=google.accounts.oauth2.initCodeClient({
-          client_id:GOOGLE_CLIENT_ID,
-          scope:'email profile',
-          ux_mode:'popup',
-          callback:()=>{}
-        });
-        // Actually use initTokenClient for implicit flow to get id_token
-        googlePopupFallback();
-      }
-    });
-  };
-}
-
-function googlePopupFallback(){
-  // Use Google Identity Services popup to get an id_token
-  const authUrl='https://accounts.google.com/o/oauth2/v2/auth?'+
-    'client_id='+encodeURIComponent(GOOGLE_CLIENT_ID)+
-    '&redirect_uri='+encodeURIComponent(location.origin+location.pathname)+
-    '&response_type=id_token'+
-    '&scope=openid email profile'+
-    '&nonce='+crypto.randomUUID();
-  location.href=authUrl;
+  // Replace our custom button with Google's rendered button
+  var wrap=document.createElement('div');
+  wrap.id='gBtnWrap';
+  wrap.style.cssText='width:100%;max-width:320px;display:flex;justify-content:center;';
+  g('btnGoogle').replaceWith(wrap);
+  google.accounts.id.renderButton(wrap,{
+    type:'standard',
+    theme:'outline',
+    size:'large',
+    width:320,
+    text:'continue_with',
+    shape:'pill'
+  });
 }
 
 function handleGoogleResponse(response){
