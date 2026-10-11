@@ -2665,28 +2665,38 @@ function weekVerdict(logged){
 function complianceScore(allMacro,range){
   if(!allMacro||!allMacro.length)return '';
   const td=todayDayNum()||currentDay;
+  // find Monday of current calendar week
+  const todayDate=dayToDate(td);
+  if(!todayDate)return '';
+  const todayDow=(todayDate.getDay()+6)%7; // 0=Mon
+  const monDay=td-todayDow; // program day of this Monday
+  const DOW_LABELS=['M','T','W','T','F','S','S'];
+  const COL={ok:'#4a7a52',warn:'#B7791F',over:'#A13024',under:'#4a6fa5',none:'#e8e2d8'};
   const recent=[];
-  for(let d=td-6;d<=td;d++){
-    const found=allMacro.find(x=>x.day===d);
+  for(let i=0;i<7;i++){
+    const d=monDay+i;
+    const inPhase=d>=1&&d<=td; // day exists in the program and not in the future
+    const found=inPhase?allMacro.find(x=>x.day===d):null;
     const dir=found?dayCalDir(d,found.kcal):null;
-    recent.push({day:d,dir,kcal:found?found.kcal:null});
+    recent.push({day:d,dir,kcal:found?found.kcal:null,inPhase});
   }
   const logged=recent.filter(r=>r.dir!==null);
   if(logged.length<2)return '';
   const onT=logged.filter(r=>r.dir==='ok'||r.dir==='warn').length;
-  const COL={ok:'#4a7a52',warn:'#B7791F',over:'#A13024',under:'#4a6fa5',none:'#e8e2d8'};
-  const DAYS=['M','T','W','T','F','S','S'];
   const segs=recent.map((r,i)=>{
-    let c=COL.none;
-    if(r.dir==='ok'||r.dir==='warn')c=COL.ok;
-    else if(r.dir==='over')c=COL.over;
-    else if(r.dir==='under')c=COL.under;
+    let c=COL.none; // grey for no data or out of phase
+    if(r.inPhase&&r.dir){
+      if(r.dir==='ok'||r.dir==='warn')c=COL.ok;
+      else if(r.dir==='over')c=COL.over;
+      else if(r.dir==='under')c=COL.under;
+    }
     const rd=i===0?'4px 0 0 4px':(i===6?'0 4px 4px 0':'0');
-    const tgt=phaseTargetKcal(r.day)||0;
-    const lbl=r.dir==='under'?'under target':r.dir==='over'?'over target':'on target';
-    return `<div data-tip="Day ${r.day} · ${r.kcal!=null?r.kcal+' kcal':'no data'} · ${r.kcal!=null?lbl:''}" style="flex:1;height:12px;background:${c};border-radius:${rd};cursor:pointer;"></div>`;
+    const tip=r.inPhase
+      ?`Day ${r.day} · ${r.kcal!=null?r.kcal+' kcal':'no data'} · ${r.kcal!=null?(r.dir==='under'?'under target':r.dir==='over'?'over target':'on target'):''}`
+      :'';
+    return `<div data-tip="${tip}" style="flex:1;height:12px;background:${c};border-radius:${rd};cursor:pointer;"></div>`;
   }).join('');
-  const dayLabels=DAYS.map(d=>`<div style="flex:1;text-align:center;font-size:9px;color:#8a8580;">${d}</div>`).join('');
+  const dayLabels=DOW_LABELS.map(d=>`<div style="flex:1;text-align:center;font-size:9px;color:#8a8580;">${d}</div>`).join('');
   const sumCol=onT>=5?'#4a7a52':onT>=3?'#B7791F':'#A13024';
   return `<div style="margin-bottom:12px;" id="compStrip">
     <div style="font-size:11px;color:#8a8580;margin-bottom:6px;">This week</div>
@@ -2709,14 +2719,22 @@ function macroBars(range){
   const barH=H-padT-padB;
   /* ---- weekly grouped view when >21 days ---- */
   if(dayCount>21){
-    const weeks=[];
-    for(let ws=d0;ws<=dN;ws+=7){
-      const we=Math.min(ws+6,dN);
-      const wDays=data.filter(d=>d.day>=ws&&d.day<=we);
-      if(!wDays.length){weeks.push({s:ws,e:we,pct:null,n:0,onT:0});continue;}
-      const onT=wDays.filter(d=>{const s=dayCalState(d.day,d.kcal);return s==='ok'||s==='warn';}).length;
-      weeks.push({s:ws,e:we,pct:Math.round(onT/wDays.length*100),n:wDays.length,onT});
+    // group by real calendar weeks (Mon-Sun)
+    const weekMap=new Map();
+    for(let dd=d0;dd<=dN;dd++){
+      const dt=dayToDate(dd);if(!dt)continue;
+      const mon=new Date(dt);mon.setDate(mon.getDate()-((mon.getDay()+6)%7)); // Monday of this week
+      const wk=mon.toISOString().slice(0,10);
+      if(!weekMap.has(wk))weekMap.set(wk,{key:wk,mon,days:[]});
+      const found=data.find(d=>d.day===dd);
+      weekMap.get(wk).days.push({day:dd,found});
     }
+    const weeks=[...weekMap.values()].map(wk=>{
+      const logged=wk.days.filter(d=>d.found);
+      if(!logged.length)return{...wk,pct:null,n:0,onT:0};
+      const onT=logged.filter(d=>{const s=dayCalState(d.found.day,d.found.kcal);return s==='ok'||s==='warn';}).length;
+      return{...wk,pct:Math.round(onT/logged.length*100),n:logged.length,onT};
+    });
     const wc=weeks.length, bw=Math.max(14,Math.min(36,(W-padL-padR)/Math.max(1,wc)*0.65));
     const xs=i=>padL+(i+0.5)/(wc)*(W-padL-padR);
     let bars='';
@@ -2726,8 +2744,8 @@ function macroBars(range){
       const col=wk.pct>=80?COL.ok:wk.pct>=50?COL.warn:COL.over;
       const x=xs(i);
       if(wk.n<3){return;}
-      const lbl='Wk '+(i+1);
-      bars+=`<rect class="mbar" data-day="${wk.s}" data-k="${wk.onT}/${wk.n}" data-wk="${lbl}" data-f="" data-c="" x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,h).toFixed(1)}" rx="4" fill="${col}"/>`;
+      const lbl=wk.mon.toLocaleDateString(undefined,{day:'numeric',month:'short'});
+      bars+=`<rect class="mbar" data-day="${wk.days[0].day}" data-k="${wk.onT}/${wk.n}" data-wk="${lbl}" data-f="" data-c="" x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,h).toFixed(1)}" rx="4" fill="${col}"/>`;
       bars+=`<text x="${x.toFixed(1)}" y="${H-8}" font-size="9" fill="#938c7d" text-anchor="middle" font-family="sans-serif">${lbl}</text>`;
     });
     // acceptability band (80-100%)

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<!-- AEVUM Admin Dashboard · v1.0.0-beta -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEVUM Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1A1A;--ink-soft:#4a463f;--gold:#B08D2E;--gold-deep:#8f6f1f;
+  --paper:#FBFAF7;--card:#ffffff;--line:#EBE5D8;--line-soft:#F2EDE2;--muted:#938c7d;
+  --red:#A13024;--green:#2d6a4f;--sidebar-bg:#141311;--sidebar-w:220px;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;font-size:13px;color:var(--ink);}
+.hidden{display:none!important;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--ink);color:#fff;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;}
+.brand{font-family:var(--serif);font-size:34px;font-weight:500;letter-spacing:.16em;}
+.brand-sub{color:var(--gold);font-size:11px;letter-spacing:.28em;margin-top:6px;}
+.login-box{margin-top:48px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px;}
+.login-box input{width:100%;padding:14px;background:#242320;border:1px solid #34322d;border-radius:12px;color:#fff;font-size:15px;text-align:center;letter-spacing:.04em;}
+.login-box input::placeholder{color:#6b665c;}
+.btn-login{padding:14px;background:var(--gold);color:var(--ink);border-radius:12px;font-size:15px;font-weight:600;transition:opacity .15s;}
+.btn-login:hover{opacity:.9;}
+.login-err{color:#e05c4d;font-size:13px;min-height:20px;}
+
+/* LAYOUT */
+#app{display:flex;height:100vh;}
+#sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);color:#b7b1a4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.sb-brand{padding:22px 20px 18px;border-bottom:1px solid #2a2820;}
+.sb-brand .mark{font-family:var(--serif);font-size:16px;color:#fff;letter-spacing:.14em;}
+.sb-brand .sub{font-size:10px;color:var(--gold);letter-spacing:.2em;margin-top:3px;}
+.sb-section{padding:16px 0 8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6b665c;padding-left:20px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;cursor:pointer;transition:background .15s,color .15s;position:relative;}
+.sb-item:hover{background:#1e1d1a;color:#e9e5dc;}
+.sb-item.active{background:#2a2820;color:var(--gold);font-weight:600;}
+.sb-item .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);display:none;position:absolute;right:16px;}
+.sb-item.dirty .dot{display:block;}
+.sb-count{font-size:11px;color:#6b665c;margin-left:auto;}
+
+/* MAIN */
+#main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar-admin{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:10;}
+.topbar-admin h1{font-family:var(--serif);font-size:20px;font-weight:500;}
+.topbar-admin .meta{font-size:12px;color:var(--muted);margin-left:12px;}
+.topbar-actions{display:flex;gap:8px;}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:opacity .15s;}
+.btn-primary{background:var(--gold);color:var(--ink);}
+.btn-primary:disabled{opacity:.4;cursor:default;}
+.btn-secondary{background:var(--line);color:var(--ink-soft);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn:hover:not(:disabled){opacity:.85;}
+
+/* TABLE */
+.table-wrap{padding:20px 28px;flex:1;}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+thead th{background:#f5f2ec;text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);position:sticky;top:57px;z-index:5;}
+tbody td{padding:4px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+tbody tr:hover{background:#faf8f3;}
+tbody td input,tbody td select{width:100%;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;transition:border-color .15s,background .15s;}
+tbody td input:focus,tbody td select:focus{border-color:var(--gold);background:var(--card);outline:none;}
+tbody td textarea{width:100%;min-height:60px;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;resize:vertical;font-size:13px;line-height:1.4;}
+tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:none;}
+.row-actions{white-space:nowrap;}
+.btn-del{color:var(--red);font-size:18px;padding:4px 8px;opacity:.5;transition:opacity .15s;}
+.btn-del:hover{opacity:1;}
+.col-narrow{width:70px;}
+.col-mid{width:110px;}
+.col-wide{min-width:200px;}
+
+/* POLICY EDITOR */
+.policy-cards{display:flex;flex-direction:column;gap:16px;padding:20px 28px;}
+.policy-card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.policy-card h3{font-family:var(--serif);font-size:16px;margin-bottom:10px;text-transform:capitalize;}
+.policy-card textarea{width:100%;min-height:200px;padding:12px;border:1px solid var(--line);border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;}
+.policy-card textarea:focus{border-color:var(--gold);outline:none;}
+
+/* USERS TABLE */
+.user-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.badge-program{background:#E8F2EF;color:var(--green);}
+.badge-free{background:var(--line-soft);color:var(--muted);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:100;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.error{background:var(--red);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state p{font-size:15px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="brand">AEVUM</div>
+  <div class="brand-sub">ADMIN</div>
+  <div class="login-box">
+    <input type="text" id="tokenInput" placeholder="Admin token" autocomplete="off" spellcheck="false">
+    <button class="btn-login" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <nav id="sidebar">
+    <div class="sb-brand">
+      <div class="mark">AEVUM</div>
+      <div class="sub">ADMIN</div>
+    </div>
+    <div class="sb-section">Reference tables</div>
+    <div class="sb-item" data-table="rules" onclick="selectTable('rules')">Rules<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="foods" onclick="selectTable('foods')">Foods<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="policy" onclick="selectTable('policy')">Policy<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="config" onclick="selectTable('config')">Config<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-section">Content</div>
+    <div class="sb-item" data-table="messages" onclick="selectTable('messages')">Messages<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="recipes" onclick="selectTable('recipes')">Recipes<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="movements" onclick="selectTable('movements')">Movements<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-item" data-table="workouts" onclick="selectTable('workouts')">Workouts<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-section">People</div>
+    <div class="sb-item" data-table="users" onclick="selectTable('users')">Users<span class="dot"></span><span class="sb-count"></span></div>
+  </nav>
+  <div id="main">
+    <div class="topbar-admin">
+      <div style="display:flex;align-items:baseline;">
+        <h1 id="tableTitle">Rules</h1>
+        <span class="meta" id="tableMeta"></span>
+      </div>
+      <div class="topbar-actions" id="tableActions"></div>
+    </div>
+    <div id="tableContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://aevum-api-v2.marco-iannitto.workers.dev';
+let TOKEN = '';
+let activeTable = '';
+
+// ─── Table definitions ───────────────────────────────────────
+const TABLES = {
+  rules: {
+    cols: [
+      { key:'phase', label:'Phase', w:'col-mid' },
+      { key:'model', label:'Model', w:'col-mid' },
+      { key:'metric', label:'Metric', w:'col-mid' },
+      { key:'basis', label:'Basis', w:'col-narrow' },
+      { key:'value', label:'Value', w:'col-narrow', type:'number' },
+      { key:'green_lo', label:'Green Lo', w:'col-narrow', type:'number' },
+      { key:'green_hi', label:'Green Hi', w:'col-narrow', type:'number' },
+      { key:'amber_lo', label:'Amber Lo', w:'col-narrow', type:'number' },
+      { key:'amber_hi', label:'Amber Hi', w:'col-narrow', type:'number' },
+      { key:'gated', label:'Gated', w:'col-narrow' },
+      { key:'unit', label:'Unit', w:'col-narrow' }
+    ]
+  },
+  foods: {
+    cols: [
+      { key:'phase', label:'Phase', w:'col-mid' },
+      { key:'category', label:'Category', w:'col-mid' },
+      { key:'subcategory', label:'Subcategory', w:'col-mid' },
+      { key:'item', label:'Item', w:'col-wide' },
+      { key:'verdict', label:'Verdict', w:'col-narrow' },
+      { key:'cap_g', label:'Cap (g)', w:'col-narrow', type:'number' },
+      { key:'note', label:'Note', w:'col-wide' }
+    ]
+  },
+  policy: { mode:'cards' },
+  config: {
+    cols: [
+      { key:'key', label:'Key', w:'col-wide' },
+      { key:'value', label:'Value', w:'col-wide' }
+    ]
+  },
+  messages: {
+    cols: [
+      { key:'id', label:'ID', w:'col-mid' },
+      { key:'trigger', label:'Trigger', w:'col-mid' },
+      { key:'enabled', label:'Enabled', w:'col-narrow' },
+      { key:'phase', label:'Phase', w:'col-narrow' },
+      { key:'priority', label:'Pri', w:'col-narrow', type:'number' },
+      { key:'title', label:'Title', w:'col-wide' },
+      { key:'body', label:'Body', w:'col-wide' },
+      { key:'badge', label:'Badge', w:'col-narrow' },
+      { key:'frequency', label:'Freq', w:'col-mid' }
+    ]
+  },
+  recipes: {
+    cols: [
+      { key:'name', label:'Name', w:'col-wide' },
+      { key:'protein', label:'Protein', w:'col-mid' },
+      { key:'cuisine', label:'Cuisine', w:'col-mid' },
+      { key:'phase', label:'Phase', w:'col-narrow' },
+      { key:'kcal', label:'Kcal', w:'col-narrow', type:'number' },
+      { key:'protein_g', label:'Prot g', w:'col-narrow', type:'number' },
+      { key:'fat_g', label:'Fat g', w:'col-narrow', type:'number' },
+      { key:'carbs_g', label:'Carbs g', w:'col-narrow', type:'number' },
+      { key:'ingredients', label:'Ingredients', w:'col-wide' },
+      { key:'steps', label:'Steps', w:'col-wide' }
+    ]
+  },
+  movements: {
+    cols: [
+      { key:'id', label:'ID', w:'col-mid' },
+      { key:'name', label:'Name', w:'col-wide' },
+      { key:'phase', label:'Phase', w:'col-narrow' },
+      { key:'equipment', label:'Equip', w:'col-mid' },
+      { key:'video_url', label:'Video URL', w:'col-wide' },
+      { key:'cues', label:'Cues', w:'col-wide' },
+      { key:'mistake', label:'Mistake', w:'col-wide' }
+    ]
+  },
+  workouts: {
+    cols: [
+      { key:'workout_id', label:'Workout ID', w:'col-mid' },
+      { key:'workout_name', label:'Name', w:'col-wide' },
+      { key:'phase', label:'Phase', w:'col-narrow' },
+      { key:'duration_min', label:'Min', w:'col-narrow', type:'number' },
+      { key:'sort_order', label:'Order', w:'col-narrow', type:'number' },
+      { key:'movement_id', label:'Movement', w:'col-mid' },
+      { key:'sets', label:'Sets', w:'col-narrow', type:'number' },
+      { key:'reps', label:'Reps', w:'col-narrow', type:'number' },
+      { key:'rest_sec', label:'Rest s', w:'col-narrow', type:'number' }
+    ]
+  },
+  users: { mode:'users' }
+};
+
+// ─── Data store ──────────────────────────────────────────────
+const store = {};
+
+// ─── API call ────────────────────────────────────────────────
+async function api(action, data = {}) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + TOKEN
+    },
+    body: JSON.stringify({ action, ...data })
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json;
+}
+
+// ─── Login ───────────────────────────────────────────────────
+async function doLogin() {
+  const inp = document.getElementById('tokenInput');
+  const err = document.getElementById('loginErr');
+  const token = inp.value.trim();
+  if (!token) { err.textContent = 'Enter your admin token'; return; }
+  TOKEN = token;
+  try {
+    // Test token with admin_users
+    await api('admin_users');
+    sessionStorage.setItem('aevum_admin_token', token);
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    selectTable('rules');
+  } catch (e) {
+    err.textContent = 'Invalid token or not admin';
+    TOKEN = '';
+  }
+}
+
+// Check saved session
+(function() {
+  const saved = sessionStorage.getItem('aevum_admin_token');
+  if (saved) {
+    TOKEN = saved;
+    api('admin_users').then(() => {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      selectTable('rules');
+    }).catch(() => { TOKEN = ''; sessionStorage.removeItem('aevum_admin_token'); });
+  }
+  document.getElementById('tokenInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+})();
+
+// ─── Table selection ─────────────────────────────────────────
+async function selectTable(name) {
+  activeTable = name;
+  document.querySelectorAll('.sb-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.table === name);
+  });
+  document.getElementById('tableTitle').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+
+  if (!store[name]) {
+    document.getElementById('tableContent').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
+    try {
+      await loadTable(name);
+    } catch (e) {
+      document.getElementById('tableContent').innerHTML = '<div class="empty-state"><p>Error: ' + e.message + '</p></div>';
+      return;
+    }
+  }
+  renderView(name);
+}
+
+async function loadTable(name) {
+  let rows;
+  if (name === 'users') {
+    const res = await api('admin_users');
+    rows = res.users || [];
+  } else {
+    const res = await api('admin_list', { table: name });
+    rows = res.rows || [];
+  }
+  store[name] = { original: structuredClone(rows), current: rows, dirty: false };
+  updateCount(name);
+}
+
+function updateCount(name) {
+  const el = document.querySelector(`.sb-item[data-table="${name}"] .sb-count`);
+  if (el && store[name]) el.textContent = store[name].current.length;
+}
+
+function markDirty(name) {
+  store[name].dirty = true;
+  const el = document.querySelector(`.sb-item[data-table="${name}"]`);
+  if (el) el.classList.add('dirty');
+  renderActions(name);
+}
+
+function markClean(name) {
+  store[name].dirty = false;
+  const el = document.querySelector(`.sb-item[data-table="${name}"]`);
+  if (el) el.classList.remove('dirty');
+  renderActions(name);
+}
+
+// ─── Render ──────────────────────────────────────────────────
+function renderView(name) {
+  const def = TABLES[name];
+  if (def.mode === 'cards') renderPolicyCards(name);
+  else if (def.mode === 'users') renderUsersTable(name);
+  else renderDataTable(name);
+  renderActions(name);
+}
+
+function renderActions(name) {
+  const acts = document.getElementById('tableActions');
+  const def = TABLES[name];
+  const d = store[name];
+  const meta = document.getElementById('tableMeta');
+  meta.textContent = d ? d.current.length + ' rows' : '';
+
+  if (def.mode === 'users') {
+    acts.innerHTML = '<button class="btn btn-secondary" onclick="refreshTable(\'' + name + '\')">Refresh</button>';
+    return;
+  }
+
+  const dirty = d && d.dirty;
+  acts.innerHTML = `
+    <button class="btn btn-secondary" onclick="addRow('${name}')">+ Add row</button>
+    <button class="btn btn-secondary" onclick="revertTable('${name}')" ${dirty ? '' : 'disabled'}>Revert</button>
+    <button class="btn btn-primary" onclick="saveTable('${name}')" ${dirty ? '' : 'disabled'}>Save changes</button>
+  `;
+}
+
+function renderDataTable(name) {
+  const def = TABLES[name];
+  const rows = store[name].current;
+  const wrap = document.getElementById('tableContent');
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  for (const col of def.cols) {
+    html += `<th class="${col.w || ''}">${col.label}</th>`;
+  }
+  html += '<th></th></tr></thead><tbody>';
+
+  for (let i = 0; i < rows.length; i++) {
+    html += '<tr>';
+    for (const col of def.cols) {
+      const val = rows[i][col.key] ?? '';
+      const inputType = col.type === 'number' ? 'number' : 'text';
+      html += `<td class="${col.w || ''}"><input type="${inputType}" value="${esc(String(val))}" data-row="${i}" data-col="${col.key}" onchange="cellChange(this,'${name}')"></td>`;
+    }
+    html += `<td class="row-actions"><button class="btn-del" onclick="delRow('${name}',${i})" title="Delete row">&times;</button></td>`;
+    html += '</tr>';
+  }
+
+  if (!rows.length) {
+    html += `<tr><td colspan="${def.cols.length + 1}" style="text-align:center;padding:30px;color:var(--muted);">No rows. Click "+ Add row" to start.</td></tr>`;
+  }
+
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+
+function renderPolicyCards(name) {
+  const rows = store[name].current;
+  const wrap = document.getElementById('tableContent');
+  const phases = ['loading', 'activation', 'stabilization', 'maintenance'];
+
+  let html = '<div class="policy-cards">';
+  for (const phase of phases) {
+    const row = rows.find(r => r.phase === phase);
+    const text = row ? row.rules_text : '';
+    html += `<div class="policy-card">
+      <h3>${phase}</h3>
+      <textarea data-phase="${phase}" onchange="policyChange(this,'${name}')" oninput="policyChange(this,'${name}')">${esc(text)}</textarea>
+    </div>`;
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderUsersTable(name) {
+  const rows = store[name].current;
+  const wrap = document.getElementById('tableContent');
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  html += '<th>ID</th><th>Name</th><th>Email</th><th>Type</th><th>Logs</th><th>Last Day</th><th>Created</th>';
+  html += '</tr></thead><tbody>';
+
+  for (const u of rows) {
+    const badge = u.program ? '<span class="user-badge badge-program">Program</span>' : '<span class="user-badge badge-free">Free</span>';
+    html += `<tr>
+      <td style="padding:8px 12px;font-size:12px;color:var(--muted);font-family:monospace;">${esc(String(u.id || ''))}</td>
+      <td style="padding:8px 12px;font-weight:500;">${esc(u.name || '')}</td>
+      <td style="padding:8px 12px;font-size:12px;">${esc(u.email || '')}</td>
+      <td style="padding:8px 12px;">${badge}</td>
+      <td style="padding:8px 12px;text-align:center;">${u.log_count || 0}</td>
+      <td style="padding:8px 12px;text-align:center;">${u.last_day || '-'}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--muted);">${u.created_at || ''}</td>
+    </tr>`;
+  }
+
+  if (!rows.length) {
+    html += '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No users yet.</td></tr>';
+  }
+
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+
+// ─── Cell editing ────────────────────────────────────────────
+function cellChange(input, name) {
+  const row = parseInt(input.dataset.row);
+  const col = input.dataset.col;
+  let val = input.value;
+  // Convert numbers
+  const def = TABLES[name].cols.find(c => c.key === col);
+  if (def && def.type === 'number') {
+    val = val === '' ? null : parseFloat(val);
+    if (isNaN(val)) val = null;
+  }
+  store[name].current[row][col] = val;
+  markDirty(name);
+}
+
+function policyChange(textarea, name) {
+  const phase = textarea.dataset.phase;
+  const rows = store[name].current;
+  let row = rows.find(r => r.phase === phase);
+  if (!row) {
+    row = { phase, rules_text: '' };
+    rows.push(row);
+  }
+  row.rules_text = textarea.value;
+  markDirty(name);
+}
+
+// ─── Row operations ──────────────────────────────────────────
+function addRow(name) {
+  const def = TABLES[name];
+  if (def.mode === 'cards') {
+    // Policy: already shows all 4 phases
+    toast('All phases already shown');
+    return;
+  }
+  const row = {};
+  for (const col of def.cols) {
+    row[col.key] = col.type === 'number' ? null : '';
+  }
+  store[name].current.push(row);
+  markDirty(name);
+  renderView(name);
+  // Scroll to bottom
+  const main = document.getElementById('main');
+  setTimeout(() => main.scrollTop = main.scrollHeight, 50);
+}
+
+function delRow(name, idx) {
+  store[name].current.splice(idx, 1);
+  markDirty(name);
+  renderView(name);
+}
+
+// ─── Save / Revert ───────────────────────────────────────────
+async function saveTable(name) {
+  const rows = store[name].current;
+  // Clean rows: remove auto-increment id for tables that use it
+  const hasAutoPK = !['config'].includes(name);
+  const cleanRows = rows.map(r => {
+    const copy = { ...r };
+    // Remove null/undefined values to keep inserts clean
+    for (const k of Object.keys(copy)) {
+      if (copy[k] === null || copy[k] === undefined) delete copy[k];
+    }
+    // Remove autoincrement id (but keep text PKs like messages.id, movements.id)
+    if (hasAutoPK && typeof copy.id === 'number') delete copy.id;
+    return copy;
+  }).filter(r => Object.keys(r).length > 0);
+
+  try {
+    await api('admin_seed', { table: name, rows: cleanRows });
+    // Reload to get server-assigned IDs
+    await loadTable(name);
+    markClean(name);
+    renderView(name);
+    toast('Saved ' + cleanRows.length + ' rows to ' + name);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+async function revertTable(name) {
+  store[name].current = structuredClone(store[name].original);
+  markClean(name);
+  renderView(name);
+  toast('Reverted ' + name);
+}
+
+async function refreshTable(name) {
+  delete store[name];
+  await selectTable(name);
+  toast('Refreshed ' + name);
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = 'toast', 2500);
+}
+
+// ─── Keyboard shortcut ──────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (activeTable && store[activeTable] && store[activeTable].dirty) {
+      saveTable(activeTable);
+    }
+  }
+});
+
+// ─── Logout ─────────────────────────────────────────────────
+function logout() {
+  TOKEN = '';
+  sessionStorage.removeItem('aevum_admin_token');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('tokenInput').value = '';
+  Object.keys(store).forEach(k => delete store[k]);
+}
+</script>
+</body>
+</html>
