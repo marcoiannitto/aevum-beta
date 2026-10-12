@@ -794,13 +794,12 @@ textarea.notes::placeholder{color:var(--muted);}
       Continue with Google
     </button>
     <div class="login-divider">OR</div>
-    <button class="btn-token" id="btnTokenLogin">I have a login token</button>
-    <button class="btn-create" id="btnNewAccount">Create free account</button>
+    <button class="btn-token" id="btnTokenLogin">I have a login code</button>
   </div>
 
   <!-- Token entry view -->
   <div id="loginTokenView">
-    <input id="tokenInput" type="text" placeholder="Paste your token here" autocomplete="off">
+    <input id="tokenInput" type="text" placeholder="Paste your login code here" autocomplete="off">
     <div class="login-err" id="loginErr"></div>
     <button class="btn-create" id="btnTokenSubmit" style="margin-top:14px;">Log in</button>
     <button class="login-back" id="btnBackToMain">&larr; Back</button>
@@ -4026,13 +4025,6 @@ g('btnTokenSubmit').onclick=()=>{
     });
 };
 g('tokenInput').onkeydown=(e)=>{if(e.key==='Enter')g('btnTokenSubmit').click();};
-
-// "Create free account" goes to onboarding (register flow)
-g('btnNewAccount').onclick=()=>{
-  hideLogin();
-  PID='';
-  initOnboard();
-};
 
 /* ──── App entry point ──── */
 loadProfile();
