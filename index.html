@@ -3853,7 +3853,7 @@ function hydrateFromBackend(){
   // fill any days missing on THIS device from the Sheet (gap-fill only, never clobbers local)
   if(!BACKEND_URL)return;
   postJSON(BACKEND_URL,{action:'getdays',id:PID},'text/plain;charset=utf-8')
-    .then(r=>r.json()).then(d=>{
+    .then(d=>{
       if(!d||!Array.isArray(d.days))return;
       let restored=0,maxDay=0;
       d.days.forEach(row=>{
