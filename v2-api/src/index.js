@@ -142,6 +142,7 @@ export default {
       if (action === 'admin_seed' && isAdmin)   return json(await adminSeed(body, db), cors);
 	  if (action === 'admin_list' && isAdmin)   return json(await adminList(body, db), cors);
 	  if (action === 'admin_import' && isAdmin) return json(await adminImport(body, db), cors);
+      if (action === 'admin_update_user' && isAdmin) return json(await adminUpdateUser(body, db), cors);
 
       // User routes
       switch (action) {
@@ -319,6 +320,7 @@ async function getProfile(userId, db) {
     profile: {
       id: row.id,
       name: row.name,
+      email: row.email || '',
       target_kg: row.target_kg,
       start_weight: row.start_weight,
       start_date: row.start_date || '',
@@ -1056,4 +1058,22 @@ async function adminImport(body, db) {
   }
   await db.batch(stmts);
   return { ok: true, table, imported: rows.length };
+}
+
+async function adminUpdateUser(body, db) {
+  const targetId = String(body.id || '').toLowerCase();
+  if (!targetId) return { error: 'id required' };
+  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg'];
+  const sets = [];
+  const vals = [];
+  for (const key of allowed) {
+    if (body[key] !== undefined) {
+      sets.push(`${key} = ?`);
+      vals.push(body[key]);
+    }
+  }
+  if (!sets.length) return { error: 'nothing to update' };
+  vals.push(targetId);
+  await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+  return { ok: true };
 }

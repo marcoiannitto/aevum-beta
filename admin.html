@@ -587,7 +587,21 @@ function renderUserDetail(data) {
   const avgFat = withKcal.length ? Math.round(withKcal.reduce((a, l) => a + (l.fat || 0), 0) / withKcal.length) : null;
   const avgCarbs = withKcal.length ? Math.round(withKcal.reduce((a, l) => a + (l.carbs || 0), 0) / withKcal.length) : null;
 
+  const isProg = !!profile.program;
   let html = '<div class="ud-wrap">';
+
+  // ─── Profile bar ───
+  html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="user-badge ${isProg ? 'badge-program' : 'badge-free'}" id="udBadge">${isProg ? 'Program' : 'Free'}</span>
+      <button class="btn ${isProg ? 'btn-outline' : 'btn-primary'}" id="udToggleBtn" onclick="toggleProgram()" style="font-size:12px;padding:6px 12px;">
+        ${isProg ? 'Switch to Free' : 'Activate Program'}
+      </button>
+    </div>
+    <span style="font-size:12px;color:var(--muted);">${profile.email || ''}</span>
+    <span style="font-size:12px;color:var(--muted);">ID: ${activeUserDetail._userId}</span>
+    <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || '-'}</span>
+  </div>`;
 
   // ─── Stats row ───
   html += '<div class="ud-stats">';
@@ -899,6 +913,24 @@ function csvVal(v) {
   const s = String(v);
   if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
   return s;
+}
+
+// ─── Toggle program status ──────────────────────────────────
+async function toggleProgram() {
+  if (!activeUserDetail) return;
+  const profile = activeUserDetail.profile || {};
+  const newVal = profile.program ? 0 : 1;
+  const label = newVal ? 'Program' : 'Free';
+  if (!confirm('Switch this user to "' + label + '"?')) return;
+  try {
+    await api('admin_update_user', { id: activeUserDetail._userId, program: newVal });
+    toast('User set to ' + label);
+    // Refresh user detail
+    delete store.users;
+    await openUser(activeUserDetail._userId);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
 }
 
 // ─── Cell editing ────────────────────────────────────────────
