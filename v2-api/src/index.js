@@ -1,5 +1,5 @@
 /**
- * AEVUM API v2.0.0
+ * AEVUM API v2.0.1
  *
  * Replaces both the GAS backend and the proxy Worker.
  * Uses Cloudflare D1 (SQLite) instead of Google Sheets.
