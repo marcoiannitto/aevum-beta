@@ -1078,7 +1078,7 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'weight', 'act'];
+  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'weight', 'act', 'email', 'name'];
   const sets = [];
   const vals = [];
   for (const key of allowed) {
