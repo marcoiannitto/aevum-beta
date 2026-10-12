@@ -3852,7 +3852,7 @@ function boot(){
 function hydrateFromBackend(){
   // fill any days missing on THIS device from the Sheet (gap-fill only, never clobbers local)
   if(!BACKEND_URL)return;
-  fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getdays',id:PID})})
+  postJSON(BACKEND_URL,{action:'getdays',id:PID},'text/plain;charset=utf-8')
     .then(r=>r.json()).then(d=>{
       if(!d||!Array.isArray(d.days))return;
       let restored=0,maxDay=0;
@@ -3868,8 +3868,8 @@ function hydrateFromBackend(){
 function fetchProfile(){
   if(!BACKEND_URL||!getAuthToken())return;
   postJSON(BACKEND_URL,{action:'profile'},'text/plain;charset=utf-8')
-    .then(r=>r.json()).then(d=>{
-      if(d.profile){
+    .then(d=>{
+      if(d&&d.profile){
         const P=d.profile, keep={target_kg:P.target_kg,start_weight:P.start_weight,start_date:P.start_date,activation_days:P.activation_days,stab_target_weight:P.stab_target_weight,maint_target_weight:P.maint_target_weight};
         // adaptive-target fields: only overwrite local if the Sheet actually has a value (local may be newer)
         if(+P.current_target_kcal>0)keep.current_target_kcal=P.current_target_kcal;
