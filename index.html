@@ -3882,7 +3882,7 @@ function hydrateFromBackend(){
         const local=localStorage.getItem(key);
         if(!local){localStorage.setItem(key,row.day_json);updated++;return;}
         // Compare timestamps: cloud updated_at (ISO string from D1) vs local updated_at (epoch ms)
-        const cloudTs=row.updated_at?new Date(row.updated_at).getTime():0;
+        const cloudTs=row.updated_at?new Date(row.updated_at.endsWith('Z')?row.updated_at:row.updated_at+'Z').getTime():0;
         let localObj;try{localObj=JSON.parse(local);}catch(e){localStorage.setItem(key,row.day_json);updated++;return;}
         const localTs=localObj.updated_at||0; // 0 = pre-timestamp data, cloud always wins
         if(cloudTs>localTs){
