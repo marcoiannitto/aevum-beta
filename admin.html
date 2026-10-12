@@ -603,6 +603,26 @@ function renderUserDetail(data) {
     <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || '-'}</span>
   </div>`;
 
+  // ─── Editable fields row ───
+  html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;">
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Activation days:
+      <input type="number" id="udActDays" value="${profile.activation_days || ''}" min="1" max="90"
+        style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Target kcal:
+      <input type="number" id="udTargetKcal" value="${profile.current_target_kcal || ''}" min="800" max="5000" step="50"
+        style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Target kg:
+      <input type="number" id="udTargetKg" value="${profile.target_kg || ''}" min="30" max="200" step="0.1"
+        style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <button class="btn btn-primary" onclick="saveUserFields()" style="font-size:12px;padding:4px 12px;">Save</button>
+  </div>`;
+
   // ─── Stats row ───
   html += '<div class="ud-stats">';
   html += statCard('Current weight', latestWeight ? latestWeight + ' kg' : '-', weightChange !== null ? (weightChange > 0 ? '+' : '') + weightChange + ' kg from start' : '');
@@ -926,6 +946,27 @@ async function toggleProgram() {
     await api('admin_update_user', { id: activeUserDetail._userId, program: newVal });
     toast('User set to ' + label);
     // Refresh user detail
+    delete store.users;
+    await openUser(activeUserDetail._userId);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+async function saveUserFields() {
+  if (!activeUserDetail) return;
+  const updates = {};
+  const actDays = document.getElementById('udActDays').value;
+  const targetKcal = document.getElementById('udTargetKcal').value;
+  const targetKg = document.getElementById('udTargetKg').value;
+  if (actDays !== '') updates.activation_days = parseInt(actDays);
+  if (targetKcal !== '') updates.current_target_kcal = parseInt(targetKcal);
+  if (targetKg !== '') updates.target_kg = parseFloat(targetKg);
+  if (!Object.keys(updates).length) { toast('Nothing to save'); return; }
+  try {
+    updates.id = activeUserDetail._userId;
+    await api('admin_update_user', updates);
+    toast('Saved');
     delete store.users;
     await openUser(activeUserDetail._userId);
   } catch (e) {
