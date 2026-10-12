@@ -1277,7 +1277,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.35.0';
+const APP_VERSION='v1.36.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1816,6 +1816,14 @@ function blankDay(){return{meals:[],water:0,weight:'',waist:'',serumAM:false,ser
 function loadDay(){const r=localStorage.getItem(K('day_'+currentDay));day=r?JSON.parse(r):blankDay();render();}
 function saveDay(silent){
   day.date=day.date||effTodayISO();
+  // Compare content without updated_at to detect real changes
+  const prev=localStorage.getItem(K('day_'+currentDay));
+  const oldTs=day.updated_at;
+  const contentSnap=d=>{const c={...d};delete c.updated_at;return JSON.stringify(c);};
+  if(prev && contentSnap(day)===contentSnap(JSON.parse(prev))){
+    // Nothing changed, just persist lastDay without bumping timestamp or syncing
+    localStorage.setItem(K('lastDay'),currentDay);return;
+  }
   day.updated_at=Date.now();
   const t=totals();const rec={...day,...t};
   localStorage.setItem(K('day_'+currentDay),JSON.stringify(day));
@@ -3881,8 +3889,9 @@ function hydrateFromBackend(){
         const key=K('day_'+row.day);
         const local=localStorage.getItem(key);
         if(!local){localStorage.setItem(key,row.day_json);updated++;return;}
-        // Compare timestamps: cloud updated_at (ISO string from D1) vs local updated_at (epoch ms)
-        const cloudTs=row.updated_at?new Date(row.updated_at.endsWith('Z')?row.updated_at:row.updated_at+'Z').getTime():0;
+        // Compare timestamps: cloud updated_at (epoch ms or ISO string) vs local updated_at (epoch ms)
+        const rawCts=row.updated_at;
+        const cloudTs=rawCts?(typeof rawCts==='number'||/^\d+$/.test(rawCts)?Number(rawCts):new Date(String(rawCts).endsWith('Z')?rawCts:rawCts+'Z').getTime()):0;
         let localObj;try{localObj=JSON.parse(local);}catch(e){localStorage.setItem(key,row.day_json);updated++;return;}
         const localTs=localObj.updated_at||0; // 0 = pre-timestamp data, cloud always wins
         if(cloudTs>localTs){

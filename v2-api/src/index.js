@@ -339,11 +339,13 @@ async function getProfile(userId, db) {
 
 // ─── Sync (upsert daily log) ─────────────────────────────────
 async function syncRow(userId, body, db) {
+  // Use client's epoch-ms timestamp so all devices compare on the same basis
+  const clientTs = body.updated_at ? Number(body.updated_at) : Date.now();
   await db.prepare(
     `INSERT INTO daily_logs (user_id, day, phase, date, weight, waist,
       serum_am, serum_pm, kcal, protein, fat, carbs, water_ml,
-      exercise, exercise_kcal, energy, hunger, sleep, notes, day_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      exercise, exercise_kcal, energy, hunger, sleep, notes, day_json, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id, day) DO UPDATE SET
       phase=excluded.phase, date=excluded.date, weight=excluded.weight,
       waist=excluded.waist, serum_am=excluded.serum_am, serum_pm=excluded.serum_pm,
@@ -352,7 +354,7 @@ async function syncRow(userId, body, db) {
       exercise=excluded.exercise, exercise_kcal=excluded.exercise_kcal,
       energy=excluded.energy, hunger=excluded.hunger, sleep=excluded.sleep,
       notes=excluded.notes, day_json=excluded.day_json,
-      updated_at=datetime('now')`
+      updated_at=excluded.updated_at`
   ).bind(
     userId, body.day || 0, body.phase || '', body.date || '',
     body.weight || null, body.waist || null,
@@ -360,7 +362,7 @@ async function syncRow(userId, body, db) {
     body.kcal || 0, body.protein || 0, body.fat || 0, body.carbs || 0,
     body.water_ml || 0, body.exercise || '', body.exercise_kcal || 0,
     body.energy || '', body.hunger || '', body.sleep || '',
-    body.notes || '', body.day_json || ''
+    body.notes || '', body.day_json || '', clientTs
   ).run();
 
   return { ok: true };
