@@ -106,8 +106,12 @@ function parseCSVRow(text, start) {
 async function callAPI(action, body, token) {
   const res = await fetch(API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Origin': 'https://beta.niramaya.sg' },
-    body: JSON.stringify({ action, token, ...body })
+    headers: {
+      'Content-Type': 'application/json',
+      'Origin': 'https://beta.niramaya.sg',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify({ action, ...body })
   });
   const data = await res.json();
   if (data.error) throw new Error(`API error (${action}): ${data.error}`);
