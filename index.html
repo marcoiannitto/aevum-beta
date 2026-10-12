@@ -10,6 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1A1A1A">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>AEVUM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1274,7 +1277,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.33.1';
+const APP_VERSION='v1.34.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -3034,6 +3037,12 @@ function exportCSV(){
 /* ---- helpers ---- */
 function g(id){return document.getElementById(id);}
 function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function showToast(msg,ms){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;max-width:90vw;text-align:center;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._tid);t._tid=setTimeout(()=>{t.style.opacity='0';},ms||3000);
+}
 
 /* ---- edit a logged meal's date + time ---- */
 let editMealIdx=-1;
@@ -3653,7 +3662,7 @@ function openProfile(){
   } else {
     g('profCoachSection').classList.add('hidden');
   }
-  g('profVer').textContent='AEVUM v2.0.0-beta';
+  g('profVer').textContent='AEVUM v2.0.0-beta (build '+APP_VERSION+')';
   g('profScrim').classList.add('show');g('profPanel').classList.add('show');
   history.pushState({sheet:'profile'},'');
 }
@@ -3862,7 +3871,7 @@ function hydrateFromBackend(){
   if(!BACKEND_URL)return;
   postJSON(BACKEND_URL,{action:'getdays',id:PID},'text/plain;charset=utf-8')
     .then(d=>{
-      if(!d||!Array.isArray(d.days))return;
+      if(!d||!Array.isArray(d.days)){showToast('Hydration: no days returned');return;}
       let updated=0;
       d.days.forEach(row=>{
         if(!row.day||!row.day_json)return;
@@ -3873,8 +3882,9 @@ function hydrateFromBackend(){
           localStorage.setItem(key,row.day_json);updated++;
         }
       });
-      if(updated){loadDay();}
-    }).catch(()=>{});
+      if(updated){loadDay();showToast('Synced '+updated+' days from cloud');}
+      else{showToast('Cloud sync: '+d.days.length+' days checked, all up to date');}
+    }).catch(e=>{showToast('Sync error: '+e.message);});
 }
 function fetchProfile(){
   if(!BACKEND_URL||!getAuthToken())return;
