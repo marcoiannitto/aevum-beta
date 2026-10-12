@@ -1277,7 +1277,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.36.0';
+const APP_VERSION='v1.37.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -3877,7 +3877,7 @@ function boot(){
   if(IS_PROGRAM){setInterval(()=>{const ph=phaseFor(currentDay);if(ph.key==='activation'||ph.key==='transition')g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;if(ph.key==='maintenance')g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}<span class="ph-i">i</span>`;},60000);}
 }
 function hydrateFromBackend(){
-  // Sync D1 → localStorage: overwrite local when cloud is newer (last-write-wins by timestamp)
+  // Cloud is source of truth: always overwrite local with cloud data
   if(!BACKEND_URL)return;
   postJSON(BACKEND_URL,{action:'getdays',id:PID},'text/plain;charset=utf-8')
     .then(d=>{
@@ -3885,23 +3885,12 @@ function hydrateFromBackend(){
       let updated=0;
       d.days.forEach(row=>{
         if(!row.day||!row.day_json)return;
-        let parsed;try{parsed=JSON.parse(row.day_json);}catch(e){return;}
+        try{JSON.parse(row.day_json);}catch(e){return;} // validate JSON
         const key=K('day_'+row.day);
-        const local=localStorage.getItem(key);
-        if(!local){localStorage.setItem(key,row.day_json);updated++;return;}
-        // Compare timestamps: cloud updated_at (epoch ms or ISO string) vs local updated_at (epoch ms)
-        const rawCts=row.updated_at;
-        const cloudTs=rawCts?(typeof rawCts==='number'||/^\d+$/.test(rawCts)?Number(rawCts):new Date(String(rawCts).endsWith('Z')?rawCts:rawCts+'Z').getTime()):0;
-        let localObj;try{localObj=JSON.parse(local);}catch(e){localStorage.setItem(key,row.day_json);updated++;return;}
-        const localTs=localObj.updated_at||0; // 0 = pre-timestamp data, cloud always wins
-        if(cloudTs>localTs){
-          // Stamp the cloud timestamp into the parsed object so future comparisons work
-          parsed.updated_at=cloudTs;
-          localStorage.setItem(key,JSON.stringify(parsed));updated++;
-        }
+        localStorage.setItem(key,row.day_json);
+        updated++;
       });
       if(updated){loadDay();showToast('Synced '+updated+' days from cloud');}
-      else{showToast('Cloud sync: '+d.days.length+' days checked, all up to date');}
     }).catch(e=>{showToast('Sync error: '+e.message);});
 }
 function fetchProfile(){
