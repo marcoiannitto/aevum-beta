@@ -321,6 +321,8 @@ async function getProfile(userId, db) {
       id: row.id,
       name: row.name,
       email: row.email || '',
+      sex: row.sex || '',
+      age: row.age,
       target_kg: row.target_kg,
       start_weight: row.start_weight,
       start_date: row.start_date || '',
@@ -1063,7 +1065,7 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg'];
+  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'age', 'height', 'weight', 'act'];
   const sets = [];
   const vals = [];
   for (const key of allowed) {

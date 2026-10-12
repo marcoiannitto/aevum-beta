@@ -620,6 +620,23 @@ function renderUserDetail(data) {
       <input type="number" id="udTargetKg" value="${profile.target_kg || ''}" min="30" max="200" step="0.1"
         style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Sex:
+      <select id="udSex" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+        <option value="m" ${profile.sex === 'm' ? 'selected' : ''}>Male</option>
+        <option value="f" ${profile.sex === 'f' ? 'selected' : ''}>Female</option>
+      </select>
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Age:
+      <input type="number" id="udAge" value="${profile.age || ''}" min="10" max="120"
+        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Height (cm):
+      <input type="number" id="udHeight" value="${profile.height || ''}" min="100" max="250"
+        style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
     <button class="btn btn-primary" onclick="saveUserFields()" style="font-size:12px;padding:4px 12px;">Save</button>
   </div>`;
 
@@ -959,9 +976,15 @@ async function saveUserFields() {
   const actDays = document.getElementById('udActDays').value;
   const targetKcal = document.getElementById('udTargetKcal').value;
   const targetKg = document.getElementById('udTargetKg').value;
+  const sex = document.getElementById('udSex').value;
+  const age = document.getElementById('udAge').value;
+  const height = document.getElementById('udHeight').value;
   if (actDays !== '') updates.activation_days = parseInt(actDays);
   if (targetKcal !== '') updates.current_target_kcal = parseInt(targetKcal);
   if (targetKg !== '') updates.target_kg = parseFloat(targetKg);
+  updates.sex = sex;
+  if (age !== '') updates.age = parseInt(age);
+  if (height !== '') updates.height = parseInt(height);
   if (!Object.keys(updates).length) { toast('Nothing to save'); return; }
   try {
     updates.id = activeUserDetail._userId;
