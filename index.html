@@ -1277,7 +1277,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.37.0';
+const APP_VERSION='v1.38.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -2685,22 +2685,28 @@ function weekVerdict(logged){
 function complianceScore(allMacro,range){
   if(!allMacro||!allMacro.length)return '';
   const td=todayDayNum()||currentDay;
-  // find Monday of current calendar week
   const todayDate=dayToDate(td);
   if(!todayDate)return '';
   const todayDow=(todayDate.getDay()+6)%7; // 0=Mon
-  const monDay=td-todayDow; // program day of this Monday
+  let monDay=td-todayDow; // Monday of current calendar week
   const DOW_LABELS=['M','T','W','T','F','S','S'];
   const COL={ok:'#4a7a52',warn:'#B7791F',over:'#A13024',under:'#4a6fa5',none:'#e8e2d8'};
-  const recent=[];
-  for(let i=0;i<7;i++){
-    const d=monDay+i;
-    const inPhase=d>=1&&d<=td; // day exists in the program and not in the future
-    const found=inPhase?allMacro.find(x=>x.day===d):null;
-    const dir=found?dayCalDir(d,found.kcal):null;
-    recent.push({day:d,dir,kcal:found?found.kcal:null,inPhase});
+  // build week data; fall back to previous week if current has < 2 logged days
+  let recent=[], logged=[], isPrevWeek=false;
+  for(let attempt=0;attempt<2;attempt++){
+    recent=[];
+    for(let i=0;i<7;i++){
+      const d=monDay+i;
+      const inPhase=d>=1&&d<=td;
+      const found=inPhase?allMacro.find(x=>x.day===d):null;
+      const dir=found?dayCalDir(d,found.kcal):null;
+      recent.push({day:d,dir,kcal:found?found.kcal:null,inPhase});
+    }
+    logged=recent.filter(r=>r.dir!==null);
+    if(logged.length>=2)break;
+    // not enough data this week, try previous week
+    monDay-=7; isPrevWeek=true;
   }
-  const logged=recent.filter(r=>r.dir!==null);
   if(logged.length<2)return '';
   const onT=logged.filter(r=>r.dir==='ok'||r.dir==='warn').length;
   const segs=recent.map((r,i)=>{
@@ -2719,7 +2725,7 @@ function complianceScore(allMacro,range){
   const dayLabels=DOW_LABELS.map(d=>`<div style="flex:1;text-align:center;font-size:9px;color:#8a8580;">${d}</div>`).join('');
   const sumCol=onT>=5?'#4a7a52':onT>=3?'#B7791F':'#A13024';
   return `<div style="margin-bottom:12px;" id="compStrip">
-    <div style="font-size:11px;color:#8a8580;margin-bottom:6px;">This week</div>
+    <div style="font-size:11px;color:#8a8580;margin-bottom:6px;">${isPrevWeek?'Last week':'This week'}</div>
     <div style="display:flex;gap:1px;margin-bottom:3px;">${segs}</div>
     <div style="display:flex;gap:1px;margin-bottom:6px;">${dayLabels}</div>
     <div style="font-size:14px;font-weight:600;color:${sumCol}">${onT} of ${logged.length} days on target</div>
