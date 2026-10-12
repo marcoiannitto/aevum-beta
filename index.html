@@ -708,31 +708,16 @@ textarea.notes::placeholder{color:var(--muted);}
 .grad-summary .gs-row:not(:last-child){border-bottom:1px solid #34322d;}
 .grad-summary .gs-label{color:#8a857c;}
 .grad-summary .gs-val{color:#fff;font-weight:500;}
-/* ---- Calorie bank ---- */
+/* ---- Calorie bank (adjusted daily target) ---- */
 .calbank{background:var(--card);border-radius:14px;padding:14px 16px;margin-top:10px;border:1px solid var(--line);}
-.calbank .b-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;}
-.calbank .cb-window{font-size:12px;font-weight:400;color:var(--muted);}
-.calbank .cb-basis{font-size:12px;color:var(--muted);margin:2px 0 4px;}
-.calbank .cb-summary{font-size:13px;color:var(--ink);margin-bottom:8px;}
-.calbank .cb-total{font-weight:700;font-size:15px;}
-.calbank .cb-target{color:var(--muted);}
-.calbank .cb-barwrap{margin-bottom:8px;}
-.calbank .cb-bg{height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden;}
-.calbank .cb-bar{height:100%;border-radius:4px;transition:width .3s;}
-.calbank .cb-bar.ok{background:var(--maint);}
-.calbank .cb-bar.warn{background:var(--warn);}
-.calbank .cb-bar.over{background:var(--over);}
-.calbank .cb-detail{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;}
-.calbank .cb-day{padding:2px 6px;border-radius:6px;background:var(--card-soft,#f5f0e8);}
-.calbank .cb-day.ok{color:var(--maint);}
-.calbank .cb-day.warn{color:var(--warn);}
-.calbank .cb-day.over{color:var(--over);}
-.calbank .cb-status{font-size:13px;font-weight:500;display:inline-block;margin-left:6px;}
-.calbank .cb-status.ok{color:var(--maint);}
-.calbank .cb-status.warn{color:var(--warn);}
-.calbank .cb-status.over{color:var(--over);}
+.calbank .b-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;}
 .calbank .cb-info{font-size:13px;color:var(--muted);cursor:pointer;margin-left:4px;opacity:0.6;}
 .calbank .cb-explainer{font-size:12px;line-height:1.5;color:var(--muted);background:var(--card-soft,#f5f0e8);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+.calbank .cb-hero{font-size:28px;font-weight:700;color:var(--ink);margin:4px 0 2px;}
+.calbank .cb-hero.ok{color:var(--maint);}
+.calbank .cb-hero.warn{color:var(--warn);}
+.calbank .cb-hero.over{color:var(--over);}
+.calbank .cb-sub{font-size:12px;color:var(--muted);}
 /* ---- Maintenance phase badge ---- */
 .phase-maint .phase-dot{background:var(--maint)!important;}
 </style>
@@ -912,14 +897,12 @@ textarea.notes::placeholder{color:var(--muted);}
       <div class="cal-disclaimer">Targets are estimates. Consult your doctor for personalised advice.</div>
     </div>
 
-    <!-- CALORIE BANK (maintenance) -->
+    <!-- CALORIE BANK (maintenance) — simplified to adjusted daily target -->
     <div class="calbank hidden" id="calBankBlock">
-      <div class="b-title"><span>Calorie bank <span class="cb-info" id="cbInfoBtn">ⓘ</span></span><span class="cb-window" id="cbWindow"></span></div>
-      <div class="cb-explainer hidden" id="cbExplainer">Balance matters more than any single day. If you go over your target one day, simply eat a little less over the next few days. What counts is your overall intake across the week staying within your needs. One off day doesn't break your progress, as long as you balance it out.</div>
-      <div class="cb-basis" id="cbBasis"></div>
-      <div class="cb-summary" id="cbSummary"></div>
-      <div class="cb-barwrap"><div class="cb-bg"><div class="cb-bar" id="cbBar"></div></div></div>
-      <div class="cb-detail" id="cbDetail"></div>
+      <div class="b-title"><span>Today's target <span class="cb-info" id="cbInfoBtn">ⓘ</span></span></div>
+      <div class="cb-explainer hidden" id="cbExplainer">Your target adjusts based on the last few days, so one big meal or a light day won't throw you off. Focus on today.</div>
+      <div class="cb-hero" id="cbHero"></div>
+      <div class="cb-sub" id="cbSub"></div>
     </div>
 
     <!-- WATER -->
@@ -1277,7 +1260,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.38.0';
+const APP_VERSION='v1.39.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -2246,30 +2229,27 @@ function renderCalorieBank(){
   const win=CALBANK_WINDOW, tol=CALBANK_TOLERANCE;
   const daily=maintTarget();
   const windowTarget=daily*win;
-  const tolHi=windowTarget*(1+tol), tolLo=windowTarget*(1-tol);
-  // collect last N days of calories (including today)
-  let totalKcal=0, dayDetails=[];
-  for(let i=0;i<win;i++){
+  // collect previous (win-1) days of calories (exclude today)
+  let prevKcal=0, prevDays=0;
+  for(let i=1;i<win;i++){
     const d=currentDay-i;if(d<1)continue;
     const raw=localStorage.getItem(K('day_'+d));
     let k=0;
     if(raw){const o=JSON.parse(raw);k=Math.round(o.kcal||0)||(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);}
-    totalKcal+=k;dayDetails.unshift({day:d,kcal:k});
+    prevKcal+=k; prevDays++;
   }
-  const diff=totalKcal-windowTarget;
-  const pct=windowTarget>0?totalKcal/windowTarget*100:0;
-  const st=totalKcal<=tolHi&&totalKcal>=tolLo?'ok':(totalKcal>tolHi?'over':'warn');
-  g('cbWindow').textContent=win+'-day window';
-  g('cbSummary').innerHTML=`<span class="cb-total num">${totalKcal.toLocaleString()}</span> / <span class="cb-target">${windowTarget.toLocaleString()} kcal</span> <span class="cb-status ${st}">${st==='ok'?'On track':st==='over'?'Over by '+Math.abs(Math.round(diff)):'Under by '+Math.abs(Math.round(diff))}</span>`;
-  g('cbBasis').textContent=`${daily.toLocaleString()} kcal/day × ${win} days`;
-  const barEl=g('cbBar');barEl.style.width=Math.min(100,pct)+'%';barEl.className='cb-bar '+st;
-  // detail per day
-  let dtl='';
-  dayDetails.forEach(dd=>{
-    const cls=dd.kcal>daily*(1+tol)?'over':dd.kcal<daily*(1-tol)?'warn':'ok';
-    dtl+=`<span class="cb-day ${cls}">D${dd.day} ${dd.kcal}</span>`;
-  });
-  g('cbDetail').innerHTML=dtl;
+  // today's adjusted target = window budget minus what was already eaten
+  const remaining=windowTarget-prevKcal;
+  const adjusted=Math.max(Math.round(daily*0.6), Math.min(Math.round(daily*1.4), Math.round(remaining)));
+  const diff=adjusted-daily;
+  const st=Math.abs(diff)<=daily*tol?'ok':(adjusted>daily?'warn':'warn');
+  const hero=g('cbHero');
+  hero.textContent=adjusted.toLocaleString()+' kcal';
+  hero.className='cb-hero'+(diff>daily*tol?' warn':diff<-daily*tol?' ok':'');
+  const sub=g('cbSub');
+  if(Math.abs(diff)<=daily*tol){sub.textContent='Same as your base target';}
+  else if(diff>0){sub.textContent=`+${Math.abs(diff)} kcal from your base (you were under recently)`;}
+  else{sub.textContent=`${Math.abs(diff)} kcal less than base (you were over recently)`;}
   const infoBtn=g('cbInfoBtn'), expl=g('cbExplainer');
   if(infoBtn&&expl){infoBtn.onclick=()=>expl.classList.toggle('hidden');}
 }
