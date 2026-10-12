@@ -708,16 +708,7 @@ textarea.notes::placeholder{color:var(--muted);}
 .grad-summary .gs-row:not(:last-child){border-bottom:1px solid #34322d;}
 .grad-summary .gs-label{color:#8a857c;}
 .grad-summary .gs-val{color:#fff;font-weight:500;}
-/* ---- Calorie bank (adjusted daily target) ---- */
-.calbank{background:var(--card);border-radius:14px;padding:14px 16px;margin-top:10px;border:1px solid var(--line);}
-.calbank .b-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;}
-.calbank .cb-info{font-size:13px;color:var(--muted);cursor:pointer;margin-left:4px;opacity:0.6;}
-.calbank .cb-explainer{font-size:12px;line-height:1.5;color:var(--muted);background:var(--card-soft,#f5f0e8);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
-.calbank .cb-hero{font-size:28px;font-weight:700;color:var(--ink);margin:4px 0 2px;}
-.calbank .cb-hero.ok{color:var(--maint);}
-.calbank .cb-hero.warn{color:var(--warn);}
-.calbank .cb-hero.over{color:var(--over);}
-.calbank .cb-sub{font-size:12px;color:var(--muted);}
+/* ---- Calorie bank (inline adjusted target) ---- */
 /* ---- Maintenance phase badge ---- */
 .phase-maint .phase-dot{background:var(--maint)!important;}
 </style>
@@ -889,7 +880,8 @@ textarea.notes::placeholder{color:var(--muted);}
       <div class="cals"><span class="big num" id="calNum">0</span><span class="unit" id="calUnit">kcal today</span></div>
       <div class="calbar-wrap hidden" id="calBarWrap">
         <div class="calbar" id="calBar"><span style="width:0%"></span></div>
-        <div class="calbar-label"><span id="calBarLeft">0</span><span id="calBarRight"></span></div>
+        <div class="calbar-label"><span id="calBarLeft">0</span><span class="cb-info hidden" id="cbInfoInline" style="font-size:13px;color:var(--muted);cursor:pointer;margin-left:4px;opacity:0.6;">ⓘ</span><span id="calBarRight"></span></div>
+        <div class="cb-explainer hidden" id="cbExplainer" style="font-size:12px;line-height:1.5;color:var(--muted);background:var(--card-soft,#f5f0e8);border-radius:8px;padding:10px 12px;margin-top:6px;">Your target adjusts based on the last few days, so one big meal or a light day won't throw you off. Focus on today.</div>
       </div>
       <div class="gates" id="gates"></div>
       <div class="buckets hidden" id="buckets"></div>
@@ -897,13 +889,7 @@ textarea.notes::placeholder{color:var(--muted);}
       <div class="cal-disclaimer">Targets are estimates. Consult your doctor for personalised advice.</div>
     </div>
 
-    <!-- CALORIE BANK (maintenance) — simplified to adjusted daily target -->
-    <div class="calbank hidden" id="calBankBlock">
-      <div class="b-title"><span>Today's target <span class="cb-info" id="cbInfoBtn">ⓘ</span></span></div>
-      <div class="cb-explainer hidden" id="cbExplainer">Your target adjusts based on the last few days, so one big meal or a light day won't throw you off. Focus on today.</div>
-      <div class="cb-hero" id="cbHero"></div>
-      <div class="cb-sub" id="cbSub"></div>
-    </div>
+    <!-- CALORIE BANK removed: adjusted target now shown inline in the calorie bar -->
 
     <!-- WATER -->
     <div class="block water-block" id="waterBlock">
@@ -1260,7 +1246,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.39.0';
+const APP_VERSION='v1.40.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1867,8 +1853,7 @@ function render(){
   const t=totals();
   const macroAct=(ph.key==='activation'||ph.key==='transition')&&actMacros();
   renderCalories(ph,t,macroAct);renderGates(ph,t,macroAct);renderBuckets(ph,macroAct);renderTimeline();renderPhaseBar();
-  if(ph.key==='maintenance') renderCalorieBank();
-  else { const cb=g('calBankBlock'); if(cb) cb.classList.add('hidden'); }
+  // calorie bank card removed; adjusted target is now inline in renderCalories
   // serum block: only in Loading + Activation
   g('serumBlock').classList.toggle('hidden',!(ph.key==='loading'||ph.key==='activation'));
   // strip
@@ -1970,10 +1955,19 @@ function renderCalories(ph,t,macroAct){
   wrap.classList.add('hidden');prot.classList.add('hidden');g('calUnit').textContent='kcal today';
   if(ph.key==='stabilization'||ph.key==='maintenance'){
     wrap.classList.remove('hidden');
-    // Exercise is a tracker only, it does NOT move the target (activity multiplier already averages it in).
     const kr=ruleFor('stabilization','kcal');
-    const target=(ph.key==='maintenance')?maintTarget():effectiveStabTarget(currentDay), pct=target>0?t.kcal/target*100:0;
-    // Bands from Rules tab use % basis (adaptive_kcal): compare pct-of-target, not raw kcal
+    let target=(ph.key==='maintenance')?maintTarget():effectiveStabTarget(currentDay);
+    // In maintenance, use adjusted target from calorie bank (rolling window)
+    const infoBtn=g('cbInfoInline'), expl=g('cbExplainer');
+    if(ph.key==='maintenance'){
+      const adj=calcAdjustedTarget();
+      if(adj!==null){target=adj;}
+      if(infoBtn){infoBtn.classList.remove('hidden');infoBtn.onclick=()=>expl.classList.toggle('hidden');}
+    }else{
+      if(infoBtn)infoBtn.classList.add('hidden');
+      if(expl)expl.classList.add('hidden');
+    }
+    const pct=target>0?t.kcal/target*100:0;
     const cls=kr?bandClass(pct,kr):'';
     bar.className='calbar'+(cls?' '+cls:'');
     bar.firstElementChild.style.width=Math.min(100,pct)+'%';
@@ -2222,36 +2216,21 @@ function waterGoalL(){
   if(w>0){const raw=w*cfgd('water_ml_per_kg')/1000;return Math.round(raw*10)/10;}
   return 2.5; // fallback
 }
-function renderCalorieBank(){
-  const block=g('calBankBlock');if(!block)return;
-  if(!inMaintenance(currentDay)){block.classList.add('hidden');return;}
-  block.classList.remove('hidden');
-  const win=CALBANK_WINDOW, tol=CALBANK_TOLERANCE;
+function calcAdjustedTarget(){
+  if(!inMaintenance(currentDay))return null;
+  const win=CALBANK_WINDOW;
   const daily=maintTarget();
   const windowTarget=daily*win;
-  // collect previous (win-1) days of calories (exclude today)
-  let prevKcal=0, prevDays=0;
+  let prevKcal=0;
   for(let i=1;i<win;i++){
     const d=currentDay-i;if(d<1)continue;
     const raw=localStorage.getItem(K('day_'+d));
     let k=0;
     if(raw){const o=JSON.parse(raw);k=Math.round(o.kcal||0)||(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);}
-    prevKcal+=k; prevDays++;
+    prevKcal+=k;
   }
-  // today's adjusted target = window budget minus what was already eaten
   const remaining=windowTarget-prevKcal;
-  const adjusted=Math.max(Math.round(daily*0.6), Math.min(Math.round(daily*1.4), Math.round(remaining)));
-  const diff=adjusted-daily;
-  const st=Math.abs(diff)<=daily*tol?'ok':(adjusted>daily?'warn':'warn');
-  const hero=g('cbHero');
-  hero.textContent=adjusted.toLocaleString()+' kcal';
-  hero.className='cb-hero'+(diff>daily*tol?' warn':diff<-daily*tol?' ok':'');
-  const sub=g('cbSub');
-  if(Math.abs(diff)<=daily*tol){sub.textContent='Same as your base target';}
-  else if(diff>0){sub.textContent=`+${Math.abs(diff)} kcal from your base (you were under recently)`;}
-  else{sub.textContent=`${Math.abs(diff)} kcal less than base (you were over recently)`;}
-  const infoBtn=g('cbInfoBtn'), expl=g('cbExplainer');
-  if(infoBtn&&expl){infoBtn.onclick=()=>expl.classList.toggle('hidden');}
+  return Math.max(Math.round(daily*0.6), Math.min(Math.round(daily*1.4), Math.round(remaining)));
 }
 function renderRate(kind){
   const el=g('r'+kind[0].toUpperCase()+kind.slice(1));el.innerHTML='';
