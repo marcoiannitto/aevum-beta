@@ -816,8 +816,8 @@ textarea.notes::placeholder{color:var(--muted);}
     <div><label>Sex</label>
       <div class="seg" id="ob-sex"><button data-v="m">Male</button><button data-v="f">Female</button></div>
     </div>
+    <div><label>Date of birth</label><input id="ob-dob" type="date" style="width:100%"></div>
     <div style="display:flex;gap:14px;">
-      <div style="flex:1"><label>Age</label><input id="ob-age" type="number" inputmode="numeric" placeholder="—"></div>
       <div style="flex:1"><label>Height (cm)</label><input id="ob-h" type="number" inputmode="numeric" placeholder="—"></div>
       <div style="flex:1"><label>Weight (kg)</label><input id="ob-w" type="number" inputmode="decimal" placeholder="—"></div>
     </div>
@@ -1607,8 +1607,9 @@ function consolStartDay(){const L=phaseLens();return L.loading+L.activation+L.tr
    * MAINT_CUT (0.90) = 0.90 of TDEE, reached via a 4-day front-loaded ramp from 600. */
 function stabTDEE(){
   const tw=stabTargetWeight()||(profile&&profile.weight)||0;
-  if(tw>0&&profile&&profile.height&&profile.age&&profile.act)
-    return mifflin({sex:profile.sex,age:profile.age,height:profile.height,act:profile.act,weight:tw});
+  const profAge=profile?(profile.dob?dobToAge(profile.dob):profile.age):0;
+  if(tw>0&&profile&&profile.height&&profAge&&profile.act)
+    return mifflin({sex:profile.sex,age:profAge,height:profile.height,act:profile.act,weight:tw});
   return (profile&&profile.need)?profile.need:2000;
 }
 function stabTargetKcal(dayNum){
@@ -1723,27 +1724,29 @@ let profile=null,currentDay=1,day=null,photoData=null,mealItems=[],bootUsedToday
 
 /* ---- profile ---- */
 function loadProfile(){const r=localStorage.getItem(K('profile'));profile=r?JSON.parse(r):null;if(profile&&profile.program===false)IS_PROGRAM=false;}
+function dobToAge(dob){const b=new Date(dob),t=new Date(),a=t.getFullYear()-b.getFullYear();return(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))?a-1:a;}
 function mifflin(p){const s=p.sex==='m'?5:-161;return Math.round((10*p.weight+6.25*p.height-5*p.age+s)*parseFloat(p.act));}
 function initOnboard(){
   g('onboard').classList.remove('hidden');
   // Free-user onboarding: show generic branding
   if(!PID){g('obSub').textContent='WELLNESS TRACKER';g('obLead').textContent='Set up your personal tracker. Your data stays on your phone.';}
-  const name=g('ob-name'),age=g('ob-age'),h=g('ob-h'),w=g('ob-w'),go=g('ob-go'),prev=g('ob-preview');
+  const name=g('ob-name'),dob=g('ob-dob'),h=g('ob-h'),w=g('ob-w'),go=g('ob-go'),prev=g('ob-preview');
   const actRadios=document.querySelectorAll('input[name="ob-act-r"]');
   function actVal(){const c=document.querySelector('input[name="ob-act-r"]:checked');return c?c.value:'1.55';}
   let sex=null;
   document.querySelectorAll('#ob-sex button').forEach(b=>b.onclick=()=>{sex=b.dataset.v;document.querySelectorAll('#ob-sex button').forEach(x=>x.classList.remove('on'));b.classList.add('on');check();});
   const consent=g('ob-consent');
-  const ready=()=>name.value.trim()&&sex&&+age.value>0&&+h.value>0&&+w.value>0&&consent.checked;
-  function check(){go.disabled=!ready();prev.textContent=(name.value.trim()&&sex&&+age.value>0&&+h.value>0&&+w.value>0)?`Reference intake ≈ ${mifflin({sex,age:+age.value,height:+h.value,weight:+w.value,act:actVal()}).toLocaleString()} kcal/day`:'';}
-  [name,age,h,w].forEach(el=>el.oninput=check);actRadios.forEach(r=>r.onchange=check);consent.onchange=check;
+  const ready=()=>name.value.trim()&&sex&&dob.value&&dobToAge(dob.value)>0&&+h.value>0&&+w.value>0&&consent.checked;
+  function check(){const age=dob.value?dobToAge(dob.value):0;go.disabled=!ready();prev.textContent=(name.value.trim()&&sex&&age>0&&+h.value>0&&+w.value>0)?`Reference intake ≈ ${mifflin({sex,age,height:+h.value,weight:+w.value,act:actVal()}).toLocaleString()} kcal/day`:'';}
+  [name,dob,h,w].forEach(el=>el.oninput=check);actRadios.forEach(r=>r.onchange=check);consent.onchange=check;
   go.onclick=()=>{
-    const p={name:name.value.trim(),sex,age:+age.value,height:+h.value,weight:+w.value,act:actVal(),
-      need:mifflin({sex,age:+age.value,height:+h.value,weight:+w.value,act:actVal()}),target_kg:parseFloat(g('ob-target').value)||null,start:new Date().toISOString().slice(0,10)};
+    const age=dobToAge(dob.value);
+    const p={name:name.value.trim(),sex,dob:dob.value,age,height:+h.value,weight:+w.value,act:actVal(),
+      need:mifflin({sex,age,height:+h.value,weight:+w.value,act:actVal()}),target_kg:parseFloat(g('ob-target').value)||null,start:new Date().toISOString().slice(0,10)};
     if(PID&&getAuthToken()){
       // Google user completing profile, or existing client: save profile to server + locally
       go.disabled=true;go.textContent='Setting up...';
-      postJSON(BACKEND_URL,{action:'complete_profile',sex:p.sex,age:p.age,height:p.height,weight:p.weight,act:p.act,target_kg:p.target_kg},'application/json')
+      postJSON(BACKEND_URL,{action:'complete_profile',sex:p.sex,dob:p.dob,height:p.height,weight:p.weight,act:p.act,target_kg:p.target_kg},'application/json')
         .then(d=>{
           IS_PROGRAM=false;
           profile=Object.assign(p,{program:false,current_target_kcal:d.current_target_kcal||p.need});
@@ -1763,7 +1766,7 @@ function initOnboard(){
     }else{
       // Free user: register via backend, get unique ID + auth token
       go.disabled=true;go.textContent='Setting up...';
-      postJSON(BACKEND_URL,{action:'register',name:p.name,sex:p.sex,age:p.age,height:p.height,weight:p.weight,act:p.act,target_kg:p.target_kg},'application/json')
+      postJSON(BACKEND_URL,{action:'register',name:p.name,sex:p.sex,dob:p.dob,height:p.height,weight:p.weight,act:p.act,target_kg:p.target_kg},'application/json')
         .then(d=>{
           if(d.error){alert(d.error);go.disabled=false;go.textContent='Begin';return;}
           PID=d.id;
@@ -3575,7 +3578,8 @@ function openProfile(){
   g('profSub').textContent='AEVUM'+(IS_PROGRAM?' Program':' Tracker');
   const rows=[
     ['Sex',profile.sex==='m'?'Male':'Female'],
-    ['Age',profile.age],
+    ['DOB',profile.dob||'—'],
+    ['Age',profile.dob?dobToAge(profile.dob):profile.age],
     ['Height',profile.height+' cm'],
     ['Start weight',(profile.start_weight||profile.weight)+' kg'],
     ['Target',profile.target_kg?profile.target_kg+' kg':'--'],

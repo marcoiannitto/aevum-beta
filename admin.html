@@ -628,9 +628,9 @@ function renderUserDetail(data) {
       </select>
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
-      Age:
-      <input type="number" id="udAge" value="${profile.age || ''}" min="10" max="120"
-        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+      DOB:
+      <input type="date" id="udDob" value="${profile.dob || ''}"
+        style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Height (cm):
@@ -977,13 +977,13 @@ async function saveUserFields() {
   const targetKcal = document.getElementById('udTargetKcal').value;
   const targetKg = document.getElementById('udTargetKg').value;
   const sex = document.getElementById('udSex').value;
-  const age = document.getElementById('udAge').value;
+  const dob = document.getElementById('udDob').value;
   const height = document.getElementById('udHeight').value;
   if (actDays !== '') updates.activation_days = parseInt(actDays);
   if (targetKcal !== '') updates.current_target_kcal = parseInt(targetKcal);
   if (targetKg !== '') updates.target_kg = parseFloat(targetKg);
   updates.sex = sex;
-  if (age !== '') updates.age = parseInt(age);
+  if (dob) updates.dob = dob;
   if (height !== '') updates.height = parseInt(height);
   if (!Object.keys(updates).length) { toast('Nothing to save'); return; }
   try {

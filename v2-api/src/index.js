@@ -174,6 +174,16 @@ export default {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+function dobToAge(dob) {
+  const b = new Date(dob), t = new Date();
+  const a = t.getFullYear() - b.getFullYear();
+  return (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) ? a - 1 : a;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // ROUTE HANDLERS
 // ═══════════════════════════════════════════════════════════════
 
@@ -183,12 +193,13 @@ async function doRegister(body, db) {
   if (!name) return { error: 'name required' };
   const sex = String(body.sex || '').toLowerCase();
   if (sex !== 'm' && sex !== 'f') return { error: 'sex must be m or f' };
-  const age = parseInt(body.age) || 0;
+  const dob = String(body.dob || '').trim(); // YYYY-MM-DD
+  const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
   const act = parseFloat(body.act) || 1.55;
   const target_kg = parseFloat(body.target_kg) || null;
-  if (!age || !height || !weight) return { error: 'age, height, weight required' };
+  if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
   // Mifflin TDEE
   const s = sex === 'm' ? 5 : -161;
@@ -204,9 +215,9 @@ async function doRegister(body, db) {
 
   await db.batch([
     db.prepare(
-      `INSERT INTO users (id, name, sex, age, height, start_weight, activity, target_kg,
-        current_target_kcal, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
-    ).bind(id, name, sex, age, height, weight, act, target_kg, tdee),
+      `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
+        current_target_kcal, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
+    ).bind(id, name, sex, dob || null, age, height, weight, act, target_kg, tdee),
     db.prepare(
       'INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)'
     ).bind(token, id, 'user')
@@ -294,20 +305,21 @@ async function doLogin(body, db) {
 async function completeProfile(userId, body, db) {
   const sex = String(body.sex || '').toLowerCase();
   if (sex !== 'm' && sex !== 'f') return { error: 'sex must be m or f' };
-  const age = parseInt(body.age) || 0;
+  const dob = String(body.dob || '').trim();
+  const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
   const act = parseFloat(body.act) || 1.55;
   const target_kg = parseFloat(body.target_kg) || null;
-  if (!age || !height || !weight) return { error: 'age, height, weight required' };
+  if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
   const s = sex === 'm' ? 5 : -161;
   const tdee = Math.round((10 * weight + 6.25 * height - 5 * age + s) * act);
 
   await db.prepare(
-    `UPDATE users SET sex=?, age=?, height=?, start_weight=?, activity=?,
+    `UPDATE users SET sex=?, dob=?, age=?, height=?, start_weight=?, activity=?,
      target_kg=?, current_target_kcal=? WHERE id=?`
-  ).bind(sex, age, height, weight, act, target_kg, tdee, userId).run();
+  ).bind(sex, dob || null, age, height, weight, act, target_kg, tdee, userId).run();
 
   return { ok: true, current_target_kcal: tdee };
 }
@@ -322,7 +334,8 @@ async function getProfile(userId, db) {
       name: row.name,
       email: row.email || '',
       sex: row.sex || '',
-      age: row.age,
+      dob: row.dob || '',
+      age: row.dob ? dobToAge(row.dob) : row.age,
       target_kg: row.target_kg,
       start_weight: row.start_weight,
       start_date: row.start_date || '',
@@ -1065,7 +1078,7 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'age', 'height', 'weight', 'act'];
+  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'weight', 'act'];
   const sets = [];
   const vals = [];
   for (const key of allowed) {
