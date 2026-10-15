@@ -493,20 +493,20 @@ textarea.notes::placeholder{color:var(--muted);}
 .plan-meal .pm-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
 .plan-meal .pm-remove{font-size:12px;color:var(--muted);padding:2px 4px;}
 .plan-meal .pm-slot{font-size:11px;color:var(--gold-deep);font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
-.plan-reset{width:100%;padding:11px;color:var(--muted);font-size:13px;font-weight:500;margin-top:8px;}
+.plan-reset{width:100%;padding:11px;color:var(--muted);font-size:13px;font-weight:500;margin-top:8px;-webkit-user-select:none;user-select:none;}
 .plan-meal .pm-name{font-size:16px;font-weight:500;margin-bottom:5px;}
 .plan-meal .pm-macros{font-size:13px;color:var(--ink-soft);}
 .plan-meal .pm-macros b{font-family:var(--serif);font-weight:500;}
 .plan-meal .pm-macros .sep{color:var(--line);margin:0 5px;}
 .plan-meal .pm-actions{display:flex;gap:8px;margin-top:12px;}
-.plan-meal .pm-btn{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;}
+.plan-meal .pm-btn{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;-webkit-user-select:none;user-select:none;}
 .plan-meal .pm-recipe{border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);}
 .plan-meal .pm-log{background:var(--ink);color:#fff;}
 .plan-empty{text-align:center;color:var(--muted);font-size:14px;padding:30px 10px;border:1px dashed var(--line);border-radius:16px;}
-.plan-addmeal{width:100%;padding:13px;border:1px dashed var(--gold);color:var(--gold-deep);border-radius:13px;font-weight:600;font-size:14px;margin-top:4px;}
+.plan-addmeal{width:100%;padding:13px;border:1px dashed var(--gold);color:var(--gold-deep);border-radius:13px;font-weight:600;font-size:14px;margin-top:4px;-webkit-user-select:none;user-select:none;}
 .plan-add-choice{display:none;flex-direction:column;gap:8px;margin-top:8px;}
 .plan-add-choice.show{display:flex;}
-.plan-add-choice button{padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink);}
+.plan-add-choice button{padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink);-webkit-user-select:none;user-select:none;}
 .sheet-close{position:absolute;top:14px;right:16px;width:34px;height:34px;border-radius:50%;background:var(--line-soft);color:var(--ink-soft);font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2;}
 .rc-search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:var(--card);margin-bottom:12px;}
 .rc-search::placeholder{color:var(--muted);}
@@ -3245,7 +3245,7 @@ function renderPlan(){
     const cellDate=new Date(calY,calM,d);
     let dn=null;
     if(sDate&&!isNaN(sDate)){dn=Math.floor((cellDate.getTime()-sDate.getTime())/86400000)+1;}
-    const valid=dn!==null&&dn>=1&&dn<=maxDay;
+    const valid=dn!==null&&dn>=1; // no upper cap: maintenance is open-ended, allow planning ahead
     const pf=valid?phaseFor(dn):null;
     const has=valid&&(planned.has(dn)||planEdit[dn]);
     const isToday=cellDate.getTime()===todayDate.getTime();
