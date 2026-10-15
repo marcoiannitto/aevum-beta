@@ -154,14 +154,23 @@ tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:
 
 /* MEAL PLAN BUILDER */
 .mp-wrap{padding:20px;}
-.mp-calendar{display:flex;gap:2px;overflow-x:auto;padding:8px 0 16px;align-items:flex-end;}
-.mp-day{min-width:38px;padding:6px 4px;text-align:center;border-radius:6px;cursor:pointer;font-size:11px;transition:all .15s;border:2px solid transparent;position:relative;}
+.mp-calendar{padding:8px 0 16px;}
+.mp-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.mp-cal-nav button{background:none;border:1px solid var(--line-soft);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--text);}
+.mp-cal-nav button:hover{background:var(--line-soft);}
+.mp-cal-nav span{font-weight:600;font-size:14px;}
+.mp-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.mp-cal-hdr{text-align:center;font-size:10px;font-weight:600;color:var(--muted);padding:4px 0;text-transform:uppercase;}
+.mp-day{padding:4px 2px;text-align:center;border-radius:6px;cursor:pointer;font-size:11px;transition:all .15s;border:2px solid transparent;position:relative;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .mp-day:hover{background:var(--line-soft);}
 .mp-day.active{border-color:var(--gold);background:var(--card);font-weight:600;}
+.mp-day.today{box-shadow:inset 0 0 0 1px var(--gold);}
+.mp-day.outside{opacity:.3;pointer-events:none;}
 .mp-day .mp-d-num{font-weight:600;font-size:13px;}
-.mp-day .mp-d-date{font-size:9px;color:var(--muted);}
-.mp-day.has-meals::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--gold);}
+.mp-day .mp-d-prog{font-size:8px;color:var(--muted);}
+.mp-day.has-meals::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--gold);}
 .mp-phase-label{font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-bottom:2px;font-weight:600;}
+.mp-cal-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:10px;}
 .ph-loading{background:#E8D5E0;color:#7B2D5F;}
 .ph-activation{background:#E8F2EF;color:var(--green);}
 .ph-transition{background:#FFF3CD;color:#856404;}
@@ -1280,6 +1289,17 @@ function dayToDate(day, startDate) {
   return d;
 }
 
+function dateToProgramDay(date, startDate) {
+  const start = new Date(startDate);
+  start.setHours(0,0,0,0);
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  return Math.floor((d - start) / 86400000) + 1;
+}
+
+// Calendar month navigation state
+let mpCalMonth = null; // {year, month} - set on first render
+
 function renderMealPlanBuilder(container) {
   const profile = activeUserDetail.profile || {};
   const actDays = profile.activation_days || 8;
@@ -1299,25 +1319,72 @@ function renderMealPlanBuilder(container) {
 
   let html = '<div class="mp-wrap">';
 
-  // Calendar strip
-  html += '<div class="mp-calendar">';
-  let prevPhase = '';
-  for (let d = 1; d <= totalDays; d++) {
-    const ph = getPhaseForDay(d, profile);
-    const dt = dayToDate(d, profile.start_date);
-    const dateStr = (dt.getMonth() + 1) + '/' + dt.getDate();
-    const isActive = d === mpState.day;
-    const hasMeals = mpState.plan[d] && mpState.plan[d].length > 0;
+  // Calendar grid
+  const startDate = profile.start_date;
+  const selectedDate = dayToDate(mpState.day, startDate);
+  const today = new Date(); today.setHours(0,0,0,0);
 
-    let dayHtml = '';
-    if (ph !== prevPhase) {
-      dayHtml += `<span class="mp-phase-label ph-${ph}">${ph.substring(0, 4)}</span>`;
-      prevPhase = ph;
-    }
-    dayHtml += `<div class="mp-d-num">${d}</div><div class="mp-d-date">${dateStr}</div>`;
-
-    html += `<div class="mp-day${isActive ? ' active' : ''}${hasMeals ? ' has-meals' : ''}" onclick="mpSelectDay(${d})" style="background:${isActive ? 'var(--card)' : ''};">${dayHtml}</div>`;
+  // Init calendar month to the selected day's month
+  if (!mpCalMonth) {
+    mpCalMonth = { year: selectedDate.getFullYear(), month: selectedDate.getMonth() };
   }
+
+  const calYear = mpCalMonth.year;
+  const calMon = mpCalMonth.month;
+  const firstOfMonth = new Date(calYear, calMon, 1);
+  const startDow = firstOfMonth.getDay(); // 0=Sun
+  const daysInMonth = new Date(calYear, calMon + 1, 0).getDate();
+  const monthLabel = firstOfMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+  const phaseColors = { loading: '#E8D5E0', activation: '#E8F2EF', transition: '#FFF3CD', stabilization: '#D4EDFF', maintenance: 'var(--line-soft)' };
+
+  html += '<div class="mp-calendar">';
+  html += `<div class="mp-cal-nav">
+    <button onclick="mpCalMonth.month--;if(mpCalMonth.month<0){mpCalMonth.month=11;mpCalMonth.year--;}renderMealPlanBuilder(this.closest('.mp-wrap').parentElement);">&larr;</button>
+    <span>${monthLabel}</span>
+    <button onclick="mpCalMonth.month++;if(mpCalMonth.month>11){mpCalMonth.month=0;mpCalMonth.year++;}renderMealPlanBuilder(this.closest('.mp-wrap').parentElement);">&rarr;</button>
+  </div>`;
+  html += '<div class="mp-cal-grid">';
+  // Day headers
+  for (const dh of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']) {
+    html += `<div class="mp-cal-hdr">${dh}</div>`;
+  }
+  // Empty cells before first day
+  for (let i = 0; i < startDow; i++) {
+    html += '<div class="mp-day outside"></div>';
+  }
+  // Days of month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cellDate = new Date(calYear, calMon, d);
+    const progDay = dateToProgramDay(cellDate, startDate);
+    const inProgram = progDay >= 1 && progDay <= totalDays;
+    const isActive = progDay === mpState.day && inProgram;
+    const isToday = cellDate.getTime() === today.getTime();
+    const hasMeals = inProgram && mpState.plan[progDay] && mpState.plan[progDay].length > 0;
+    const ph = inProgram ? getPhaseForDay(progDay, profile) : null;
+    const bgColor = ph ? phaseColors[ph] : '';
+
+    let cls = 'mp-day';
+    if (isActive) cls += ' active';
+    if (isToday) cls += ' today';
+    if (hasMeals) cls += ' has-meals';
+    if (!inProgram) cls += ' outside';
+
+    const onclick = inProgram ? `onclick="mpSelectDay(${progDay})"` : '';
+    const progLabel = inProgram ? `<div class="mp-d-prog">D${progDay}</div>` : '';
+
+    html += `<div class="${cls}" ${onclick} style="background:${isActive ? 'var(--card)' : bgColor};">
+      <div class="mp-d-num">${d}</div>${progLabel}
+    </div>`;
+  }
+  html += '</div>';
+  // Legend
+  html += '<div class="mp-cal-legend">';
+  for (const [k, c] of Object.entries(phaseColors)) {
+    html += `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${c};vertical-align:middle;margin-right:3px;"></span>${k}</span>`;
+  }
+  html += ' <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;box-shadow:inset 0 0 0 1px var(--gold);vertical-align:middle;margin-right:3px;"></span>today</span>';
+  html += '</div>';
   html += '</div>';
 
   // Phase + target info
