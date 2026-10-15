@@ -143,6 +143,11 @@ export default {
 	  if (action === 'admin_list' && isAdmin)   return json(await adminList(body, db), cors);
 	  if (action === 'admin_import' && isAdmin) return json(await adminImport(body, db), cors);
       if (action === 'admin_update_user' && isAdmin) return json(await adminUpdateUser(body, db), cors);
+      if (action === 'admin_mealplan' && isAdmin) {
+        const targetId = String(body.user_id || '');
+        if (!targetId) return json({ error: 'user_id required' }, cors, 400);
+        return json(await mealEngine(targetId, body, db), cors);
+      }
 
       // User routes
       switch (action) {
@@ -396,7 +401,7 @@ async function getDays(userId, db) {
 // ─── Meal plan ───────────────────────────────────────────────
 async function getMealPlan(userId, db) {
   const rows = await db.prepare(
-    'SELECT day, meal, recipe, kcal, protein, fat, carbs FROM meal_plans WHERE user_id = ? ORDER BY day'
+    'SELECT day, meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json FROM meal_plans WHERE user_id = ? ORDER BY day'
   ).bind(userId).all();
   return { plan: rows.results };
 }
@@ -901,12 +906,55 @@ async function mealEngine(userId, body, db) {
   if (sub === 'save') {
     const rows = body.rows || [];
     if (!rows.length) return { error: 'rows required' };
-    const stmts = rows.map(r =>
-      db.prepare('INSERT INTO meal_plans (user_id, day, meal, recipe, kcal, protein, fat, carbs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(userId, +r.day, r.meal || '', r.recipe || '', Math.round(+r.kcal || 0), Math.round(+r.protein || 0), Math.round(+r.fat || 0), Math.round(+r.carbs || 0))
+    // Delete existing meals for the given day(s) first (upsert pattern)
+    const days = [...new Set(rows.map(r => +r.day))];
+    const delStmts = days.map(d =>
+      db.prepare('DELETE FROM meal_plans WHERE user_id = ? AND day = ?').bind(userId, d)
     );
-    await db.batch(stmts);
+    const insStmts = rows.map(r =>
+      db.prepare('INSERT INTO meal_plans (user_id, day, meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(userId, +r.day, r.meal || '', r.recipe || '', Math.round(+r.kcal || 0), Math.round(+r.protein || 0), Math.round(+r.fat || 0), Math.round(+r.carbs || 0), r.meal_type || 'recipe', r.meal_slot || '', r.components_json || '')
+    );
+    await db.batch([...delStmts, ...insStmts]);
     return { ok: true, saved: rows.length };
+  }
+
+  if (sub === 'delete') {
+    const day = body.day;
+    if (day === undefined) return { error: 'day required' };
+    const dayEnd = body.day_end !== undefined ? +body.day_end : +day;
+    await db.prepare('DELETE FROM meal_plans WHERE user_id = ? AND day >= ? AND day <= ?')
+      .bind(userId, +day, dayEnd).run();
+    return { ok: true };
+  }
+
+  if (sub === 'copy') {
+    const fromDay = body.from_day;
+    const toDay = body.to_day;
+    if (fromDay === undefined || toDay === undefined) return { error: 'from_day and to_day required' };
+    const src = await db.prepare('SELECT meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json FROM meal_plans WHERE user_id = ? AND day = ?')
+      .bind(userId, +fromDay).all();
+    if (!src.results.length) return { error: 'no meals on source day' };
+    // Delete target day first
+    const stmts = [db.prepare('DELETE FROM meal_plans WHERE user_id = ? AND day = ?').bind(userId, +toDay)];
+    for (const r of src.results) {
+      stmts.push(
+        db.prepare('INSERT INTO meal_plans (user_id, day, meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+          .bind(userId, +toDay, r.meal, r.recipe, r.kcal, r.protein, r.fat, r.carbs, r.meal_type || 'recipe', r.meal_slot || '', r.components_json || '')
+      );
+    }
+    await db.batch(stmts);
+    return { ok: true, copied: src.results.length };
+  }
+
+  if (sub === 'ingredients') {
+    const rows = await db.prepare('SELECT * FROM ingredients').all();
+    return { ingredients: rows.results };
+  }
+
+  if (sub === 'catered') {
+    const rows = await db.prepare('SELECT * FROM catered_menu ORDER BY category, name').all();
+    return { catered_menu: rows.results };
   }
 
   if (sub === 'users') {
@@ -1031,7 +1079,7 @@ async function adminSeed(body, db) {
   const rows = body.rows || [];
   if (!table || !rows.length) return { error: 'table and rows required' };
 
-  const allowed = ['recipes', 'messages', 'movements', 'workouts', 'rules', 'foods', 'policy', 'config'];
+  const allowed = ['recipes', 'messages', 'movements', 'workouts', 'rules', 'foods', 'policy', 'config', 'ingredients', 'catered_menu'];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
 
   // Clear existing + insert
@@ -1049,7 +1097,7 @@ async function adminSeed(body, db) {
 }
 async function adminList(body, db) {
   const table = String(body.table || '');
-  const allowed = ['recipes','messages','movements','workouts','rules','foods','policy','config'];
+  const allowed = ['recipes','messages','movements','workouts','rules','foods','policy','config','ingredients','catered_menu'];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
   const rows = await db.prepare(`SELECT * FROM ${table}`).all();
   return { table, rows: rows.results };
