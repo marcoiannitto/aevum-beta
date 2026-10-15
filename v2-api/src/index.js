@@ -844,6 +844,13 @@ const ME = {
 async function mealEngine(userId, body, db) {
   const sub = String(body.sub || '');
 
+  if (sub === 'plan') {
+    const rows = await db.prepare(
+      'SELECT day, meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json FROM meal_plans WHERE user_id = ? ORDER BY day'
+    ).bind(userId).all();
+    return { plan: rows.results };
+  }
+
   if (sub === 'calc') {
     const sex = String(body.sex || 'm').toLowerCase();
     const height = parseFloat(body.height);
