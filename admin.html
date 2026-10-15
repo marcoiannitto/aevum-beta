@@ -1324,9 +1324,9 @@ function renderMealPlanBuilder(container) {
   const selectedDate = dayToDate(mpState.day, startDate);
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Init calendar month to the selected day's month
+  // Init calendar month to today's month
   if (!mpCalMonth) {
-    mpCalMonth = { year: selectedDate.getFullYear(), month: selectedDate.getMonth() };
+    mpCalMonth = { year: today.getFullYear(), month: today.getMonth() };
   }
 
   const calYear = mpCalMonth.year;
