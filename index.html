@@ -435,35 +435,24 @@ textarea.notes::placeholder{color:var(--muted);}
 .cal-cell.on .cc-day{color:#fff;}
 .cal-cell.on::before{opacity:1;}
 /* week strip */
-.wk-strip{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.wk-nav{display:flex;align-items:center;gap:8px;}
-.wk-nav .wk-label{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;font-family:var(--serif);}
-.wk-nav .wk-label::after{content:' ▾';font-size:10px;opacity:.4;}
-.wk-nav .arrow{font-size:18px;width:32px;height:32px;border:none;background:none;color:var(--ink);cursor:pointer;border-radius:8px;}
-.wk-nav .arrow:active{background:var(--line);}
-.wk-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-.wk-cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;position:relative;}
-.wk-cell .wk-dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.wk-cell .wk-date{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--ink);}
-.wk-cell .wk-dnum{font-size:9px;color:var(--muted);}
-.wk-cell .wk-dot{width:5px;height:5px;border-radius:50%;background:var(--gold-deep);margin-top:1px;}
-.wk-cell .wk-dot.empty{background:transparent;}
-.wk-cell::before{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--pc,transparent);opacity:.8;}
-.wk-cell.today{border-color:var(--gold);box-shadow:0 0 0 1.5px var(--gold) inset;}
-.wk-cell.on{background:var(--ink);border-color:var(--ink);}
-.wk-cell.on .wk-date,.wk-cell.on .wk-dow,.wk-cell.on .wk-dnum{color:#fff;}
-/* month popover */
-.mo-pop{display:none;position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);}
-.mo-pop.show{display:block;}
-.mo-pop .mo-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.mo-pop .mo-head .mo-title{flex:1;text-align:center;font-size:14px;font-weight:600;font-family:var(--serif);}
-.mo-pop .mo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
-.mo-pop .mo-dow{font-size:10px;color:var(--muted);padding:2px 0;}
-.mo-pop .mo-day{font-size:13px;padding:6px 0;border-radius:8px;cursor:pointer;color:var(--ink);}
-.mo-pop .mo-day:hover{background:var(--line);}
-.mo-pop .mo-day.on{background:var(--ink);color:#fff;}
-.mo-pop .mo-day.today{border:1px solid var(--gold);}
-.mo-pop .mo-day.out{color:var(--muted);opacity:.4;}
+/* month-grid calendar */
+.mc-wrap{margin-bottom:14px;}
+.mc-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mc-nav .mc-label{flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--ink);font-family:var(--serif);}
+.mc-nav .arrow{font-size:18px;width:32px;height:32px;border:none;background:none;color:var(--ink);cursor:pointer;border-radius:8px;}
+.mc-nav .arrow:active{background:var(--line);}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+.mc-dow{font-size:10px;color:var(--muted);padding:4px 0;text-transform:uppercase;letter-spacing:.5px;}
+.mc-day{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px;border-radius:8px;cursor:pointer;position:relative;min-height:42px;border:1.5px solid transparent;transition:all .15s;}
+.mc-day:hover{background:var(--line);}
+.mc-day .mc-date{font-family:var(--serif);font-size:14px;font-weight:500;color:var(--ink);}
+.mc-day .mc-dnum{font-size:8px;color:var(--muted);}
+.mc-day.today{border-color:var(--gold);}
+.mc-day.on{background:var(--ink);border-color:var(--ink);}
+.mc-day.on .mc-date,.mc-day.on .mc-dnum{color:#fff;}
+.mc-day.out{opacity:.3;pointer-events:none;}
+.mc-day .mc-dot{width:5px;height:5px;border-radius:50%;background:var(--gold-deep);margin-top:1px;}
+.mc-day::before{content:'';position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--pc,transparent);opacity:.7;}
 .cal-legend{display:flex;flex-wrap:wrap;gap:12px;margin:0 2px 14px;font-size:11px;color:var(--muted);}
 .cal-legend span{display:inline-flex;align-items:center;gap:5px;}
 .cal-legend i{width:8px;height:8px;border-radius:50%;display:inline-block;}
@@ -3170,7 +3159,7 @@ async function doFoodCheck(){
 /* ---- meal plan ----
    PLAN = coach's plan from sheet. planEdit[day] = per-day local override that
    fully replaces that day when the user edits it. Sheet is never touched. */
-let PLAN=[], planLoaded=false, planDay=1, planEdit={}, planAction=null;
+let PLAN=[], planLoaded=false, planDay=1, planEdit={}, planAction=null, planCalMonth=null;
 function loadPlanEdit(){try{planEdit=JSON.parse(localStorage.getItem(K('planedit'))||'{}');}catch(e){planEdit={};}}
 function savePlanEdit(){localStorage.setItem(K('planedit'),JSON.stringify(planEdit));}
 function baseItemsFor(day){return PLAN.filter(p=>p.day===day).map(p=>({meal:p.meal,recipe:p.recipe,kcal:p.kcal,protein:p.protein,fat:p.fat,carbs:p.carbs}));}
@@ -3217,126 +3206,79 @@ function dayToDate(dayNum){
   return dt;
 }
 function fmtShort(dt){return dt.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});}
-function renderMonthPopover(yr,mo,maxDay,todayDay,planned){
-  const po=g('moPopover');if(!po)return;
-  const dows=['M','T','W','T','F','S','S'];
-  const mName=new Date(yr,mo,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  let h=`<div class="mo-head"><button class="arrow" id="moPrev">‹</button><span class="mo-title">${mName}</span><button class="arrow" id="moNext">›</button></div>`;
-  h+='<div class="mo-grid">';
-  dows.forEach(d=>{h+=`<div class="mo-dow">${d}</div>`;});
-  const first=new Date(yr,mo,1);
-  const startOff=(first.getDay()+6)%7; // 0=Mon
-  const daysInMonth=new Date(yr,mo+1,0).getDate();
-  const sd=startDateStr();const s=sd?new Date(sd+'T00:00:00'):null;
-  for(let i=0;i<startOff;i++)h+=`<div class="mo-day out"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const dt=new Date(yr,mo,d);
-    let dn=null;
-    if(s&&!isNaN(s)){dn=Math.floor((dt.getTime()-s.getTime())/86400000)+1;}
-    const valid=dn!==null&&dn>=1&&dn<=maxDay;
-    const cls=['mo-day'];
-    if(valid&&dn===planDay)cls.push('on');
-    if(valid&&dn===todayDay)cls.push('today');
-    if(!valid)cls.push('out');
-    h+=`<div class="${cls.join(' ')}" ${valid?`data-dn="${dn}"`:''} style="cursor:${valid?'pointer':'default'}">${d}</div>`;
-  }
-  h+='</div>';
-  po.innerHTML=h;
-  // wire month nav
-  g('moPrev').onclick=(e)=>{e.stopPropagation();const pm=mo===0?11:mo-1;const py=mo===0?yr-1:yr;renderMonthPopover(py,pm,maxDay,todayDay,planned);};
-  g('moNext').onclick=(e)=>{e.stopPropagation();const nm=mo===11?0:mo+1;const ny=mo===11?yr+1:yr;renderMonthPopover(ny,nm,maxDay,todayDay,planned);};
-  // wire day clicks
-  po.querySelectorAll('.mo-day[data-dn]').forEach(el=>{
-    el.onclick=()=>{planDay=+el.dataset.dn;po.classList.remove('show');renderPlan();};
-  });
-}
+/* renderMonthPopover removed - replaced by inline month-grid calendar */
 function renderPlan(){
   const total=TOTAL_DAYS||totalDays();
   let todayDay=null;
   {const sd=startDateStr();if(sd){const s=new Date(sd+'T00:00:00');if(!isNaN(s))todayDay=Math.floor((effNow()-s.getTime())/86400000)+1;}}
   const maxDay=Math.max(total,todayDay||total);
   if(planDay<1||planDay>maxDay){planDay=(todayDay&&todayDay>=1)?todayDay:1;}
-  // week strip calendar with real dates
-  const db=g('planDays');db.className='wk-strip';db.innerHTML='';
+  // month-grid calendar
+  const db=g('planDays');db.className='mc-wrap';db.innerHTML='';
   const planned=new Set(planDaysAvailable());
-  const dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  // determine which week to show (week containing planDay)
-  const planDate=dayToDate(planDay);
-  // getISODay: 0=Mon...6=Sun
-  const isoDay=d=>(d.getDay()+6)%7;
-  // find Monday of the week containing planDay
-  let weekMonDate;
-  if(planDate){weekMonDate=new Date(planDate);weekMonDate.setDate(weekMonDate.getDate()-isoDay(planDate));}
-  else{const now=new Date(effNow());weekMonDate=new Date(now);weekMonDate.setDate(weekMonDate.getDate()-isoDay(now));}
-  // month label
-  const monLabel=weekMonDate.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  // nav + label
-  const nav=document.createElement('div');nav.className='wk-nav';
-  nav.innerHTML=`<button class="arrow" id="wkPrev">‹</button><span class="wk-label" id="wkMonthLabel">${monLabel}</span><button class="arrow" id="wkNext">›</button>`;
+  const sd=startDateStr();
+  const sDate=sd?new Date(sd+'T00:00:00'):null;
+  const todayDate=new Date(effNow());todayDate.setHours(0,0,0,0);
+
+  // init calendar month to today
+  if(!planCalMonth) planCalMonth={year:todayDate.getFullYear(),month:todayDate.getMonth()};
+  const calY=planCalMonth.year, calM=planCalMonth.month;
+  const firstOfMonth=new Date(calY,calM,1);
+  const daysInMonth=new Date(calY,calM+1,0).getDate();
+  const startDow=firstOfMonth.getDay(); // 0=Sun
+  const monthLabel=firstOfMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+
+  // nav
+  const nav=document.createElement('div');nav.className='mc-nav';
+  nav.innerHTML=`<button class="arrow" id="mcPrev">‹</button><span class="mc-label">${monthLabel}</span><button class="arrow" id="mcNext">›</button>`;
   db.appendChild(nav);
-  // week row
-  const row=document.createElement('div');row.className='wk-row';
-  for(let i=0;i<7;i++){
-    const cellDate=new Date(weekMonDate);cellDate.setDate(weekMonDate.getDate()+i);
-    // which dayNum is this date?
-    const sd=startDateStr();let dn=null;
-    if(sd){const s=new Date(sd+'T00:00:00');if(!isNaN(s)){dn=Math.floor((cellDate.getTime()-s.getTime())/86400000)+1;}}
+
+  // grid
+  const grid=document.createElement('div');grid.className='mc-grid';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>{
+    const h=document.createElement('div');h.className='mc-dow';h.textContent=d;grid.appendChild(h);
+  });
+  // offset: convert Sun=0 start to Mon=0 start
+  const off=(startDow+6)%7;
+  for(let i=0;i<off;i++){const e=document.createElement('div');e.className='mc-day out';grid.appendChild(e);}
+  for(let d=1;d<=daysInMonth;d++){
+    const cellDate=new Date(calY,calM,d);
+    let dn=null;
+    if(sDate&&!isNaN(sDate)){dn=Math.floor((cellDate.getTime()-sDate.getTime())/86400000)+1;}
     const valid=dn!==null&&dn>=1&&dn<=maxDay;
     const pf=valid?phaseFor(dn):null;
     const has=valid&&(planned.has(dn)||planEdit[dn]);
-    const isToday=valid&&dn===todayDay;
+    const isToday=cellDate.getTime()===todayDate.getTime();
     const isOn=valid&&dn===planDay;
-    const cell=document.createElement('button');
-    cell.className='wk-cell'+(isOn?' on':'')+(isToday?' today':'');
+
+    const cell=document.createElement('div');
+    let cls='mc-day';
+    if(isOn)cls+=' on';
+    if(isToday)cls+=' today';
+    if(!valid)cls+=' out';
+    cell.className=cls;
     if(pf)cell.style.setProperty('--pc',pf.color);
-    if(!valid){cell.style.opacity='.3';cell.disabled=true;}
-    const dateNum=cellDate.getDate();
-    cell.innerHTML=`<span class="wk-dow">${dows[i]}</span><span class="wk-date">${dateNum}</span>${valid?`<span class="wk-dnum">Day ${dn}</span>`:''}${has?'<span class="wk-dot"></span>':'<span class="wk-dot empty"></span>'}`;
+    cell.innerHTML=`<span class="mc-date">${d}</span>${valid?`<span class="mc-dnum">D${dn}</span>`:''}${has?'<span class="mc-dot"></span>':''}`;
     if(valid){const dd=dn;cell.onclick=()=>{planDay=dd;renderPlan();};}
-    row.appendChild(cell);
+    grid.appendChild(cell);
   }
-  db.appendChild(row);
-  // month popover container (positioned relative to db)
-  db.style.position='relative';
-  const pop=document.createElement('div');pop.className='mo-pop';pop.id='moPopover';
-  db.appendChild(pop);
+  db.appendChild(grid);
+
   // wire nav
-  const prevBtn=g('wkPrev'),nextBtn=g('wkNext'),monthLbl=g('wkMonthLabel');
-  prevBtn.onclick=()=>{
-    // go to previous week: find dayNum for Monday-7
-    const prevMon=new Date(weekMonDate);prevMon.setDate(weekMonDate.getDate()-7);
-    const sd=startDateStr();if(!sd)return;
-    const s=new Date(sd+'T00:00:00');if(isNaN(s))return;
-    let dn=Math.floor((prevMon.getTime()-s.getTime())/86400000)+1;
-    // clamp: pick a valid day in that week
-    for(let off=0;off<7;off++){const dd=dn+off;if(dd>=1&&dd<=maxDay){planDay=dd;renderPlan();return;}}
-  };
-  nextBtn.onclick=()=>{
-    const nextMon=new Date(weekMonDate);nextMon.setDate(weekMonDate.getDate()+7);
-    const sd=startDateStr();if(!sd)return;
-    const s=new Date(sd+'T00:00:00');if(isNaN(s))return;
-    let dn=Math.floor((nextMon.getTime()-s.getTime())/86400000)+1;
-    for(let off=0;off<7;off++){const dd=dn+off;if(dd>=1&&dd<=maxDay){planDay=dd;renderPlan();return;}}
-  };
-  // month popover toggle
-  monthLbl.onclick=()=>{
-    const po=g('moPopover');
-    if(po.classList.contains('show')){po.classList.remove('show');return;}
-    // build month grid for the month containing planDay
-    const viewDate=planDate||new Date(effNow());
-    const yr=viewDate.getFullYear(),mo=viewDate.getMonth();
-    renderMonthPopover(yr,mo,maxDay,todayDay,planned);
-    po.classList.add('show');
-  };
+  g('mcPrev').onclick=()=>{planCalMonth.month--;if(planCalMonth.month<0){planCalMonth.month=11;planCalMonth.year--;}renderPlan();};
+  g('mcNext').onclick=()=>{planCalMonth.month++;if(planCalMonth.month>11){planCalMonth.month=0;planCalMonth.year++;}renderPlan();};
+
   // legend
   {const lg=g('planLegend');if(lg)lg.innerHTML=
     `<span><i style="background:#8a8a8a"></i>Loading</span>`+
-    `<span><i style="background:#B08D2E"></i>Activation/Transition</span>`+
+    `<span><i style="background:#B08D2E"></i>Activ./Trans.</span>`+
     `<span><i style="background:#4a463f"></i>Stabilization</span>`+
     `<span><i style="background:${MAINT_COLOR}"></i>Maintenance</span>`+
     `<span><i style="background:var(--gold-deep)"></i>has plan</span>`;}
+  // day header
   {const pf=phaseFor(planDay),dt=dayToDate(planDay);const hd=g('planDayHead');
    if(hd)hd.innerHTML=`<span class="pdh-dot" style="background:${pf.color}"></span><b>Day ${planDay}</b> · ${pf.name}${dt?' · '+fmtShort(dt):''}${planDay===todayDay?' · Today':''}`;}
+
   const items=planItemsFor(planDay);
   const edited=!!planEdit[planDay];
   let tot={kcal:0,protein:0,fat:0,carbs:0};
