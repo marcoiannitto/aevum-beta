@@ -1,0 +1,5456 @@
+[
+  {
+    "id": "ACT-001",
+    "name": "Chicken and Ginger Soup",
+    "protein": "Chicken",
+    "cuisine": "Asian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "carrots",
+        "grams": 50.0
+      },
+      {
+        "id": "ginger",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 15.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      },
+      {
+        "id": "water",
+        "grams": 450.0
+      }
+    ],
+    "steps": [
+      "Slice the chicken breast into thin strips.",
+      "In a non-stick pot, dry-toast the crushed garlic and ginger slices for 30 seconds until fragrant.",
+      "Add the water and bring to a boil. Reduce heat and simmer gently for 5 minutes to infuse the ginger into the broth.",
+      "Slice the carrots into thin rounds. Add to the broth and cook 3 minutes.",
+      "Add the chicken strips. Simmer gently for 5 minutes until the chicken is cooked through.",
+      "Add the spinach and 1 teaspoon of soy sauce. Cook 2 minutes until the spinach is just wilted.",
+      "Turn off the heat. Squeeze in the lime juice, add fresh cilantro and chili slices.",
+      "Serve in a bowl with the hot broth."
+    ],
+    "source": "https://blog.giallozafferano.it/lucia77/zuppa-di-pollo-funghi-e-zenzero/"
+  },
+  {
+    "id": "ACT-002",
+    "name": "Steamed Cabbage Rolls with Chicken",
+    "protein": "Chicken",
+    "cuisine": "Asian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "white-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "carrots",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "parsley",
+        "grams": 15.0
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "orange-juice",
+        "grams": 15.0
+      }
+    ],
+    "steps": [
+      "Detach 6-8 large savoy cabbage leaves. Blanch them in salted boiling water for 3 minutes until pliable. Drain and trim away the thick central rib from each leaf.",
+      "Chop the chicken breast very finely by hand with a knife (small pieces, do not use a blender). Mix in a bowl with grated ginger, minced garlic, soy sauce, finely grated carrots, parsley, pepper, and orange juice if using.",
+      "Place 1-2 tablespoons of the filling onto each blanched cabbage leaf. Fold in the sides and roll up tightly.",
+      "Arrange the rolls seam-side down in a steamer basket.",
+      "Steam for 18-20 minutes until the chicken is fully cooked through.",
+      "Serve with a drizzle of soy sauce or a squeeze of lemon juice."
+    ],
+    "source": "https://blog.giallozafferano.it/nocemoscata/involtini-di-verza-al-vapore/"
+  },
+  {
+    "id": "ACT-003",
+    "name": "Asian Chilli Garlic Prawns",
+    "protein": "Shrimp",
+    "cuisine": "Asian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "broccoli",
+        "grams": 80.0
+      },
+      {
+        "id": "garlic",
+        "grams": 15.0
+      },
+      {
+        "id": "ginger",
+        "grams": 10.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 5.0
+      },
+      {
+        "id": "sriracha",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "water",
+        "grams": 120.0
+      },
+      {
+        "id": "brown-sugar",
+        "grams": 5.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 30.0
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      },
+      {
+        "id": "scallions",
+        "grams": 15
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Blanch the broccoli florets in boiling water for 60 seconds until bright green but still crisp. Drain and set aside.",
+      "Heat a non-stick pan over high heat until very hot. Pat the shrimp dry with paper towels.",
+      "Sear the shrimp in the dry non-stick pan for 45 seconds per side until golden and just pink. Remove to a plate.",
+      "Reduce heat to medium. In the same pan, add 1 tablespoon of water, then the garlic, ginger, and chilli flakes. Stir for 20 seconds until fragrant.",
+      "Add the water, sriracha, soy sauce, and sugar. Raise heat to medium-high and simmer 2-3 minutes until the sauce reduces by half and turns slightly syrupy.",
+      "Return the shrimp and blanched broccoli to the pan. Toss to coat in the sauce, cook 1 minute.",
+      "Squeeze lime juice over and toss once more.",
+      "Plate and garnish with sliced scallion and red chilli. Serve immediately."
+    ],
+    "source": "https://www.recipetineats.com/asian-chilli-garlic-prawns-shrimp/"
+  },
+  {
+    "id": "ACT-004",
+    "name": "Turkey Lettuce Wraps with Lime",
+    "protein": "Turkey",
+    "cuisine": "Asian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "turkey-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "lettuce",
+        "grams": 50.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 50.0
+      },
+      {
+        "id": "carrots",
+        "grams": 40.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 15.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      }
+    ],
+    "steps": [
+      "Slice the turkey breast into thin strips about 1cm wide.",
+      "In a small bowl, mix the grated ginger, minced garlic, half the soy sauce and half the lime juice. Add the turkey strips and toss to coat.",
+      "Heat a non-stick pan over high heat. Cook the marinated turkey strips 2-3 minutes, turning frequently, until golden brown on all sides.",
+      "Cut the cucumber and carrots into fine julienne strips.",
+      "Wash and dry the lettuce leaves, keeping them whole as cups.",
+      "Assemble each wrap: place a lettuce leaf flat, add a bed of julienned vegetables, top with warm turkey strips, fresh cilantro, a slice of chili, and a squeeze of the remaining lime juice and soy sauce.",
+      "Roll up tightly and eat with your hands."
+    ],
+    "source": "https://blog.giallozafferano.it/isaporidiethra/involtini-di/"
+  },
+  {
+    "id": "ACT-005",
+    "name": "Beef with Sauteed Greens (Chao Qing Cai)",
+    "protein": "Beef",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 90.0
+      },
+      {
+        "id": "celery",
+        "grams": 30.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Slice beef round steak into thin strips and marinate with a splash of shaoxing wine and minced garlic.",
+      "Bring beef broth to a simmer in a non-stick pan, adding julienned ginger, chopped celery, and napa cabbage.",
+      "Add the beef strips and stir-fry in the simmering broth until cooked through.",
+      "Stir in light soy sauce and toss until the vegetables are tender and the sauce is reduced.",
+      "Serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-006",
+    "name": "Beef with Shiitake and Bok Choy",
+    "protein": "Beef",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-chuck",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-shiitake",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 60.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Slice lean beef chuck and fresh shiitake mushrooms.",
+      "Combine beef broth, light soy sauce, shaoxing wine, and minced garlic in a non-stick wok.",
+      "Add the beef and shiitake mushrooms, bringing to a simmer for 5 minutes until the beef is tender.",
+      "Toss in chopped bok choy and cook for another 3 minutes until wilted and incorporated.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-007",
+    "name": "Chinese Beef with Zucchini and Capers",
+    "protein": "Beef",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 80.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Slice lean beef sirloin thinly and marinate with shaoxing wine and minced garlic.",
+      "Heat beef broth in a non-stick wok, then add sliced ginger and bok choy, cooking until tender.",
+      "Add the marinated beef slices and stir-fry until they change color.",
+      "Toss in sliced zucchini and light soy sauce, simmering for 2 minutes until the vegetables are tender-crisp.",
+      "Serve warm."
+    ]
+  },
+  {
+    "id": "ACT-008",
+    "name": "Garlic Beef with Chinese Broccoli",
+    "protein": "Beef",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "broccolini",
+        "grams": 90.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Slice lean beef round steak thinly and chop gai lan into manageable lengths.",
+      "Sauté minced garlic and ginger in a non-stick wok with a splash of beef broth until aromatic.",
+      "Add the gai lan and remaining broth, covering to steam for 3 minutes.",
+      "Push the greens aside, add the beef and shaoxing wine, and stir-fry until the beef is cooked through.",
+      "Stir in light soy sauce and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-009",
+    "name": "Spiced Beef with Bean Sprouts",
+    "protein": "Beef",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "mung-bean-sprouts",
+        "grams": 80.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 40.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "chinese-black-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "black-pepper",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Marinate thinly sliced beef sirloin with minced ginger and Sichuan peppercorns.",
+      "Bring beef broth and light soy sauce to a boil in a non-stick pan.",
+      "Add rehydrated wood ear mushrooms and beef slices, cooking for 3 minutes.",
+      "Toss in mung bean sprouts and stir-fry for 2 minutes until tender-crisp.",
+      "Remove from heat, drizzle with black vinegar, and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-010",
+    "name": "Braised Chicken with Bamboo Shoots and Star Anise",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "celery",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 60.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "star-anise",
+        "grams": 2.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Combine chicken broth, light soy sauce, shaoxing wine, star anise, and sliced ginger in a pot.",
+      "Add cubed chicken breast and sliced bamboo shoots, bringing to a gentle simmer.",
+      "Cover and simmer for 10 minutes until the chicken absorbs the aromatic flavors.",
+      "Add chopped bok choy during the final 3 minutes until wilted.",
+      "Discard star anise and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-011",
+    "name": "Cantonese Poached Chicken with Choy Sum",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 90.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Bring chicken broth, sliced ginger, and shaoxing wine to a boil in a shallow pan.",
+      "Submerge the whole chicken breast, cover, and poach gently on low heat for 8-10 minutes.",
+      "Add choy sum to the broth alongside the chicken for the last 4 minutes until tender-crisp.",
+      "Remove chicken, slice, and arrange over the choy sum.",
+      "Drizzle with light soy sauce and garnish with fresh scallions."
+    ]
+  },
+  {
+    "id": "ACT-012",
+    "name": "Chicken with Shiitake and Bean Sprouts",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-shiitake",
+        "grams": 70.0
+      },
+      {
+        "id": "mung-bean-sprouts",
+        "grams": 60.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Slice chicken breast and marinate with a splash of shaoxing wine and minced garlic.",
+      "Heat chicken broth in a hot non-stick pan, then add sliced shiitake mushrooms and ginger, cooking until soft.",
+      "Add the chicken strips and water-stir-fry until the chicken begins to turn white.",
+      "Toss in mung bean sprouts and light soy sauce, stirring briskly for 2 minutes until sprouts are tender-crisp.",
+      "Serve warm."
+    ]
+  },
+  {
+    "id": "ACT-013",
+    "name": "Chinese Chicken Salad",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 60.0
+      },
+      {
+        "id": "white-cabbage",
+        "grams": 30.0
+      },
+      {
+        "id": "carrots",
+        "grams": 20.0
+      },
+      {
+        "id": "scallions",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 30.0
+      },
+      {
+        "id": "rice-vinegar",
+        "grams": 45.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "black-pepper",
+        "grams": 2.5
+      },
+      {
+        "id": "brown-sugar",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Bring a saucepan of water to a boil. Add the chicken breast, cover, and bring back to a simmer. Turn off the heat and leave covered for 20 minutes.",
+      "Make the dressing: combine soy sauce, rice vinegar, grated ginger, minced garlic, black pepper, and a pinch of sugar in a small jar. Shake well and let it sit 10 minutes for the flavours to meld.",
+      "Remove the poached chicken and let it rest 5 minutes. Shred it with two forks.",
+      "In a large bowl, combine the shredded napa cabbage, red cabbage, julienned carrot, and sliced scallions.",
+      "Add the shredded chicken and pour the dressing over. Toss well.",
+      "Divide among serving bowls and serve immediately."
+    ],
+    "source": "https://www.recipetineats.com/chinese-chicken-salad/"
+  },
+  {
+    "id": "ACT-014",
+    "name": "Ginger-Scallion Chicken over Smashed Slaw",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 70.0
+      },
+      {
+        "id": "white-cabbage",
+        "grams": 30.0
+      },
+      {
+        "id": "ginger",
+        "grams": 21.0
+      },
+      {
+        "id": "scallions",
+        "grams": 2.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "rice-vinegar",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "In a small deep pot, submerge the chicken breast in water along with the ginger slices and scallion stalk. Bring to a gentle simmer, cover, and cook for 10 minutes until cooked through. Remove the chicken to rest, but keep the broth hot.",
+      "Place the cucumber on a cutting board. Use the flat side of a heavy knife or a rolling pin to smash it until it splits open. Slice it into bite-sized chunks, place in a colander, toss with a tiny pinch of salt, and let drain for 5 minutes. Discard the extracted water.",
+      "Mix the drained smashed cucumber with the shredded cabbage and toss with 1 tsp of rice vinegar. Lay this base on your serving plate.",
+      "Make the relish: In a small heatproof bowl, mix the minced ginger, minced scallion, grated garlic, and salt. Ladle 2 tbsp of the boiling hot chicken poaching broth directly over the aromatics to \"bloom\" them without oil.",
+      "Slice the chicken breast thinly, arrange it over the top of the cucumber-cabbage slaw, and spoon the warm ginger-scallion relish generously over the meat."
+    ]
+  },
+  {
+    "id": "ACT-015",
+    "name": "Hot and Sour Soup",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-shiitake",
+        "grams": 50.0
+      },
+      {
+        "id": "celery",
+        "grams": 20.0
+      },
+      {
+        "id": "egg-white",
+        "grams": 100.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 721.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 25.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "white-pepper",
+        "grams": 2.5
+      },
+      {
+        "id": "rice-vinegar",
+        "grams": 45.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 5.0
+      },
+      {
+        "id": "scallions",
+        "grams": 15.0
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Combine the stock, ginger, both soy sauces, chilli flakes, and white pepper in a large pot. Bring to a simmer over medium-high heat.",
+      "Add the whole chicken breast, cover, and reduce heat to a gentle simmer. Poach for 10 minutes until just cooked through.",
+      "Remove the chicken and shred it finely with two forks.",
+      "Add the sliced shiitake mushrooms, bamboo shoots, and shredded chicken back to the pot. Simmer uncovered for 5 minutes.",
+      "Stir in the white vinegar. Taste and adjust with more vinegar, salt, or white pepper. The soup should be noticeably sour and peppery.",
+      "While stirring the soup in a steady circular motion, slowly drizzle in the egg whites in a thin stream to form silky ribbons.",
+      "Ladle into bowls, garnish with sliced scallion, and serve hot.",
+      "Note: This recipe uses 100g of the daily 200g egg white portion alongside 100g chicken. Adjust your other meals accordingly."
+    ],
+    "source": "https://www.recipetineats.com/hot-and-sour-soup/"
+  },
+  {
+    "id": "ACT-016",
+    "name": "Hunan Chicken with Celery and Napa Cabbage",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "celery",
+        "grams": 40.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "chinese-black-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Slice chicken breast into thin strips and marinate with minced garlic and red pepper flakes.",
+      "Place chicken in a hot non-stick pan with a splash of chicken broth, searing until lightly browned.",
+      "Add sliced celery and chopped napa cabbage along with remaining broth and light soy sauce.",
+      "Cover and simmer for 6 minutes until vegetables are tender and broth reduces into a savory glaze.",
+      "Stir in black vinegar and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-017",
+    "name": "Poached Chicken with Ginger Shallot Dressing",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 60.0
+      },
+      {
+        "id": "scallions",
+        "grams": 75.0
+      },
+      {
+        "id": "ginger",
+        "grams": 36.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Take the chicken breast out of the fridge 20 minutes before cooking.",
+      "Fill a saucepan with enough water to cover the chicken by 5cm. Add the ginger slices and scallion. Bring to a boil.",
+      "Add the chicken breast, cover with a lid, and bring back to a simmer.",
+      "Immediately remove the pan from the heat and leave covered for 20 minutes. The chicken will gently cook to perfection in the residual heat.",
+      "While the chicken poaches, make the Ginger Shallot Dressing: combine the finely sliced scallions and grated ginger in a small bowl. When the chicken is done, add 2 tablespoons of the hot poaching liquid, soy sauce, and salt. Stir and let rest 5 minutes so the flavours bloom.",
+      "Remove the chicken from the poaching liquid. Let rest 5 minutes, then slice across the grain into 5mm-thick slices.",
+      "Arrange the cucumber rounds on a plate. Fan the sliced chicken over the cucumber.",
+      "Spoon the ginger shallot dressing generously over the chicken and serve at room temperature."
+    ],
+    "source": "https://www.recipetineats.com/foolproof-poached-chicken-breast-with-ginger-shallot-sauce/"
+  },
+  {
+    "id": "ACT-018",
+    "name": "Sichuan Chicken and Cabbage",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "white-cabbage",
+        "grams": 100.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 200.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "rice-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "black-pepper",
+        "grams": 2.5
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2.5
+      }
+    ],
+    "steps": [
+      "Heat a dry non-stick pan over medium-high heat. Toss in the whole Sichuan peppercorns and toast dry for 60 seconds until highly fragrant. Remove them, crush into a powder, and set aside.",
+      "In the same pan, pour the chicken broth, soy sauce, rice vinegar, minced garlic, chili flakes, and half of your crushed Sichuan pepper. Bring to a rolling boil.",
+      "Drop the paper-thin chicken slices into the boiling broth. Immediately turn off the heat completely, cover the pan with a lid, and let it sit undisturbed for 3–4 minutes. (Chef's secret: This residual heat poaching prevents fat-free chicken from drying out). Remove the tender chicken with a slotted spoon and set aside.",
+      "Turn the heat back to medium-high. Throw the chunked cabbage into the remaining broth. Simmer for 3–4 minutes until the cabbage wilts and absorbs the dark broth.",
+      "Once the liquid has reduced down to a light, clingy syrup, return the chicken to the pan. Toss everything vigorously on high heat for 30 seconds. Dust with the remaining Sichuan pepper powder and serve."
+    ]
+  },
+  {
+    "id": "ACT-019",
+    "name": "Spicy Garlic Chicken with Wood Ear and Bean Sprouts",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 50.0
+      },
+      {
+        "id": "mung-bean-sprouts",
+        "grams": 60.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "chinese-black-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Mince garlic and combine with chili flakes, chicken broth, and light soy sauce in a non-stick pan.",
+      "Add sliced chicken breast and rehydrated wood ear mushrooms, cooking over medium heat for 5 minutes.",
+      "Toss in mung bean sprouts and stir-fry in the reducing sauce for 2 minutes until tender-crisp.",
+      "Remove from heat, drizzle with black vinegar, and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-020",
+    "name": "Spicy Sichuan Chicken Soup with Wood Ear Mushrooms",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 60.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 50.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "chinese-black-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "black-pepper",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Bring chicken broth, crushed garlic, and Sichuan peppercorns to a simmer in a non-stick pot.",
+      "Add sliced chicken breast and rehydrated wood ear mushrooms, cooking for 5 minutes.",
+      "Stir in chopped bok choy and simmer for another 3 minutes until tender.",
+      "Remove from heat, stir in black vinegar and light soy sauce, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-021",
+    "name": "Steamed Chicken with Ginger and Scallion",
+    "protein": "Chicken",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "mung-bean-sprouts",
+        "grams": 40.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 20.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Slice chicken breast and marinate with shaoxing wine and minced ginger.",
+      "Arrange napa cabbage and bean sprouts in a steaming dish, placing the chicken on top.",
+      "Pour chicken broth and light soy sauce over the mixture.",
+      "Steam over high heat for 12 minutes until chicken is cooked through.",
+      "Garnish with fresh scallions and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-022",
+    "name": "Sizzling Ginger Steamed Cod",
+    "protein": "Cod",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 120.0
+      },
+      {
+        "id": "baby-spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "scallions",
+        "grams": 120.0
+      },
+      {
+        "id": "ginger",
+        "grams": 30.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 15.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 5.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "white-pepper",
+        "grams": 1
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 45.0
+      }
+    ],
+    "steps": [
+      "Place a sheet of parchment paper on a sheet of foil. Lay the cod fillet on the parchment.",
+      "Season both sides with a pinch of salt and white pepper. Drizzle 1/2 teaspoon of cooking sake over the top.",
+      "Fold the parchment to seal the fish, then wrap in foil to form a sealed parcel.",
+      "Steam over boiling water for 10-12 minutes, or bake at 200C for 12 minutes, until the fish reaches 60C internally and flakes easily.",
+      "While fish cooks, wilt the baby spinach in a non-stick pan with 1 tablespoon of water and a pinch of salt.",
+      "Unwrap the fish parcel onto a serving plate. Place the wilted spinach alongside.",
+      "Top the fish with the julienned ginger, scallion greens, and chilli if using.",
+      "Drizzle the soy sauce evenly over the fish and aromatics.",
+      "Heat 3 tablespoons of chicken stock until just boiling. Pour the hot stock over the aromatics. It will sizzle and partially cook them, releasing fragrance.",
+      "Serve immediately."
+    ],
+    "source": "https://www.recipetineats.com/sizzling-ginger-steamed-fish/"
+  },
+  {
+    "id": "ACT-023",
+    "name": "Chinese Egg Drop Soup with Ginger & Spinach",
+    "protein": "Egg whites",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "egg-white",
+        "grams": 200.0
+      },
+      {
+        "id": "baby-spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 960.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "white-pepper",
+        "grams": 1.2
+      },
+      {
+        "id": "salt",
+        "grams": 2.5
+      },
+      {
+        "id": "scallions",
+        "grams": 15.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Bring the chicken stock to a gentle simmer in a medium pot.",
+      "Add the grated ginger, white pepper, salt, and soy sauce. Stir and let simmer 2 minutes to infuse. Taste and adjust seasoning.",
+      "Add the baby spinach and stir gently until just wilted, about 30 seconds.",
+      "While stirring the soup in a steady, slow circular motion with a ladle, slowly drizzle in the egg whites in a very thin stream. The stirring speed controls the ribbon size: stir slowly for large, elegant ribbons, or faster for fine wisps.",
+      "Once all egg whites are added, let the soup simmer undisturbed for 30 seconds so the ribbons set.",
+      "Ladle into bowls, garnish with chopped scallion, and serve hot."
+    ],
+    "source": "https://thewoksoflife.com/egg-drop-soup/"
+  },
+  {
+    "id": "ACT-024",
+    "name": "Garlic-Ginger Prawn and Broccoli",
+    "protein": "Shrimp",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "broccoli",
+        "grams": 100.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 100.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Place the broccoli florets into a steamer basket over boiling water. Steam for exactly 3–4 minutes until they turn a vibrant, brilliant green but still retain a crisp bite. Set aside.",
+      "In a wide non-stick pan or wok over medium-high heat, combine the 100ml chicken broth, minced garlic, minced ginger, soy sauce, and chili flakes. Bring to a vigorous boil and let it bubble for 60 seconds to concentrate the flavors.",
+      "Toss the steamed broccoli into the bubbling sauce. Because broccoli acts like a sponge, toss it rapidly for 30 seconds so the florets drink up the hot garlic-ginger broth.",
+      "Drop the raw prawns directly into the pan. Toss continuously for about 90 seconds.",
+      "As soon as the prawns curl tightly and turn pink, and the remaining liquid reduces down to a thin glaze that clings to the food, pull the pan off the heat and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-025",
+    "name": "Prawn, Bok Choy and Mushroom Broth",
+    "protein": "Shrimp",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 70.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 40.0
+      },
+      {
+        "id": "scallions",
+        "grams": 15.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 400.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "white-pepper",
+        "grams": 1
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "In a small pot, combine the 400ml broth, grated garlic, grated ginger, soy sauce, and white pepper. Bring to a gentle simmer for 4 minutes to infuse the liquids.",
+      "Add the sliced mushrooms and the sturdy, white bottom stalks of the bok choy. Simmer for 2 minutes.",
+      "Drop in the raw prawns and the green leafy tops of the bok choy. Cook for exactly 60–90 seconds until the prawns turn completely pink and opaque.",
+      "Turn off the heat, ladle into a large soup bowl, and garnish with fresh scallion and chili flakes."
+    ]
+  },
+  {
+    "id": "ACT-026",
+    "name": "Shrimp and Broccoli in Garlic Sauce",
+    "protein": "Shrimp",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "broccoli",
+        "grams": 80.0
+      },
+      {
+        "id": "garlic",
+        "grams": 10.0
+      },
+      {
+        "id": "shaoxing-wine",
+        "grams": 15.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 22.5
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 120.0
+      },
+      {
+        "id": "brown-sugar",
+        "grams": 1.2
+      },
+      {
+        "id": "white-pepper",
+        "grams": 0.6
+      },
+      {
+        "id": "ginger",
+        "grams": 5.0
+      },
+      {
+        "id": "scallions",
+        "grams": 15.0
+      }
+    ],
+    "steps": [
+      "Bring a medium pot of water to a rolling boil. Blanch the broccoli florets for 30 seconds until bright green, then immediately transfer to a bowl of cold water. Drain and set aside.",
+      "Return the water to a boil. Blanch the shrimp for 15 seconds until they just start to turn pink (they should be about 60% cooked). Drain immediately.",
+      "In a small bowl, mix the chicken stock, soy sauce, sugar, and white pepper.",
+      "Heat a non-stick pan over high heat. Add the garlic and ginger with 1 tablespoon of water, stir for 15 seconds until fragrant.",
+      "Add the Shaoxing wine, let it sizzle for 5 seconds.",
+      "Pour in the stock-soy mixture and bring to a rapid boil.",
+      "Add the blanched shrimp and broccoli. Toss to coat and cook for 1-2 minutes until the sauce reduces slightly and clings to the shrimp and broccoli.",
+      "Garnish with sliced scallion and serve immediately."
+    ],
+    "source": "https://thewoksoflife.com/shrimp-and-broccoli/"
+  },
+  {
+    "id": "ACT-027",
+    "name": "Cantonese Steamed Fish with Ginger & Scallion",
+    "protein": "Sole",
+    "cuisine": "Chinese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "sole",
+        "grams": 120.0
+      },
+      {
+        "id": "scallions",
+        "grams": 30.0
+      },
+      {
+        "id": "ginger",
+        "grams": 15.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 2
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 22.5
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "brown-sugar",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "baby-spinach",
+        "grams": 50.0
+      }
+    ],
+    "steps": [
+      "Rinse the sole fillet and pat dry. Place on a heatproof plate.",
+      "Cut scallions into 5cm lengths, split lengthwise, and julienne. Julienne the ginger finely. Roughly chop the cilantro. Set aside one-third of the aromatics on a separate plate.",
+      "In a small bowl, stir soy sauce, salt, and sugar into 2 tablespoons of hot water until dissolved.",
+      "Set up a steamer with a rack and 3cm of water. Bring to a vigorous boil.",
+      "Place the plate with fish into the steamer, reduce heat to medium so water simmers steadily. Cover and steam for 7-8 minutes until the flesh flakes easily when tested with a butter knife.",
+      "While fish steams, wilt the baby spinach in a separate non-stick pan with 1 tablespoon of water and a pinch of salt, about 1-2 minutes.",
+      "Remove fish from steamer. Drain any liquid from the plate. Spread the reserved raw aromatics over the fish.",
+      "In a non-stick pan over medium heat, briefly cook the remaining ginger for 30 seconds, then add scallions and cilantro with the soy sauce mixture. Bring to a quick bubble, about 30 seconds.",
+      "Plate the wilted spinach as a bed, place the steamed fish on top, and pour the hot aromatics and sauce over the fish. Serve immediately."
+    ],
+    "source": "https://thewoksoflife.com/cantonese-steamed-fish/"
+  },
+  {
+    "id": "ACT-028",
+    "name": "Beef Strips with Spinach and Cherry Tomatoes",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 50.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Season beef sirloin strips with garlic and oregano.",
+      "Sear beef strips in a hot non-stick pan with a splash of beef broth for 2 minutes.",
+      "Toss in halved cherry tomatoes and fresh spinach, stirring until tomatoes soften and spinach wilts.",
+      "Add remaining broth to tie the juices together and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-029",
+    "name": "Beef and Mushroom Stew",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-chuck",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 80.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 40.0
+      },
+      {
+        "id": "beef-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "rosemary",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Season cubed lean beef with minced garlic and fresh rosemary.",
+      "Sear beef in a hot non-stick pan with a splash of beef broth until browned.",
+      "Add sliced mushrooms and diced bell peppers, sautéing until tender.",
+      "Add remaining beef broth, cover, and simmer on low heat for 15 minutes until beef is tender.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-030",
+    "name": "Beef with Zucchini and Capers",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 100.0
+      },
+      {
+        "id": "capers",
+        "grams": 10.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Sauté sliced zucchini and minced garlic in a non-stick pan with a splash of vegetable broth until tender-crisp.",
+      "Push zucchini aside and sear the sliced lean beef round steak until browned.",
+      "Add capers, lemon juice, and remaining broth, simmering for 3 minutes until glaze forms.",
+      "Garnish with fresh parsley and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-031",
+    "name": "Light Beef Bolognese",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 40.0
+      },
+      {
+        "id": "celery",
+        "grams": 30.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Dry-sauté extra lean ground beef in a non-stick pan until browned, breaking it apart.",
+      "Add minced celery, diced zucchini, and garlic along with a splash of vegetable broth, cooking until soft.",
+      "Stir in crushed tomatoes and fresh basil.",
+      "Simmer uncovered for 10 minutes until reduced into a rich meat sauce, then serve."
+    ]
+  },
+  {
+    "id": "ACT-032",
+    "name": "Light Beef Pizzaiola",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 50.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 30.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Season beef round steak with minced garlic and oregano.",
+      "Sear beef in a hot non-stick pan using a splash of vegetable broth until browned on both sides.",
+      "Add sliced zucchini and mushrooms to the pan, sautéing briefly.",
+      "Pour in crushed tomatoes and remaining broth, simmering covered for 8-10 minutes until beef is tender and sauce reduces.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-033",
+    "name": "Light Meatballs in Tomato Sauce",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 80.0
+      },
+      {
+        "id": "spinach",
+        "grams": 40.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Form extra lean ground beef into small meatballs mixed with minced garlic and basil.",
+      "Brown meatballs in a non-stick skillet with a splash of vegetable broth.",
+      "Pour in crushed tomatoes and remaining broth, simmering gently for 10 minutes.",
+      "Toss in fresh spinach during the last two minutes until wilted.",
+      "Serve warm."
+    ]
+  },
+  {
+    "id": "ACT-034",
+    "name": "Warm Beef Carpaccio with Eggplant",
+    "protein": "Beef",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 90.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "parsley",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Sauté diced eggplant with minced garlic and a splash of vegetable broth in a non-stick pan until soft and caramelized.",
+      "Push eggplant to the side and quickly flash-sear the thinly sliced lean beef for 30 seconds per side.",
+      "Drizzle with fresh lemon juice and toss gently.",
+      "Garnish with fresh parsley and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-035",
+    "name": "Bresaola Carpaccio with Arugula and Lemon",
+    "protein": "Bresaola",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 70.0
+      },
+      {
+        "id": "arugula",
+        "grams": 60.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 50.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "lemon",
+        "grams": 2
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Fan out the bresaola slices across a large plate, slightly overlapping.",
+      "Wash and dry the arugula. Pile it in the center of the plate on top of the bresaola.",
+      "Scatter the halved cherry tomatoes around the arugula.",
+      "Squeeze the lemon juice directly over everything.",
+      "Finely grate lemon zest over the dish.",
+      "Finish with a generous amount of freshly ground black pepper and a small pinch of oregano."
+    ],
+    "source": "https://blog.giallozafferano.it/ilchiccodimais/carpaccio-di-bresaola-con-rucola-e-parmigiano-ricetta-veloce/"
+  },
+  {
+    "id": "ACT-036",
+    "name": "Bresaola Rolls with Arugula and Lemon Zest",
+    "protein": "Bresaola",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 70.0
+      },
+      {
+        "id": "arugula",
+        "grams": 60.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 50.0
+      },
+      {
+        "id": "lemon",
+        "grams": 2
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 7.5
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "apple-cider-vinegar",
+        "grams": 3
+      }
+    ],
+    "steps": [
+      "Lay the bresaola slices flat on a cutting board.",
+      "Place a small tuft of arugula and 1-2 tomato wedges on each slice.",
+      "Grate a little lemon zest over each one.",
+      "Roll each slice up tightly.",
+      "Arrange the rolls on a plate, squeeze lemon juice over them, and finish with freshly ground black pepper.",
+      "Optional: drizzle a few drops of balsamic vinegar for added depth."
+    ],
+    "source": "https://blog.giallozafferano.it/simona68/involtini-bresaola-rucola-scorza-limone/"
+  },
+  {
+    "id": "ACT-037",
+    "name": "Balsamic Chicken with Spinach",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "apple-cider-vinegar",
+        "grams": 15.0
+      },
+      {
+        "id": "spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 40.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Season chicken breast with garlic and basil.",
+      "Sear chicken in a non-stick pan with a splash of chicken broth until browned.",
+      "Pour in balsamic vinegar and remaining broth, reducing to a glossy glaze.",
+      "Toss in cherry tomatoes and fresh spinach, cooking just until wilted.",
+      "Plate chicken and spoon the wilted greens and glaze over top."
+    ]
+  },
+  {
+    "id": "ACT-038",
+    "name": "Chicken Puttanesca",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "capers",
+        "grams": 25.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Season chicken breast with minced garlic and sear in a hot non-stick pan with a splash of vegetable broth.",
+      "Add crushed tomatoes, capers, and sliced black olives to the pan.",
+      "Simmer uncovered for 8-10 minutes until the sauce thickens and chicken is cooked through.",
+      "Garnish with fresh parsley and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-039",
+    "name": "Chicken alla Pizzaiola",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "spinach",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 4.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "basil",
+        "grams": 3.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 45.0
+      }
+    ],
+    "steps": [
+      "Pound the chicken breast to an even 1cm thickness between two sheets of cling film.",
+      "Season both sides with salt and oregano.",
+      "Heat a non-stick pan over medium-high heat. Sear the chicken 3-4 minutes per side until golden brown. Remove from pan.",
+      "In the same pan, add the crushed garlic and halved cherry tomatoes with 2-3 tablespoons of water. Cook 3 minutes, pressing the tomatoes with a wooden spoon to release their juices.",
+      "Return the chicken to the pan, reduce heat to low, cover and cook 4-5 minutes until chicken is cooked through.",
+      "In a separate non-stick pan, wilt the spinach with a pinch of salt and 1 tablespoon of water for 2 minutes.",
+      "Plate the spinach as a bed, place the chicken on top, spoon the tomato sauce over, and garnish with fresh basil leaves."
+    ],
+    "source": "https://blog.giallozafferano.it/mollichedizucchero/petto-di-pollo-saporito-in-padella-ricetta-facile/"
+  },
+  {
+    "id": "ACT-040",
+    "name": "Chicken with Mushrooms and Thyme",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 90.0
+      },
+      {
+        "id": "spinach",
+        "grams": 50.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "thyme",
+        "grams": 3.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Slice mushrooms and sauté in a non-stick pan with minced garlic, fresh thyme, and a splash of chicken broth until browned.",
+      "Push mushrooms aside and add the seasoned chicken breast, searing on both sides.",
+      "Add remaining broth and fresh spinach, covering until spinach wilts and chicken is cooked through.",
+      "Drizzle with lemon juice before serving."
+    ]
+  },
+  {
+    "id": "ACT-041",
+    "name": "Garlic Chicken with Broccolini",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "broccolini",
+        "grams": 100.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Sauté sliced garlic and red pepper flakes in a non-stick pan with a splash of chicken broth until fragrant.",
+      "Add broccolini and remaining broth, covering to steam until tender-crisp.",
+      "Push broccolini aside and sear the seasoned chicken breast in the pan until fully cooked.",
+      "Stir in lemon juice to glaze the pan, coating chicken and broccolini.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-042",
+    "name": "Herb-Roasted Chicken with Eggplant",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 90.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 40.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Toss cubed eggplant and sliced zucchini with minced garlic and oregano.",
+      "Roast vegetables in a non-stick pan with a splash of vegetable broth until tender and caramelized.",
+      "Season chicken breast and sear in the same pan alongside the vegetables.",
+      "Drizzle lemon juice over the chicken and vegetables just before finishing.",
+      "Serve warm together."
+    ]
+  },
+  {
+    "id": "ACT-043",
+    "name": "Lemon Caper Chicken",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 30.0
+      },
+      {
+        "id": "chicken-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "capers",
+        "grams": 10.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 80.0
+      },
+      {
+        "id": "parsley",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Season chicken breast with garlic and herbs.",
+      "Sear chicken in a non-stick pan with a splash of chicken broth until golden.",
+      "Add remaining broth, lemon juice, and capers to the pan.",
+      "Add sliced zucchini and simmer covered until chicken is cooked through and zucchini is tender.",
+      "Garnish with fresh parsley and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-044",
+    "name": "Light Chicken Cacciatore",
+    "protein": "Chicken",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 80.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 40.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 30.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "rosemary",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Slice chicken breast into bite-sized pieces and season with rosemary and minced garlic.",
+      "Brown chicken in a hot non-stick skillet using a splash of vegetable broth.",
+      "Add mushrooms and bell peppers, sautéing until soft.",
+      "Stir in crushed tomatoes and remaining broth.",
+      "Simmer on low heat for 10 minutes until reduced and rich, then serve."
+    ]
+  },
+  {
+    "id": "ACT-045",
+    "name": "Cod and Cherry Tomato Soup",
+    "protein": "Cod",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 120.0
+      },
+      {
+        "id": "spinach",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 6.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "parsley",
+        "grams": 1.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 1
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 350.0
+      },
+      {
+        "id": "lemon",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "In a non-stick pot, dry-toast the crushed garlic for 30 seconds until fragrant.",
+      "Add the halved cherry tomatoes and press them with a wooden spoon to release juices. Cook 3 minutes.",
+      "Pour in the water, add the lemon zest strip and chili flakes. Bring to a boil, then reduce to a gentle simmer for 5 minutes.",
+      "Roughly chop the Swiss chard leaves. Add to the soup and cook 3 minutes until wilted.",
+      "Cut the cod into roughly 3cm chunks. Gently place them into the soup, cover, and cook 6-7 minutes on very low heat. Do not stir, as the fish will break apart.",
+      "Remove the lemon zest strip. Add the chopped parsley and a generous grind of black pepper.",
+      "Serve in a bowl with the broth."
+    ],
+    "source": "https://blog.giallozafferano.it/allacciateilgrembiule/zuppa-di-pesce/"
+  },
+  {
+    "id": "ACT-046",
+    "name": "Cod en Papillote with Zucchini and Tomatoes",
+    "protein": "Cod",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 120.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 5.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 5.0
+      },
+      {
+        "id": "capers",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "parsley",
+        "grams": 3
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Preheat the oven to 200°C (fan-assisted).",
+      "Slice the zucchini into 5mm-thick rounds.",
+      "Lay out a large sheet of parchment paper on a baking tray.",
+      "Arrange the zucchini rounds in the center, slightly overlapping, as a bed for the fish.",
+      "Place the cod fillet on top of the zucchini. Season with salt and pepper.",
+      "Scatter the halved cherry tomatoes, rinsed capers, garlic slices and oregano around and on top of the fish.",
+      "Seal the parchment parcel tightly by folding and crimping the edges.",
+      "Bake for 20 minutes.",
+      "Open the parcel at the table, garnish with fresh parsley leaves."
+    ],
+    "source": "https://blog.giallozafferano.it/orecchietteeforchette/merluzzo-saporito-al-cartoccio/"
+  },
+  {
+    "id": "ACT-047",
+    "name": "Cod with Zucchini and Fresh Mint",
+    "protein": "Cod",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 120.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 80.0
+      },
+      {
+        "id": "mint",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 4.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 7.5
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 45.0
+      }
+    ],
+    "steps": [
+      "Slice the zucchini into 5mm-thick rounds.",
+      "Heat a non-stick pan over medium-high heat. Cook the zucchini rounds dry (no oil) for 3 minutes per side until they develop golden-brown char marks. Season with salt and remove.",
+      "In the same pan, dry-toast the garlic slices for 20 seconds. Add the halved cherry tomatoes and 2 tablespoons of water. Press and cook 2 minutes.",
+      "Lay the cod fillets into the tomato sauce. Cover and cook 5-6 minutes on medium-low heat.",
+      "Return the zucchini rounds around the fish, cover for a final minute to heat through.",
+      "Turn off the heat. Scatter the torn fresh mint leaves over the dish and squeeze lemon juice on top."
+    ],
+    "source": "https://blog.giallozafferano.it/ricettechepassione/filetti-di-merluzzo-in-padella-con-zucchine/"
+  },
+  {
+    "id": "ACT-048",
+    "name": "Warm Mediterranean Cod Salad",
+    "protein": "Cod",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 120.0
+      },
+      {
+        "id": "arugula",
+        "grams": 50.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 50.0
+      },
+      {
+        "id": "celery",
+        "grams": 50.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "capers",
+        "grams": 5.0
+      },
+      {
+        "id": "parsley",
+        "grams": 15.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 1
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Bring a pot of water to a boil with a bay leaf and a few whole peppercorns.",
+      "Submerge the cod fillet, reduce heat to a gentle simmer. Poach for 8-10 minutes until the fish flakes easily.",
+      "Drain carefully and let it cool for 3 minutes.",
+      "Rub the half garlic clove inside the serving bowl to perfume it, then discard.",
+      "Arrange the arugula, halved cherry tomatoes and sliced celery in the bowl.",
+      "Break the warm cod into large rustic chunks over the vegetables. Do not shred it too finely.",
+      "Dress with lemon juice, chopped capers, parsley, oregano and black pepper."
+    ],
+    "source": "https://blog.giallozafferano.it/ricettechepassione/insalata-di-merluzzo/"
+  },
+  {
+    "id": "ACT-049",
+    "name": "Egg White Frittata with Spinach and Herbs",
+    "protein": "Egg whites",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "egg-white",
+        "grams": 200.0
+      },
+      {
+        "id": "spinach",
+        "grams": 80.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "nutmeg",
+        "grams": 1.0
+      },
+      {
+        "id": "parsley",
+        "grams": 15.0
+      },
+      {
+        "id": "chives",
+        "grams": 5.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Blanch the spinach in salted boiling water for 2 minutes. Drain, squeeze out all excess water thoroughly, and roughly chop.",
+      "In a bowl, whisk the egg whites with a fork until frothy. Add the chopped spinach, parsley, chives, nutmeg, salt and pepper. Mix well.",
+      "Heat a good-quality non-stick pan over medium heat. Rub the cut side of the garlic clove across the surface of the pan, then discard.",
+      "Pour in the egg white mixture. Cover with a lid and cook over medium-low heat for 6-7 minutes until the bottom is set and golden.",
+      "Flip the frittata using a plate to assist: slide it onto the plate, then invert it back into the pan. Cook the other side uncovered for 2-3 minutes.",
+      "Serve hot or at room temperature."
+    ],
+    "source": "https://blog.giallozafferano.it/gustoamoreefantasie/frittata-light-di-albumi-e-spinaci/"
+  },
+  {
+    "id": "ACT-050",
+    "name": "Baked Cod Parcel with Zucchini",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 40.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "thyme",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Place the cod fillet in the center of a parchment paper sheet, surrounded by sliced zucchini and cherry tomatoes.",
+      "Season with minced garlic, fresh thyme, a splash of fish broth, and lemon juice.",
+      "Seal the parchment paper tightly into a packet and bake at 180°C for 15 minutes.",
+      "Open carefully and serve warm in its parchment pouch."
+    ]
+  },
+  {
+    "id": "ACT-051",
+    "name": "Cod in Light Tomato Broth (Acqua Pazza)",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 60.0
+      },
+      {
+        "id": "celery",
+        "grams": 30.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 50.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Sauté minced garlic and sliced celery in a non-stick pan with a splash of vegetable broth until soft.",
+      "Add halved cherry tomatoes, cod fillet, and remaining vegetable broth to the pan.",
+      "Cover and simmer gently for 6-8 minutes until the fish is cooked through and flaky.",
+      "Drizzle with lemon juice, garnish with fresh parsley, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-052",
+    "name": "Cod with Mushrooms and Spinach",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 70.0
+      },
+      {
+        "id": "spinach",
+        "grams": 50.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "thyme",
+        "grams": 3.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Sauté sliced white mushrooms and minced garlic in a non-stick pan with a splash of vegetable broth until browned.",
+      "Add fresh spinach and remaining broth, stirring until the spinach wilts.",
+      "Push the vegetables aside and sear the cod fillet in the same pan for 3 minutes per side until flaky.",
+      "Drizzle with lemon juice and serve hot together."
+    ]
+  },
+  {
+    "id": "ACT-053",
+    "name": "Lemon Cod with Broccolini and Capers",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "broccolini",
+        "grams": 90.0
+      },
+      {
+        "id": "capers",
+        "grams": 10.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Sauté minced garlic and red pepper flakes in a non-stick pan with a splash of vegetable broth.",
+      "Add broccolini and remaining broth, covering to steam until tender-crisp.",
+      "Add the cod fillet, capers, and fresh lemon juice to the pan, covering and simmering for 6 minutes until the fish is opaque.",
+      "Serve warm with the citrus reduction pan juices."
+    ]
+  },
+  {
+    "id": "ACT-054",
+    "name": "Light Cod alla Livornese",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "capers",
+        "grams": 25.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Sauté minced garlic in a non-stick skillet with a splash of vegetable broth.",
+      "Stir in canned crushed tomatoes, capers, and sliced black olives, simmering for 5 minutes.",
+      "Nestle the cod fillet into the rich tomato sauce, cover, and simmer for 8 minutes until cooked.",
+      "Garnish with fresh parsley and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-055",
+    "name": "Light Cod alla Sorrentina",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 40.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Sauté diced bell peppers and minced garlic in a non-stick pan with a splash of vegetable broth until soft.",
+      "Pour in crushed tomatoes and fresh oregano, letting the mixture simmer for 5 minutes.",
+      "Place the cod fillet into the simmering sauce, cover, and cook gently for 8 minutes until flaky and fully cooked.",
+      "Serve hot, spooning the rich sauce over the fish."
+    ]
+  },
+  {
+    "id": "ACT-056",
+    "name": "Sea Bass with Eggplant Cream",
+    "protein": "Fish",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "sea-bass",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 90.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Cube eggplant and sauté in a non-stick pan with minced garlic and vegetable broth until completely soft.",
+      "Blend or mash the cooked eggplant with fresh basil and lemon juice into a smooth cream.",
+      "Sear the sea bass fillet in a clean non-stick pan with a splash of broth until crisp on the skin side and cooked through.",
+      "Spread the warm eggplant cream on the plate and top with the sea bass."
+    ]
+  },
+  {
+    "id": "ACT-057",
+    "name": "Lemon Caper Pork Loin",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 100.0
+      },
+      {
+        "id": "capers",
+        "grams": 10.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Sauté sliced zucchini and minced garlic in a non-stick pan with a splash of vegetable broth until tender-crisp.",
+      "Push the zucchini aside and sear the seasoned lean pork tenderloin medallions until golden and cooked through.",
+      "Add capers, lemon juice, and remaining broth to the pan, simmering for 2 minutes to create a light pan-sauce.",
+      "Garnish with fresh parsley and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-058",
+    "name": "Light Pork Pizzaiola",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 50.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "oregano-fresh",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Season lean pork tenderloin medallions with minced garlic and fresh oregano.",
+      "Sear the pork medallions in a hot non-stick skillet using a splash of vegetable broth until browned on both sides.",
+      "Add sliced zucchini to the pan and sauté briefly.",
+      "Pour in crushed tomatoes and remaining broth, cover, and simmer for 8-10 minutes until the pork is tender and the sauce reduces.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-059",
+    "name": "Pork Cacciatore with Spinach",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 80.0
+      },
+      {
+        "id": "spinach",
+        "grams": 40.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 30.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "rosemary",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Brown lean pork tenderloin medallions in a non-stick pan with a splash of vegetable broth and minced garlic.",
+      "Stir in crushed tomatoes and fresh rosemary, simmering gently for 8 minutes.",
+      "Toss in fresh spinach during the final two minutes until wilted into the sauce.",
+      "Ensure the pork is fully cooked through and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-060",
+    "name": "Pork Loin with Broccolini and Rosemary",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "broccolini",
+        "grams": 100.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "rosemary",
+        "grams": 3.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Sauté minced garlic and chopped rosemary in a non-stick pan with a splash of vegetable broth.",
+      "Add broccolini and remaining broth, covering to steam until tender-crisp.",
+      "Push the broccolini aside and sear the seasoned lean pork tenderloin medallions until cooked through.",
+      "Drizzle lemon juice over the dish just before plating and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-061",
+    "name": "Pork Rolls with Eggplant",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 90.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 3.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Dice eggplant finely and sauté with minced garlic and a splash of vegetable broth until completely soft, mixing in fresh basil.",
+      "Pound the lean pork tenderloin thin, spread the soft eggplant mixture over it, and roll it up securely.",
+      "Place the roll in a non-stick pan with remaining broth and bake or pan-simmer covered for 12 minutes until cooked.",
+      "Drizzle with lemon juice and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-062",
+    "name": "Pork Strips with Cherry Tomatoes and Basil",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 60.0
+      },
+      {
+        "id": "zucchini",
+        "grams": 50.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "basil",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Slice lean pork tenderloin into thin strips and season with minced garlic.",
+      "Sear the pork strips in a hot non-stick pan with a splash of vegetable broth for 2 minutes.",
+      "Toss in halved cherry tomatoes and diced zucchini, stirring until the vegetables soften and release their juices.",
+      "Stir in fresh basil and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-063",
+    "name": "Pork and Mushroom Stew with Thyme",
+    "protein": "Pork",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "pork-tenderloin",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 80.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 40.0
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 40.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "thyme",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Cut lean pork tenderloin into bite-sized cubes and season with minced garlic and fresh thyme.",
+      "Brown the pork cubes in a hot non-stick pan with a splash of vegetable broth.",
+      "Add sliced white mushrooms and diced bell peppers, sautéing until soft.",
+      "Pour in remaining broth, cover, and simmer on low heat for 12 minutes until the pork is fully cooked and tender.",
+      "Serve warm."
+    ]
+  },
+  {
+    "id": "ACT-064",
+    "name": "Shrimp alla Diavola",
+    "protein": "Shrimp",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "spinach",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 8.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2
+      },
+      {
+        "id": "parsley",
+        "grams": 1.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      }
+    ],
+    "steps": [
+      "Shell and devein the shrimp, pat dry thoroughly.",
+      "Heat a non-stick pan over medium-high heat. Dry-toast the crushed garlic and whole chili for 30 seconds until fragrant.",
+      "Add the halved cherry tomatoes and 2 tablespoons of water. Press with a wooden spoon to crush them, cook 5 minutes until they form a thick, spicy sauce.",
+      "Add the shrimp in a single layer. Cook 2 minutes per side until pink and just cooked through.",
+      "In a separate non-stick pan, wilt the spinach with a pinch of salt and 1 tablespoon of water for 2 minutes.",
+      "Plate the spinach as a bed, arrange the shrimp on top with the diavola sauce spooned over, and finish with fresh parsley."
+    ],
+    "source": "https://blog.giallozafferano.it/allacciateilgrembiule/gamberi-alla-diavola/"
+  },
+  {
+    "id": "ACT-065",
+    "name": "Spicy Shrimp and Tomato Soup",
+    "protein": "Shrimp",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "spinach",
+        "grams": 80.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 8.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2
+      },
+      {
+        "id": "parsley",
+        "grams": 1.0
+      },
+      {
+        "id": "lemon",
+        "grams": 2
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "water",
+        "grams": 350.0
+      }
+    ],
+    "steps": [
+      "Shell and devein the shrimp, keeping the shells. Pat shrimp dry and set aside.",
+      "In a non-stick pot, dry-toast the crushed garlic and whole chili for 30 seconds.",
+      "Add the shrimp shells and toast them dry for 2 minutes, stirring (they release deep seafood flavor without any fat).",
+      "Pour in the water and add the lemon zest strip. Boil for 5 minutes, then strain the broth through a fine sieve, discarding the shells, garlic, chili and zest. Return the clear broth to the pot.",
+      "Add the halved cherry tomatoes. Cook 3 minutes, pressing to crush them.",
+      "Add the Swiss chard, roughly chopped. Cook 3 minutes.",
+      "Add the shrimp. Cook gently for 3 minutes on low heat.",
+      "Finish with fresh parsley and black pepper. Serve with the broth."
+    ],
+    "source": "https://blog.giallozafferano.it/marcoemarisa/zuppa-di-gamberi/"
+  },
+  {
+    "id": "ACT-066",
+    "name": "Sole en Papillote with Asparagus and Lemon",
+    "protein": "Sole",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "sole",
+        "grams": 120.0
+      },
+      {
+        "id": "asparagus",
+        "grams": 80.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.5
+      },
+      {
+        "id": "thyme",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 3
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Preheat the oven to 200°C (fan-assisted).",
+      "Trim the asparagus, removing the woody ends. If thick, halve them lengthwise.",
+      "Lay out a large sheet of parchment paper on a baking tray.",
+      "Arrange the asparagus in the center of the parchment. Place the sole fillet on top.",
+      "Season with salt and pepper. Lay the lemon slices, garlic slivers, thyme sprigs and halved cherry tomatoes around and on top of the fish.",
+      "Squeeze the quarter lemon over everything.",
+      "Seal the parchment parcel by folding and crimping the edges tightly all around.",
+      "Bake for 15 minutes.",
+      "Serve in the opened parcel, garnished with fresh parsley."
+    ],
+    "source": "https://blog.giallozafferano.it/ilchiccodimais/pesce-al-cartoccio-con-aromi-ricetta-semplice/"
+  },
+  {
+    "id": "ACT-067",
+    "name": "Turkey Strips with Mushrooms",
+    "protein": "Turkey",
+    "cuisine": "Italian",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "turkey-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 80.0
+      },
+      {
+        "id": "spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "rosemary",
+        "grams": 2.0
+      },
+      {
+        "id": "parsley",
+        "grams": 15.0
+      },
+      {
+        "id": "salt",
+        "grams": 4
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      },
+      {
+        "id": "vegetable-broth",
+        "grams": 60.0
+      }
+    ],
+    "steps": [
+      "Slice the turkey breast into thin straccetti strips, about 2cm wide.",
+      "Clean the mushrooms with a damp cloth, then slice them thinly (about 3mm).",
+      "Heat a non-stick pan over high heat. Add the mushrooms in a single layer and cook without stirring for 3-4 minutes until they develop a golden-brown sear. Season lightly with salt and remove.",
+      "In the same pan over high heat, sear the turkey strips 2-3 minutes per side until golden.",
+      "Add the minced garlic, thyme sprigs, 1 teaspoon of soy sauce and 3-4 tablespoons of water. Stir for 1 minute to create a light sauce.",
+      "Return the mushrooms to the pan, toss everything together for 1 minute.",
+      "In a separate pan, wilt the spinach with a pinch of salt and 1 tablespoon of water for 2 minutes.",
+      "Plate the spinach as a base, top with the turkey strips and mushrooms, garnish with fresh parsley."
+    ],
+    "source": "https://blog.giallozafferano.it/ricettefaciliefelici/straccetti-di-tacchino-ai-funghi/"
+  },
+  {
+    "id": "ACT-068",
+    "name": "Prawn and Vegetable Chawanmushi",
+    "protein": "Shrimp",
+    "cuisine": "Japanese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "egg-white",
+        "grams": 132.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 235.0
+      },
+      {
+        "id": "shrimp",
+        "grams": 40.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 60.0
+      },
+      {
+        "id": "spinach",
+        "grams": 30.0
+      },
+      {
+        "id": "scallions",
+        "grams": 15.0
+      }
+    ],
+    "steps": [
+      "Arrange the chopped prawns, mushrooms, and spinach evenly across the bottom of a heatproof ceramic bowl or ramekin.",
+      "In a separate bowl, gently whisk the liquid egg whites with the seasoned warm water/soy mixture until completely combined. Try not to create too many air bubbles.",
+      "Strain the egg mixture through a fine-mesh sieve directly into the bowl over your vegetables and prawns.",
+      "Cover the top of the bowl tightly with aluminium foil to block condensation water drops.",
+      "Set up a steamer basket over a pot of gently simmering water (not a rolling boil). Place the foiled bowl inside, cover with the pot lid, and steam on low heat for 12–14 minutes until the center is just set like a delicate custard. Top with scallions."
+    ]
+  },
+  {
+    "id": "ACT-069",
+    "name": "Spicy Turkey Salad with Peppers",
+    "protein": "Turkey",
+    "cuisine": "Latin",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "turkey-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 80.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 60.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 5.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "rice-vinegar",
+        "grams": 5.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 15.0
+      },
+      {
+        "id": "cumin",
+        "grams": 1
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 1
+      }
+    ],
+    "steps": [
+      "Cut the turkey breast into thin strips about 1cm wide.",
+      "Season with salt and cumin, toss to coat evenly.",
+      "Heat a non-stick pan over high heat. Sear the turkey strips 2-3 minutes per side until golden brown and cooked through. Remove and let rest.",
+      "Slice the bell peppers into thin strips. Cut the cucumber into half-moons.",
+      "In a large bowl, combine the peppers, cucumber and sliced fresh chili.",
+      "Add the warm turkey strips.",
+      "Dress with lime juice, white wine vinegar and chopped cilantro. Toss gently and serve."
+    ],
+    "source": "https://blog.giallozafferano.it/lacucinadiloredana/ricetta-insalata-di-pollo-e-carote/"
+  },
+  {
+    "id": "ACT-070",
+    "name": "Chicken in Spicy Tamarind Broth (Asam Pedas)",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 70.0
+      },
+      {
+        "id": "tomato",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 40.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "shallots",
+        "grams": 5.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Blend shallots, ginger, and dried chili paste into a spice paste.",
+      "In a pot, combine the spice paste with water and tamarind juice, bringing to a boil.",
+      "Add sliced chicken breast and whole okra pods to the sour and spicy broth.",
+      "Simmer gently for 10 minutes until the chicken is tender and the okra is cooked through.",
+      "Serve warm."
+    ]
+  },
+  {
+    "id": "ACT-071",
+    "name": "Dry Minangkabau Chicken Rendang",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 60.0
+      },
+      {
+        "id": "water",
+        "grams": 54.0
+      },
+      {
+        "id": "shallots",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 3.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Toast desiccated coconut in a dry pan until golden brown, then grind into a paste.",
+      "Blend shallots, galangal, and lemongrass into a fine spice paste.",
+      "Combine spice paste, toasted coconut paste, light coconut milk, and water in a non-stick pan.",
+      "Add chicken breast and sliced long beans, simmering on low heat until the liquid completely reduces and coats the chicken.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-072",
+    "name": "Ginger and Chili Chicken",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 70.0
+      },
+      {
+        "id": "water",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "ginger",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Slice chicken breast and julienne a generous amount of fresh ginger.",
+      "Sauté minced garlic and ginger in a non-stick pan with a splash of water until fragrant.",
+      "Add chicken strips, light soy sauce, and remaining water, cooking until the chicken turns white.",
+      "Toss in chopped bok choy and scallions, covering for 3 minutes until tender.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-073",
+    "name": "Light Coconut Chili Chicken (Masak Lemak)",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 60.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 60.0
+      },
+      {
+        "id": "turmeric",
+        "grams": 3.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Blend fresh turmeric, bird eye chili, and lemongrass into a fine paste.",
+      "Combine the spice paste, light coconut milk, and water in a non-stick pot, bringing to a gentle simmer.",
+      "Add cubed chicken breast, sliced long beans, and diced eggplant to the simmering spiced broth.",
+      "Cook uncovered for 10-12 minutes, stirring occasionally, until the chicken is cooked through and vegetables are tender.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-074",
+    "name": "Oil-Free Spiced Chicken (Ayam Berempah)",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 80.0
+      },
+      {
+        "id": "water",
+        "grams": 15.0
+      },
+      {
+        "id": "turmeric",
+        "grams": 3.0
+      },
+      {
+        "id": "shallots",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "coriander-ground",
+        "grams": 2.0
+      },
+      {
+        "id": "cumin",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Blend turmeric, shallots, lemongrass, ground coriander, and cumin with a splash of water into a thick spice paste.",
+      "Coat the chicken breast thoroughly with the spice paste and let marinate for 20 minutes.",
+      "Place the coated chicken in a hot non-stick pan with a few drops of water, covering with a lid to steam-roast for 6 minutes.",
+      "Remove the lid and sear until the spices form a dry, fragrant crust on the chicken.",
+      "Serve alongside fresh cucumber slices."
+    ]
+  },
+  {
+    "id": "ACT-075",
+    "name": "Spiced Chicken and Bone Soup",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "celery",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 60.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "cinnamon",
+        "grams": 2.0
+      },
+      {
+        "id": "star-anise",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Bring water to a boil with crushed garlic, ginger, cinnamon stick, and star anise to form a spiced broth.",
+      "Add sliced chicken breast, chopped celery, and napa cabbage to the pot.",
+      "Simmer covered on medium heat for 10 minutes until the chicken is tender and flavors infuse the broth.",
+      "Remove cinnamon stick and star anise, then serve hot as a clear, aromatic soup."
+    ]
+  },
+  {
+    "id": "ACT-076",
+    "name": "Spicy Turmeric Grilled Chicken (Ayam Percik)",
+    "protein": "Chicken",
+    "cuisine": "Malay",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 80.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "shallots",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 4.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Blend shallots, ginger, lemongrass, and bird eye chili into a smooth paste.",
+      "Mix the spice paste with tamarind juice and water to create a marinade.",
+      "Coat the chicken breast with the mixture and marinate for 15 minutes.",
+      "Place the chicken and remaining sauce in a non-stick pan, adding chopped bok choy around it.",
+      "Cover and simmer on medium heat for 12 minutes until the sauce reduces to a glaze and chicken is fully cooked."
+    ]
+  },
+  {
+    "id": "ACT-077",
+    "name": "Loaded Egg-White Frittata",
+    "protein": "Egg whites",
+    "cuisine": "Mediterranean",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "egg-white",
+        "grams": 180.0
+      },
+      {
+        "id": "mushrooms-white",
+        "grams": 50.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 30.0
+      },
+      {
+        "id": "spinach",
+        "grams": 20.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 2.5
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2
+      },
+      {
+        "id": "garlic",
+        "grams": 2
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Preheat your oven to 190°C (375°F). Line a small cake pan or oven-safe skillet with parchment paper (Chef's secret: guarantees a non-stick release without spray or oil).",
+      "Heat a non-stick pan over medium heat. Toss in the mushrooms and bell peppers with 1 tbsp of water. Sauté for 3–4 minutes until tender. Stir in the chopped spinach for 30 seconds until wilted, then remove from heat.",
+      "In a medium bowl, pour the liquid egg whites. Add the oregano, chili flakes, garlic powder, salt, and pepper. Use a fork to whip the whites vigorously for 30 seconds until slightly frothy. (This traps air, giving the fat-free frittata a lighter, fluffy rise).",
+      "Stir the cooked vegetables into the seasoned egg whites.",
+      "Pour the mixture into your parchment-lined baking dish. Bake in the oven for 15 minutes until puffed up, golden on the edges, and firmly set in the center."
+    ]
+  },
+  {
+    "id": "ACT-078",
+    "name": "Baked Fish on Peperonata",
+    "protein": "Fish",
+    "cuisine": "Mediterranean",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 60.0
+      },
+      {
+        "id": "tomato",
+        "grams": 40.0
+      },
+      {
+        "id": "onion",
+        "grams": 20.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 2.5
+      },
+      {
+        "id": "paprika",
+        "grams": 1
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 2
+      },
+      {
+        "id": "salt",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Heat a non-stick pan over medium heat. Add the sliced onion, garlic, and 2 tablespoons of water. Water-sauté for 3 minutes until the onions soften.",
+      "Add the bell pepper strips, diced tomatoes, oregano, paprika, and chili flakes. Reduce heat to low, cover, and let the vegetables sweat in their own juices for 7–8 minutes until completely soft, sweet, and jammy (peperonata).",
+      "Pat your fish fillet dry and season lightly with salt and pepper.",
+      "Push the sweet peppers slightly aside, lay the fish fillet directly onto the bottom of the pan, and spoon some of the jammy tomato-pepper mixture over the top of the fish.",
+      "Cover tightly, turn the heat to medium-low, and steam-cook for 6–8 minutes until the fish flakes beautifully."
+    ]
+  },
+  {
+    "id": "ACT-079",
+    "name": "Fish in Tomato and Vegetable Stew",
+    "protein": "Fish",
+    "cuisine": "Mediterranean",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "cod",
+        "grams": 100.0
+      },
+      {
+        "id": "canned-crushed-tomatoes",
+        "grams": 70.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 30.0
+      },
+      {
+        "id": "spinach",
+        "grams": 20.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "dried-oregano",
+        "grams": 2.5
+      },
+      {
+        "id": "paprika",
+        "grams": 1
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 2.5
+      },
+      {
+        "id": "basil",
+        "grams": 3
+      }
+    ],
+    "steps": [
+      "Heat a deep non-stick pan over medium heat. Add the chopped tomatoes, diced bell pepper, minced garlic, oregano, paprika, chili flakes, and fish sauce.",
+      "Simmer gently for 8–10 minutes, stirring occasionally, until the liquid reduces and the tomatoes become a thick, jammy paste.",
+      "Stir the fresh spinach into the tomato sauce until it wilts completely.",
+      "Pat the fish fillet completely dry with a paper towel. Nestle the fish directly into the center of the stew.",
+      "Cover the pan tightly with a lid, turn the heat down to low, and poach for 6–8 minutes until the fish is opaque and flakes easily with a fork. Top with fresh basil before serving."
+    ]
+  },
+  {
+    "id": "ACT-080",
+    "name": "Lemon Shrimp Salad",
+    "protein": "Shrimp",
+    "cuisine": "Mediterranean",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "arugula",
+        "grams": 60.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 80.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "parsley",
+        "grams": 15.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 4.0
+      }
+    ],
+    "steps": [
+      "Shell and devein the shrimp, pat dry thoroughly with paper towels.",
+      "Heat a non-stick pan over high heat until very hot. Cook shrimp 1 minute per side until just pink, season with a pinch of salt. Remove to a plate.",
+      "Slice the cucumber into thin rounds.",
+      "In a large bowl, toss arugula and cucumber slices. Dress with lemon juice and finely grated lemon zest, add chopped parsley.",
+      "Arrange warm shrimp on top of the salad. Crush pink peppercorns over the dish and serve immediately."
+    ],
+    "source": "https://blog.giallozafferano.it/benessereegusto/insalata-di-gamberi/"
+  },
+  {
+    "id": "ACT-081",
+    "name": "Warm Chicken Salad with Celery and Mustard",
+    "protein": "Chicken",
+    "cuisine": "Nordic",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "celery",
+        "grams": 82.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 80.0
+      },
+      {
+        "id": "dijon-mustard",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "apple",
+        "grams": 5.0
+      },
+      {
+        "id": "chives",
+        "grams": 15.0
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "black-pepper",
+        "grams": 4
+      },
+      {
+        "id": "carrots",
+        "grams": 2
+      }
+    ],
+    "steps": [
+      "Fill a pot with water, add half a carrot, half a celery stalk and a few whole peppercorns. Bring to a boil.",
+      "Submerge the whole chicken breast, reduce heat to a gentle simmer. Poach for 12-15 minutes until internal temperature reaches 75°C. Remove and rest 5 minutes.",
+      "Meanwhile, slice the celery into thin diagonal pieces. Cut the cucumber into half-moons.",
+      "In a small bowl, whisk the Dijon mustard, lemon juice and apple cider vinegar with a fork until emulsified into a smooth dressing.",
+      "Slice the chicken into 1cm-thick slices while still warm.",
+      "Arrange the vegetables on a plate, place the warm chicken slices on top, drizzle the mustard-lemon dressing over everything, and sprinkle with chopped chives."
+    ],
+    "source": "https://blog.giallozafferano.it/mastercheffa/insalata-di-pollo-al-sedano/"
+  },
+  {
+    "id": "ACT-082",
+    "name": "Nordic Sole and Fennel Soup",
+    "protein": "Sole",
+    "cuisine": "Nordic",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "sole",
+        "grams": 120.0
+      },
+      {
+        "id": "fennel",
+        "grams": 81.0
+      },
+      {
+        "id": "spinach",
+        "grams": 60.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.5
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 7.5
+      },
+      {
+        "id": "lemon",
+        "grams": 2
+      },
+      {
+        "id": "salt",
+        "grams": 1
+      },
+      {
+        "id": "white-pepper",
+        "grams": 2
+      },
+      {
+        "id": "water",
+        "grams": 400.0
+      }
+    ],
+    "steps": [
+      "Trim the fennel: remove the base, reserve the green fronds for garnish. Slice the bulb into thin 3mm slices.",
+      "In a non-stick pot, dry-toast the fennel seeds for 30 seconds until fragrant.",
+      "Add the sliced fennel and crushed garlic. Cook dry for 2 minutes, stirring.",
+      "Pour in the water and add the lemon zest strip. Bring to a boil, then reduce heat and simmer 8 minutes until the fennel is soft and sweet.",
+      "Add the spinach and cook 2 minutes.",
+      "Cut the sole into pieces. Gently place them into the soup, cover, and cook on very low heat for 5-6 minutes.",
+      "Remove the lemon zest. Add lemon juice, finely chopped fennel fronds and white pepper.",
+      "Serve in a bowl with the broth."
+    ],
+    "source": "https://blog.giallozafferano.it/chezbibia/ricetta-zuppa-di-finocchi/"
+  },
+  {
+    "id": "ACT-083",
+    "name": "Beef Jungle Curry (Gaeng Pa)",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-chuck",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 60.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 50.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 3.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dissolve Thai red curry paste in a non-stick pan with a splash of water, simmering until fragrant.",
+      "Add cubed lean beef chuck, diced eggplant, and sliced green beans to the pan.",
+      "Pour in remaining water, adding bruised galangal and torn kaffir lime leaves.",
+      "Simmer uncovered for 12-15 minutes until the beef is tender and the vegetables absorb the spiced broth.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-084",
+    "name": "Beef with Curry Paste and Long Beans (Prik King)",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 90.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 6.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dry-sauté Thai red curry paste in a non-stick pan with a splash of water until vibrant and aromatic.",
+      "Add thinly sliced lean beef sirloin and stir-fry until coated and partially cooked.",
+      "Add sliced green beans, fish sauce, light soy sauce, and remaining water.",
+      "Simmer for 5 minutes until the beans are tender-crisp and coated in a concentrated savory reduction.",
+      "Garnish with shredded kaffir lime leaves and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-085",
+    "name": "Clear Tom Yum Beef Soup",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-straw",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 80.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 13.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 4.0
+      }
+    ],
+    "steps": [
+      "Bring water to a boil in a pot with sliced galangal, bruised lemongrass, and torn kaffir lime leaves.",
+      "Add thinly sliced lean beef round steak and straw mushrooms, simmering gently for 6 minutes.",
+      "Stir in Thai chili paste and fish sauce, cooking for another minute.",
+      "Remove from heat, stir in fresh lime juice and chopped bok choy, and serve hot as a clear, spicy broth."
+    ]
+  },
+  {
+    "id": "ACT-086",
+    "name": "Grilled Beef Salad (Nam Tok)",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 80.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 20.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "shallots",
+        "grams": 3.0
+      },
+      {
+        "id": "cornstarch",
+        "grams": 4.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Grill or pan-sear the lean beef sirloin in a hot non-stick pan with a splash of water until medium-rare, then slice thinly.",
+      "In a bowl, toss the sliced beef with fresh lime juice, fish sauce, thinly sliced shallots, toasted ground rice, and dried chili flakes.",
+      "Serve the warm beef salad immediately alongside fresh cucumber slices and raw bok choy."
+    ]
+  },
+  {
+    "id": "ACT-087",
+    "name": "Thai Basil Beef (Pad Kaphrao)",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-round",
+        "grams": 100.0
+      },
+      {
+        "id": "basil",
+        "grams": 70.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Mince garlic and bird eye chili together, then dry-sauté in a hot non-stick pan with a splash of water until aromatic.",
+      "Add finely minced or chopped lean beef round steak and stir-fry until completely cooked through.",
+      "Stir in fish sauce, light soy sauce, and sliced green beans, tossing for 2 minutes.",
+      "Turn off the heat, fold in the fresh Thai holy basil leaves until wilted, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-088",
+    "name": "Thai Beef Salad (Yam Neua)",
+    "protein": "Beef",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "beef-sirloin",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 60.0
+      },
+      {
+        "id": "celery",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 20.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "shallots",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 4.0
+      }
+    ],
+    "steps": [
+      "Pan-sear the lean beef sirloin in a non-stick pan with a splash of water until cooked to preference, then slice into thin strips.",
+      "Prepare the dressing by whisking together lime juice, fish sauce, and Thai chili paste.",
+      "Toss the sliced beef with thinly sliced cucumbers, crisp celery, shallots, and bruised lemongrass.",
+      "Pour the dressing over the top, mix well, and serve immediately."
+    ]
+  },
+  {
+    "id": "ACT-089",
+    "name": "Chicken Jungle Curry (Gaeng Pa)",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 60.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 50.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 3.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dissolve Thai red curry paste in a non-stick pan with a splash of water, simmering until fragrant.",
+      "Add cubed chicken breast, diced eggplant, and sliced green beans to the pan.",
+      "Pour in remaining water, adding bruised galangal and torn kaffir lime leaves.",
+      "Simmer uncovered for 10-12 minutes until the vegetables are tender and the chicken is fully cooked.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-090",
+    "name": "Chicken and Cabbage Larb Slaw",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "white-cabbage",
+        "grams": 70.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 30.0
+      },
+      {
+        "id": "shallots",
+        "grams": 20
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 10
+      },
+      {
+        "id": "lime-juice",
+        "grams": 22.5
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "water",
+        "grams": 15.0
+      }
+    ],
+    "steps": [
+      "Mix the raw minced chicken with 1/2 tbsp lime juice and 1 tbsp water (pre-acidifies the meat, keeping it tender without oil).",
+      "Heat a non-stick pan over medium-high heat. Add the chicken and the white parts of the sliced shallots.",
+      "Cook 5-6 minutes, breaking the chicken into a fine crumble until fully cooked. Remove and cool 2 minutes.",
+      "Toss the shredded cabbage, cucumber ribbons, chili, remaining shallot tops, mint and coriander in a bowl.",
+      "Pour the remaining lime juice and fish sauce over, add the warm chicken, toss well. Serve in a bowl or in lettuce leaves."
+    ]
+  },
+  {
+    "id": "ACT-091",
+    "name": "Chicken with Curry Paste and Long Beans (Prik King)",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 90.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 6.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dry-sauté Thai red curry paste in a non-stick pan with a splash of water until aromatic.",
+      "Add sliced chicken breast and stir-fry until coated and partially cooked.",
+      "Add sliced green beans, fish sauce, light soy sauce, and remaining water.",
+      "Toss and simmer for 5 minutes until the beans are tender-crisp and coated in a reduced savory glaze.",
+      "Garnish with finely shredded kaffir lime leaves and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-092",
+    "name": "Clear Tom Yum Chicken Soup",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-straw",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 80.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 13.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Bring water to a boil in a pot with sliced galangal, bruised lemongrass, and torn kaffir lime leaves.",
+      "Add sliced chicken breast and straw mushrooms, simmering for 6 minutes until tender.",
+      "Stir in Thai chili paste and fish sauce, cooking for another minute.",
+      "Remove from heat, stir in fresh lime juice and chopped bok choy, and serve hot as a clear soup."
+    ]
+  },
+  {
+    "id": "ACT-093",
+    "name": "Ginger Chicken Stir (Phad King)",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "ginger",
+        "grams": 70.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Julienne fresh ginger and slice wood ear mushrooms.",
+      "Sauté minced garlic and ginger in a non-stick pan with a splash of water until aromatic.",
+      "Add sliced chicken breast and stir-fry until it begins to turn white.",
+      "Toss in wood ear mushrooms, light soy sauce, fish sauce, and remaining water, simmering for 4 minutes until tender.",
+      "Garnish with fresh scallions and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-094",
+    "name": "Grilled Chicken with Jaew Dipping Sauce",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 80.0
+      },
+      {
+        "id": "water",
+        "grams": 15.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "shallots",
+        "grams": 3.0
+      },
+      {
+        "id": "cornstarch",
+        "grams": 4.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Marinate chicken breast with a splash of fish sauce and water, then grill or pan-sear in a non-stick pan until fully cooked and lightly charred.",
+      "Prepare the dipping sauce by mixing lime juice, fish sauce, finely diced shallots, toasted ground rice, and dried chili flakes.",
+      "Slice the cooked chicken and serve immediately alongside fresh cucumber slices with the dipping sauce on the side."
+    ]
+  },
+  {
+    "id": "ACT-095",
+    "name": "Thai Basil Chicken (Pad Kaphrao)",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "basil",
+        "grams": 80.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Mince garlic and bird eye chili together, then dry-sauté in a hot non-stick pan with a splash of water until fragrant.",
+      "Add finely diced chicken breast and stir-fry until completely white and cooked through.",
+      "Stir in light soy sauce, fish sauce, and sliced green beans, tossing for 2 minutes.",
+      "Turn off the heat, fold in the fresh Thai holy basil leaves until wilted from residual heat, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-096",
+    "name": "Thai Chicken Salad with Chilli Lime Dressing",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "lettuce",
+        "grams": 60.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 40.0
+      },
+      {
+        "id": "cherry-tomatoes",
+        "grams": 30.0
+      },
+      {
+        "id": "onion",
+        "grams": 1.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 1.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 35.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 22.5
+      },
+      {
+        "id": "garlic",
+        "grams": 6.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      }
+    ],
+    "steps": [
+      "Take the chicken breast out of the fridge 20 minutes before cooking.",
+      "Bring a saucepan of water to a boil. Add the chicken, cover with a lid, and bring back to a simmer. Immediately turn off the heat and leave covered for 20 minutes.",
+      "While chicken poaches, make the dressing: combine lime juice, chilli garlic sauce, minced garlic, fish sauce, and chopped cilantro stems in a small jar. Shake well and let stand 10 minutes.",
+      "Remove the poached chicken, let it rest 5 minutes, then shred it with two forks into bite-size pieces.",
+      "In a large bowl, combine the lettuce, cucumber slices, halved cherry tomatoes, red onion, chilli, and cilantro leaves.",
+      "Add the shredded chicken. Drizzle with the dressing and toss gently.",
+      "Serve immediately, with extra lime wedges on the side."
+    ],
+    "source": "https://www.recipetineats.com/thai-chicken-salad/"
+  },
+  {
+    "id": "ACT-097",
+    "name": "Thai Larb Gai Lettuce Wraps",
+    "protein": "Chicken",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "lettuce",
+        "grams": 60.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 30.0
+      },
+      {
+        "id": "brown-sugar",
+        "grams": 2.5
+      },
+      {
+        "id": "ginger",
+        "grams": 15.0
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 10.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 1.0
+      },
+      {
+        "id": "onion",
+        "grams": 1.0
+      },
+      {
+        "id": "mint",
+        "grams": 30.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 30.0
+      },
+      {
+        "id": "cornstarch",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Hand-mince the chicken breast by slicing it thinly, then chopping it finely with a sharp knife until you have a coarse mince.",
+      "Make the sauce: mix lime juice, fish sauce, and sugar in a small bowl until sugar dissolves.",
+      "Dry-toast 1 teaspoon of raw jasmine rice in a small non-stick pan over low heat, stirring constantly for 3-4 minutes until golden and fragrant. Grind to a coarse powder with a mortar and pestle. Set aside.",
+      "Heat a non-stick pan over high heat until very hot. Add the chicken mince in a single layer, breaking it apart with a spatula. Cook without stirring for 1-2 minutes to get some colour, then stir and cook another 2 minutes until just cooked through.",
+      "Add the ginger, garlic, lemongrass, and chillies to the pan. Cook 30 seconds until fragrant.",
+      "Pour in the sauce, stir to combine, cook 30 seconds more.",
+      "Remove from heat. Toss in the red onion, mint, cilantro, and toasted rice powder.",
+      "Spoon filling into lettuce cups and serve immediately with extra lime wedges."
+    ],
+    "source": "https://www.recipetineats.com/thai-chicken-lettuce-cups-larb-gai-laab-gai/"
+  },
+  {
+    "id": "ACT-098",
+    "name": "Clear Tom Yum Shrimp Soup",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-straw",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 80.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 13.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Bring water to a boil in a pot with sliced galangal, bruised lemongrass, and torn kaffir lime leaves.",
+      "Add peeled shrimp and straw mushrooms, simmering for 4 minutes until the shrimp are cooked through.",
+      "Stir in Thai chili paste and fish sauce, cooking for another minute.",
+      "Remove from heat, stir in fresh lime juice and chopped bok choy, and serve hot as a clear soup."
+    ]
+  },
+  {
+    "id": "ACT-099",
+    "name": "Ginger Shrimp Stir (Phad King)",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "ginger",
+        "grams": 70.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Julienne fresh ginger and slice wood ear mushrooms.",
+      "Sauté minced garlic and ginger in a non-stick pan with a splash of water until aromatic.",
+      "Add peeled shrimp and stir-fry until they just begin to turn pink.",
+      "Toss in wood ear mushrooms, light soy sauce, fish sauce, and remaining water, simmering for 3 minutes until tender.",
+      "Garnish with fresh scallions and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-100",
+    "name": "Shrimp Jungle Curry (Gaeng Pa)",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 60.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 50.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 3.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dissolve Thai red curry paste in a non-stick pan with a splash of water, simmering until fragrant.",
+      "Add diced eggplant and sliced green beans to the pan along with remaining water, galangal, and kaffir lime leaves.",
+      "Simmer uncovered for 10 minutes until the vegetables are tender.",
+      "Add peeled shrimp during the final 3 minutes, cooking until pink and opaque, then serve hot."
+    ]
+  },
+  {
+    "id": "ACT-101",
+    "name": "Shrimp with Curry Paste and Long Beans (Prik King)",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 90.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 6.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dry-sauté Thai red curry paste in a non-stick pan with a splash of water until vibrant and aromatic.",
+      "Add sliced green beans, fish sauce, light soy sauce, and remaining water, simmering for 4 minutes until tender-crisp.",
+      "Add peeled shrimp to the pan and toss for 2 minutes until cooked through and coated in the reduced glaze.",
+      "Garnish with finely shredded kaffir lime leaves and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-102",
+    "name": "Steamed Shrimp with Glass Noodles (Goong Ob Woonsen)",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "celery",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 40.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Arrange chopped napa cabbage and sliced celery at the bottom of a non-stick pot with a splash of water, minced garlic, and ginger.",
+      "Place peeled shrimp on top of the vegetables.",
+      "Drizzle with light soy sauce and fish sauce, cover tightly, and steam-braise on medium heat for 6-8 minutes until the shrimp are cooked and vegetables are tender.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-103",
+    "name": "Thai Basil Shrimp (Pad Kaphrao)",
+    "protein": "Shrimp",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "basil",
+        "grams": 80.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 10.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Mince garlic and bird eye chili together, then dry-sauté in a hot non-stick pan with a splash of water until fragrant.",
+      "Add peeled shrimp and stir-fry until pink and opaque.",
+      "Stir in light soy sauce, fish sauce, and sliced green beans, tossing for 2 minutes.",
+      "Turn off the heat, fold in the fresh Thai holy basil leaves until wilted from residual heat, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-104",
+    "name": "Squid, Cucumber and Pepper Salad",
+    "protein": "Squid",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 60.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 40.0
+      },
+      {
+        "id": "cilantro",
+        "grams": 10
+      },
+      {
+        "id": "garlic",
+        "grams": 5.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 1.0
+      },
+      {
+        "id": "water",
+        "grams": 15.0
+      }
+    ],
+    "steps": [
+      "Prepare an ice bath (a bowl filled with cold water and ice cubes) and set it aside.",
+      "Lay the squid tube flat on a cutting board. Cut it open, and score the inside surface in a tight, diagonal diamond cross-hatch pattern with a sharp knife. Slice into bite-sized squares.",
+      "Bring a small pot of water to a rolling boil. Drop the squid pieces in for exactly 45 seconds. They will instantly curl up into textured shapes.",
+      "Immediately scoop the squid out and plunge it into the ice bath to stop the cooking process completely. (Chef's secret: This ensures the squid stays incredibly tender and snappy, never chewy). Drain well.",
+      "In a medium bowl, whisk the lime juice, fish sauce, minced garlic, chili, and water together. Add the cucumber, bell pepper, chilled squid, and coriander. Toss thoroughly so the dressing catches in the scored grooves of the squid."
+    ]
+  },
+  {
+    "id": "ACT-105",
+    "name": "Clear Tom Yum Tofu Soup",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "mushrooms-straw",
+        "grams": 70.0
+      },
+      {
+        "id": "bok-choy",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 80.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 13.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 5.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 3.0
+      },
+      {
+        "id": "thai-chili-paste",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Bring water to a boil in a pot with sliced galangal, bruised lemongrass, and torn kaffir lime leaves.",
+      "Add cubed firm tofu and straw mushrooms, simmering for 5 minutes until the tofu absorbs the aromatics.",
+      "Stir in traditional chili paste and natural fermented fish sauce, cooking for another minute.",
+      "Remove from heat, stir in fresh lime juice and chopped bok choy, and serve hot as a clear soup."
+    ]
+  },
+  {
+    "id": "ACT-106",
+    "name": "Ginger Tofu Stir (Phad King)",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "ginger",
+        "grams": 70.0
+      },
+      {
+        "id": "mushrooms-wood-ear",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "garlic",
+        "grams": 3.0
+      },
+      {
+        "id": "scallions",
+        "grams": 5.0
+      }
+    ],
+    "steps": [
+      "Julienne fresh ginger and slice wood ear mushrooms.",
+      "Sauté minced garlic and ginger in a non-stick pan with a splash of water until aromatic.",
+      "Add cubed firm tofu and stir-fry until golden on the edges.",
+      "Toss in wood ear mushrooms, natural fermented fish sauce, and remaining water, simmering for 3 minutes until tender.",
+      "Garnish with fresh scallions and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-107",
+    "name": "Steamed Tofu with Glass Noodles (Ob Woonsen)",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "napa-cabbage",
+        "grams": 80.0
+      },
+      {
+        "id": "celery",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 40.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Arrange chopped napa cabbage and sliced celery at the bottom of a non-stick pot with a splash of water, minced garlic, and ginger.",
+      "Place cubed firm tofu on top of the vegetables.",
+      "Drizzle with natural fermented fish sauce, cover tightly, and steam-braise on medium heat for 6 minutes until the tofu is tender and infused with aromatics.",
+      "Serve hot."
+    ]
+  },
+  {
+    "id": "ACT-108",
+    "name": "Thai Basil Tofu (Pad Kaphrao)",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "basil",
+        "grams": 80.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 40.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "chili-birds-eye",
+        "grams": 5.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      }
+    ],
+    "steps": [
+      "Crumble or dice firm tofu into small pieces.",
+      "Mince garlic and bird eye chili together, then dry-sauté in a hot non-stick pan with a splash of water until aromatic.",
+      "Add the tofu and stir-fry until lightly golden.",
+      "Stir in natural fermented fish sauce and sliced green beans, tossing for 2 minutes.",
+      "Turn off the heat, fold in the fresh Thai holy basil leaves until wilted from residual heat, and serve hot."
+    ]
+  },
+  {
+    "id": "ACT-109",
+    "name": "Tofu Jungle Curry (Gaeng Pa)",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "eggplant",
+        "grams": 60.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 50.0
+      },
+      {
+        "id": "water",
+        "grams": 50.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 5.0
+      },
+      {
+        "id": "galangal",
+        "grams": 3.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dissolve traditional Thai red curry paste in a non-stick pan with a splash of water, simmering until fragrant.",
+      "Add diced eggplant and sliced green beans to the pan along with remaining water, galangal, and kaffir lime leaves.",
+      "Simmer uncovered for 10 minutes until the vegetables are tender.",
+      "Add cubed firm tofu during the final 3 minutes, simmering until heated through, then serve hot."
+    ]
+  },
+  {
+    "id": "ACT-110",
+    "name": "Tofu with Curry Paste and Long Beans (Prik King)",
+    "protein": "Tofu",
+    "cuisine": "Thai",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "tofu-firm",
+        "grams": 100.0
+      },
+      {
+        "id": "green-beans",
+        "grams": 90.0
+      },
+      {
+        "id": "water",
+        "grams": 30.0
+      },
+      {
+        "id": "fish-sauce",
+        "grams": 10.0
+      },
+      {
+        "id": "thai-red-curry-paste",
+        "grams": 6.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 3.0
+      }
+    ],
+    "steps": [
+      "Dry-sauté traditional Thai red curry paste in a non-stick pan with a splash of water until vibrant and aromatic.",
+      "Add sliced green beans, natural fermented fish sauce, and remaining water, simmering for 4 minutes until tender-crisp.",
+      "Add cubed firm tofu to the pan and toss for 2 minutes until coated in the reduced glaze.",
+      "Garnish with finely shredded kaffir lime leaves and serve warm."
+    ]
+  },
+  {
+    "id": "ACT-111",
+    "name": "Shrimp Lettuce Wraps with Lime and Mint",
+    "protein": "Shrimp",
+    "cuisine": "Vietnamese",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "shrimp",
+        "grams": 100.0
+      },
+      {
+        "id": "lettuce",
+        "grams": 40.0
+      },
+      {
+        "id": "carrots",
+        "grams": 40.0
+      },
+      {
+        "id": "cucumber",
+        "grams": 50.0
+      },
+      {
+        "id": "lime-juice",
+        "grams": 15.0
+      },
+      {
+        "id": "soy-sauce-light",
+        "grams": 5.0
+      },
+      {
+        "id": "ginger",
+        "grams": 3.0
+      },
+      {
+        "id": "mint",
+        "grams": 5.0
+      },
+      {
+        "id": "chili-red",
+        "grams": 2
+      },
+      {
+        "id": "garlic",
+        "grams": 1.2
+      }
+    ],
+    "steps": [
+      "Shell and devein the shrimp, pat dry.",
+      "Heat a non-stick pan over high heat. Cook the shrimp 1 minute per side with a pinch of salt until just pink. Remove.",
+      "Cut the carrots and cucumber into fine julienne strips.",
+      "Wash and dry the lettuce leaves, keeping them whole as cups.",
+      "In a small bowl, mix the lime juice, soy sauce, grated ginger and garlic into a dipping sauce.",
+      "Assemble each wrap: lettuce leaf as the base, julienned vegetables, 2-3 shrimp per wrap, a fresh mint leaf, a slice of chili, and a teaspoon of the lime-ginger sauce.",
+      "Roll up tightly and eat with your hands."
+    ],
+    "source": "https://blog.giallozafferano.it/isaporidiethra/involtini-di/"
+  },
+  {
+    "id": "ACT-112",
+    "name": "Chicken over Red Pepper and Broccoli Purees",
+    "protein": "Chicken",
+    "cuisine": "Western",
+    "phase": "Activation",
+    "ingredients": [
+      {
+        "id": "chicken-breast",
+        "grams": 100.0
+      },
+      {
+        "id": "bell-pepper-red",
+        "grams": 250.0
+      },
+      {
+        "id": "broccoli",
+        "grams": 100.0
+      },
+      {
+        "id": "garlic",
+        "grams": 2.0
+      },
+      {
+        "id": "lemon-juice",
+        "grams": 30.0
+      },
+      {
+        "id": "paprika",
+        "grams": 2.0
+      },
+      {
+        "id": "chili-flakes",
+        "grams": 1.0
+      },
+      {
+        "id": "salt",
+        "grams": 2.0
+      },
+      {
+        "id": "white-pepper",
+        "grams": 1.0
+      }
+    ],
+    "steps": [
+      "Cook the chicken your preferred way with spices of choice, rest, then slice.",
+      "RED PURÉE: dry-pan or water-sauté sliced red peppers with a lid on low heat 8-10 min until fully soft, letting some browning happen for depth.",
+      "Add half the garlic the last 2 min, then blend peppers with half the lemon juice, salt, and paprika, adding a splash of water until smooth; sieve for silk.",
+      "GREEN PURÉE: steam or boil broccoli until very soft, then blend with remaining garlic, remaining lemon juice, salt, and white pepper, adding a splash of water until smooth.",
+      "PLATE: spoon each purée on opposite sides of the plate and drag a spoon through for the swoosh.",
+      "Fan the sliced chicken across the middle, crack black pepper, and add herbs if you like."
+    ]
+  }
+]

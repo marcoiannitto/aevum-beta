@@ -1,0 +1,1406 @@
+[
+  {
+    "id": "beef-chuck",
+    "name": "Beef Chuck (lean)",
+    "category": "protein",
+    "per100g": {
+      "p": 20.2,
+      "f": 5.0,
+      "c": 0,
+      "kcal": 132
+    },
+    "source": "ai"
+  },
+  {
+    "id": "beef-round",
+    "name": "Beef Round (lean)",
+    "category": "protein",
+    "per100g": {
+      "p": 21.7,
+      "f": 4.3,
+      "c": 0,
+      "kcal": 131
+    },
+    "source": "ai"
+  },
+  {
+    "id": "beef-sirloin",
+    "name": "Beef Sirloin (lean)",
+    "category": "protein",
+    "per100g": {
+      "p": 20.9,
+      "f": 5.4,
+      "c": 0,
+      "kcal": 136
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chicken-breast",
+    "name": "Chicken Breast (skinless)",
+    "category": "protein",
+    "per100g": {
+      "p": 22.5,
+      "f": 2.6,
+      "c": 0,
+      "kcal": 120
+    },
+    "source": "usda"
+  },
+  {
+    "id": "cod",
+    "name": "Cod (Atlantic)",
+    "category": "protein",
+    "per100g": {
+      "p": 17.8,
+      "f": 0.7,
+      "c": 0,
+      "kcal": 82
+    },
+    "source": "usda"
+  },
+  {
+    "id": "egg-white",
+    "name": "Egg White",
+    "category": "protein",
+    "per100g": {
+      "p": 10.9,
+      "f": 0.2,
+      "c": 0.7,
+      "kcal": 52
+    },
+    "source": "ai"
+  },
+  {
+    "id": "halibut",
+    "name": "Halibut",
+    "category": "protein",
+    "per100g": {
+      "p": 18.6,
+      "f": 1.3,
+      "c": 0,
+      "kcal": 91
+    },
+    "source": "ai"
+  },
+  {
+    "id": "pork-tenderloin",
+    "name": "Pork Tenderloin (lean)",
+    "category": "protein",
+    "per100g": {
+      "p": 20.9,
+      "f": 2.2,
+      "c": 0,
+      "kcal": 109
+    },
+    "source": "usda"
+  },
+  {
+    "id": "salmon",
+    "name": "Salmon",
+    "category": "protein",
+    "per100g": {
+      "p": 20.4,
+      "f": 8.1,
+      "c": 0,
+      "kcal": 142
+    },
+    "source": "usda"
+  },
+  {
+    "id": "sea-bass",
+    "name": "Sea Bass",
+    "category": "protein",
+    "per100g": {
+      "p": 18.4,
+      "f": 2.0,
+      "c": 0,
+      "kcal": 97
+    },
+    "source": "usda"
+  },
+  {
+    "id": "shrimp",
+    "name": "Shrimp (peeled)",
+    "category": "protein",
+    "per100g": {
+      "p": 20.1,
+      "f": 0.5,
+      "c": 0,
+      "kcal": 85
+    },
+    "source": "usda"
+  },
+  {
+    "id": "snapper",
+    "name": "Snapper",
+    "category": "protein",
+    "per100g": {
+      "p": 20.5,
+      "f": 1.3,
+      "c": 0,
+      "kcal": 100
+    },
+    "source": "usda"
+  },
+  {
+    "id": "sole",
+    "name": "Sole / Flounder",
+    "category": "protein",
+    "per100g": {
+      "p": 12.4,
+      "f": 1.9,
+      "c": 0,
+      "kcal": 70
+    },
+    "source": "usda"
+  },
+  {
+    "id": "swordfish",
+    "name": "Swordfish",
+    "category": "protein",
+    "per100g": {
+      "p": 19.7,
+      "f": 6.7,
+      "c": 0,
+      "kcal": 144
+    },
+    "source": "usda"
+  },
+  {
+    "id": "tilapia",
+    "name": "Tilapia",
+    "category": "protein",
+    "per100g": {
+      "p": 20.1,
+      "f": 1.7,
+      "c": 0,
+      "kcal": 96
+    },
+    "source": "usda"
+  },
+  {
+    "id": "tofu-firm",
+    "name": "Tofu (firm)",
+    "category": "protein",
+    "per100g": {
+      "p": 9.0,
+      "f": 4.2,
+      "c": 2.0,
+      "kcal": 78
+    },
+    "source": "usda"
+  },
+  {
+    "id": "tuna",
+    "name": "Tuna (fresh)",
+    "category": "protein",
+    "per100g": {
+      "p": 23.3,
+      "f": 4.9,
+      "c": 0,
+      "kcal": 144
+    },
+    "source": "usda"
+  },
+  {
+    "id": "turkey-breast",
+    "name": "Turkey Breast",
+    "category": "protein",
+    "per100g": {
+      "p": 21.5,
+      "f": 1.7,
+      "c": 0,
+      "kcal": 102
+    },
+    "source": "usda"
+  },
+  {
+    "id": "artichoke",
+    "name": "Artichoke",
+    "category": "vegetable",
+    "per100g": {
+      "p": 3.3,
+      "f": 0.2,
+      "c": 5.1,
+      "kcal": 47
+    },
+    "source": "ai"
+  },
+  {
+    "id": "arugula",
+    "name": "Arugula (Rocket)",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.6,
+      "f": 0.7,
+      "c": 2.0,
+      "kcal": 25
+    },
+    "source": "usda"
+  },
+  {
+    "id": "asparagus",
+    "name": "Asparagus",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.2,
+      "f": 0.1,
+      "c": 1.8,
+      "kcal": 20
+    },
+    "source": "usda"
+  },
+  {
+    "id": "baby-spinach",
+    "name": "Baby Spinach",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.9,
+      "f": 0.4,
+      "c": 1.4,
+      "kcal": 23
+    },
+    "source": "usda"
+  },
+  {
+    "id": "bell-pepper-green",
+    "name": "Bell Pepper (green)",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.9,
+      "f": 0.2,
+      "c": 2.9,
+      "kcal": 20
+    },
+    "source": "usda"
+  },
+  {
+    "id": "bell-pepper-red",
+    "name": "Bell Pepper (red)",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.0,
+      "f": 0.3,
+      "c": 3.9,
+      "kcal": 26
+    },
+    "source": "usda"
+  },
+  {
+    "id": "bell-pepper-yellow",
+    "name": "Bell Pepper (yellow)",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.0,
+      "f": 0.2,
+      "c": 5.4,
+      "kcal": 27
+    },
+    "source": "usda"
+  },
+  {
+    "id": "chili-birds-eye",
+    "name": "Bird's Eye Chili",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.9,
+      "f": 0.4,
+      "c": 5.3,
+      "kcal": 40
+    },
+    "source": "ai"
+  },
+  {
+    "id": "bok-choy",
+    "name": "Bok Choy",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.5,
+      "f": 0.2,
+      "c": 2.2,
+      "kcal": 13
+    },
+    "source": "ai"
+  },
+  {
+    "id": "broccoli",
+    "name": "Broccoli",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.8,
+      "f": 0.4,
+      "c": 4.0,
+      "kcal": 34
+    },
+    "source": "usda"
+  },
+  {
+    "id": "broccolini",
+    "name": "Broccolini",
+    "category": "vegetable",
+    "per100g": {
+      "p": 3.0,
+      "f": 0.5,
+      "c": 3.5,
+      "kcal": 28
+    },
+    "source": "ai"
+  },
+  {
+    "id": "carrots",
+    "name": "Carrots",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.9,
+      "f": 0.2,
+      "c": 6.8,
+      "kcal": 41
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cauliflower",
+    "name": "Cauliflower",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.9,
+      "f": 0.3,
+      "c": 3.0,
+      "kcal": 25
+    },
+    "source": "usda"
+  },
+  {
+    "id": "celery",
+    "name": "Celery",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.2,
+      "c": 1.4,
+      "kcal": 14
+    },
+    "source": "usda"
+  },
+  {
+    "id": "cherry-tomatoes",
+    "name": "Cherry Tomatoes",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.9,
+      "f": 0.2,
+      "c": 3.9,
+      "kcal": 18
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cucumber",
+    "name": "Cucumber",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.1,
+      "c": 3.1,
+      "kcal": 15
+    },
+    "source": "usda"
+  },
+  {
+    "id": "eggplant",
+    "name": "Eggplant",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.0,
+      "f": 0.2,
+      "c": 2.9,
+      "kcal": 25
+    },
+    "source": "usda"
+  },
+  {
+    "id": "fennel",
+    "name": "Fennel",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.2,
+      "f": 0.2,
+      "c": 4.2,
+      "kcal": 31
+    },
+    "source": "ai"
+  },
+  {
+    "id": "green-beans",
+    "name": "Green Beans",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.8,
+      "f": 0.2,
+      "c": 4.3,
+      "kcal": 31
+    },
+    "source": "usda"
+  },
+  {
+    "id": "kale",
+    "name": "Kale",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.9,
+      "f": 1.5,
+      "c": 0.3,
+      "kcal": 35
+    },
+    "source": "usda"
+  },
+  {
+    "id": "leek",
+    "name": "Leek",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.5,
+      "f": 0.3,
+      "c": 9.0,
+      "kcal": 61
+    },
+    "source": "ai"
+  },
+  {
+    "id": "lettuce",
+    "name": "Lettuce",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.4,
+      "f": 0.2,
+      "c": 1.1,
+      "kcal": 13
+    },
+    "source": "usda"
+  },
+  {
+    "id": "mung-bean-sprouts",
+    "name": "Mung Bean Sprouts",
+    "category": "vegetable",
+    "per100g": {
+      "p": 3.0,
+      "f": 0.2,
+      "c": 5.9,
+      "kcal": 31
+    },
+    "source": "ai"
+  },
+  {
+    "id": "napa-cabbage",
+    "name": "Napa Cabbage",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.2,
+      "f": 0.2,
+      "c": 2.2,
+      "kcal": 13
+    },
+    "source": "ai"
+  },
+  {
+    "id": "radish",
+    "name": "Radish",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.1,
+      "c": 3.4,
+      "kcal": 16
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chili-red",
+    "name": "Red Chili Pepper",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.9,
+      "f": 0.4,
+      "c": 5.3,
+      "kcal": 40
+    },
+    "source": "ai"
+  },
+  {
+    "id": "scallions",
+    "name": "Scallions / Spring Onion",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.8,
+      "f": 0.2,
+      "c": 4.7,
+      "kcal": 32
+    },
+    "source": "ai"
+  },
+  {
+    "id": "shallots",
+    "name": "Shallots",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.5,
+      "f": 0.1,
+      "c": 16.8,
+      "kcal": 72
+    },
+    "source": "ai"
+  },
+  {
+    "id": "mushrooms-shiitake",
+    "name": "Shiitake Mushrooms",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.2,
+      "f": 0.5,
+      "c": 6.8,
+      "kcal": 34
+    },
+    "source": "ai"
+  },
+  {
+    "id": "spinach",
+    "name": "Spinach",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.9,
+      "f": 0.4,
+      "c": 1.4,
+      "kcal": 23
+    },
+    "source": "usda"
+  },
+  {
+    "id": "mushrooms-straw",
+    "name": "Straw Mushrooms",
+    "category": "vegetable",
+    "per100g": {
+      "p": 3.8,
+      "f": 0.7,
+      "c": 2.3,
+      "kcal": 32
+    },
+    "source": "ai"
+  },
+  {
+    "id": "tomato",
+    "name": "Tomato",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.9,
+      "f": 0.2,
+      "c": 2.7,
+      "kcal": 18
+    },
+    "source": "usda"
+  },
+  {
+    "id": "watercress",
+    "name": "Watercress",
+    "category": "vegetable",
+    "per100g": {
+      "p": 2.3,
+      "f": 0.1,
+      "c": 1.3,
+      "kcal": 11
+    },
+    "source": "ai"
+  },
+  {
+    "id": "white-cabbage",
+    "name": "White Cabbage",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.3,
+      "f": 0.1,
+      "c": 3.3,
+      "kcal": 25
+    },
+    "source": "usda"
+  },
+  {
+    "id": "mushrooms-white",
+    "name": "White Mushrooms",
+    "category": "vegetable",
+    "per100g": {
+      "p": 3.1,
+      "f": 0.3,
+      "c": 2.3,
+      "kcal": 22
+    },
+    "source": "usda"
+  },
+  {
+    "id": "mushrooms-wood-ear",
+    "name": "Wood Ear Mushrooms",
+    "category": "vegetable",
+    "per100g": {
+      "p": 0.5,
+      "f": 0.2,
+      "c": 6.3,
+      "kcal": 25
+    },
+    "source": "ai"
+  },
+  {
+    "id": "zucchini",
+    "name": "Zucchini",
+    "category": "vegetable",
+    "per100g": {
+      "p": 1.2,
+      "f": 0.3,
+      "c": 3.1,
+      "kcal": 17
+    },
+    "source": "ai"
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.3,
+      "f": 0.2,
+      "c": 11.4,
+      "kcal": 52
+    },
+    "source": "ai"
+  },
+  {
+    "id": "blueberry",
+    "name": "Blueberry",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.3,
+      "c": 12.1,
+      "kcal": 57
+    },
+    "source": "usda"
+  },
+  {
+    "id": "grapefruit",
+    "name": "Grapefruit",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.6,
+      "f": 0.1,
+      "c": 7.0,
+      "kcal": 32
+    },
+    "source": "usda"
+  },
+  {
+    "id": "lemon",
+    "name": "Lemon (flesh)",
+    "category": "fruit",
+    "per100g": {
+      "p": 1.1,
+      "f": 0.3,
+      "c": 6.5,
+      "kcal": 29
+    },
+    "source": "usda"
+  },
+  {
+    "id": "lime",
+    "name": "Lime (flesh)",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.2,
+      "c": 7.7,
+      "kcal": 30
+    },
+    "source": "usda"
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.9,
+      "f": 0.1,
+      "c": 9.3,
+      "kcal": 47
+    },
+    "source": "usda"
+  },
+  {
+    "id": "raspberry",
+    "name": "Raspberry",
+    "category": "fruit",
+    "per100g": {
+      "p": 1.2,
+      "f": 0.7,
+      "c": 5.4,
+      "kcal": 52
+    },
+    "source": "usda"
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "category": "fruit",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.3,
+      "c": 5.7,
+      "kcal": 32
+    },
+    "source": "usda"
+  },
+  {
+    "id": "galangal",
+    "name": "Galangal",
+    "category": "aromatic",
+    "per100g": {
+      "p": 1.0,
+      "f": 1.0,
+      "c": 15.0,
+      "kcal": 71
+    },
+    "source": "ai"
+  },
+  {
+    "id": "garlic",
+    "name": "Garlic",
+    "category": "aromatic",
+    "per100g": {
+      "p": 6.4,
+      "f": 0.5,
+      "c": 33.1,
+      "kcal": 149
+    },
+    "source": "ai"
+  },
+  {
+    "id": "ginger",
+    "name": "Ginger (fresh)",
+    "category": "aromatic",
+    "per100g": {
+      "p": 1.8,
+      "f": 0.8,
+      "c": 15.8,
+      "kcal": 80
+    },
+    "source": "ai"
+  },
+  {
+    "id": "kaffir-lime-leaf",
+    "name": "Kaffir Lime Leaves",
+    "category": "aromatic",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 0,
+      "kcal": 0
+    },
+    "source": "ai"
+  },
+  {
+    "id": "lemongrass",
+    "name": "Lemongrass",
+    "category": "aromatic",
+    "per100g": {
+      "p": 1.8,
+      "f": 0.5,
+      "c": 25.3,
+      "kcal": 99
+    },
+    "source": "ai"
+  },
+  {
+    "id": "onion",
+    "name": "Onion",
+    "category": "aromatic",
+    "per100g": {
+      "p": 1.1,
+      "f": 0.1,
+      "c": 9.3,
+      "kcal": 40
+    },
+    "source": "ai"
+  },
+  {
+    "id": "basil",
+    "name": "Basil (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.2,
+      "f": 0.6,
+      "c": 1.1,
+      "kcal": 23
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chives",
+    "name": "Chives (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.3,
+      "f": 0.7,
+      "c": 1.9,
+      "kcal": 30
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cilantro",
+    "name": "Cilantro (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 2.1,
+      "f": 0.5,
+      "c": 0.9,
+      "kcal": 23
+    },
+    "source": "ai"
+  },
+  {
+    "id": "dill",
+    "name": "Dill (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.5,
+      "f": 1.1,
+      "c": 4.9,
+      "kcal": 43
+    },
+    "source": "ai"
+  },
+  {
+    "id": "mint",
+    "name": "Mint (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.8,
+      "f": 0.9,
+      "c": 5.3,
+      "kcal": 44
+    },
+    "source": "ai"
+  },
+  {
+    "id": "oregano-fresh",
+    "name": "Oregano (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 1.5,
+      "f": 0.7,
+      "c": 4.3,
+      "kcal": 44
+    },
+    "source": "ai"
+  },
+  {
+    "id": "parsley",
+    "name": "Parsley (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.0,
+      "f": 0.8,
+      "c": 3.0,
+      "kcal": 36
+    },
+    "source": "ai"
+  },
+  {
+    "id": "rosemary",
+    "name": "Rosemary (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 3.3,
+      "f": 5.9,
+      "c": 6.6,
+      "kcal": 131
+    },
+    "source": "ai"
+  },
+  {
+    "id": "thyme",
+    "name": "Thyme (fresh)",
+    "category": "herb",
+    "per100g": {
+      "p": 5.6,
+      "f": 1.7,
+      "c": 10.5,
+      "kcal": 101
+    },
+    "source": "ai"
+  },
+  {
+    "id": "apple-cider-vinegar",
+    "name": "Apple Cider Vinegar",
+    "category": "condiment",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 0.9,
+      "kcal": 22
+    },
+    "source": "ai"
+  },
+  {
+    "id": "beef-broth",
+    "name": "Beef Broth",
+    "category": "condiment",
+    "per100g": {
+      "p": 1.0,
+      "f": 0.1,
+      "c": 0.1,
+      "kcal": 7
+    },
+    "source": "ai"
+  },
+  {
+    "id": "canned-crushed-tomatoes",
+    "name": "Canned Crushed Tomatoes",
+    "category": "condiment",
+    "per100g": {
+      "p": 1.3,
+      "f": 0.2,
+      "c": 4.3,
+      "kcal": 29
+    },
+    "source": "ai"
+  },
+  {
+    "id": "capers",
+    "name": "Capers (brined)",
+    "category": "condiment",
+    "per100g": {
+      "p": 2.4,
+      "f": 0.9,
+      "c": 1.7,
+      "kcal": 23
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chicken-broth",
+    "name": "Chicken Broth",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.5,
+      "f": 0.2,
+      "c": 0.3,
+      "kcal": 5
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chinese-black-vinegar",
+    "name": "Chinese Black Vinegar",
+    "category": "condiment",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 2.0,
+      "kcal": 18
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cooking-sake",
+    "name": "Cooking Sake",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.3,
+      "f": 0,
+      "c": 5.0,
+      "kcal": 56
+    },
+    "source": "ai"
+  },
+  {
+    "id": "dijon-mustard",
+    "name": "Dijon Mustard",
+    "category": "condiment",
+    "per100g": {
+      "p": 3.7,
+      "f": 3.1,
+      "c": 5.8,
+      "kcal": 66
+    },
+    "source": "ai"
+  },
+  {
+    "id": "fish-sauce",
+    "name": "Fish Sauce",
+    "category": "condiment",
+    "per100g": {
+      "p": 5.1,
+      "f": 0,
+      "c": 3.6,
+      "kcal": 35
+    },
+    "source": "ai"
+  },
+  {
+    "id": "lemon-juice",
+    "name": "Lemon Juice",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.3,
+      "f": 0.2,
+      "c": 6.6,
+      "kcal": 22
+    },
+    "source": "usda"
+  },
+  {
+    "id": "soy-sauce-light",
+    "name": "Light Soy Sauce",
+    "category": "condiment",
+    "per100g": {
+      "p": 5.6,
+      "f": 0.1,
+      "c": 4.9,
+      "kcal": 53
+    },
+    "source": "ai"
+  },
+  {
+    "id": "lime-juice",
+    "name": "Lime Juice",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.4,
+      "f": 0.1,
+      "c": 8.0,
+      "kcal": 25
+    },
+    "source": "usda"
+  },
+  {
+    "id": "miso-paste",
+    "name": "Miso Paste",
+    "category": "condiment",
+    "per100g": {
+      "p": 11.7,
+      "f": 6.0,
+      "c": 25.4,
+      "kcal": 199
+    },
+    "source": "ai"
+  },
+  {
+    "id": "orange-juice",
+    "name": "Orange Juice",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.7,
+      "f": 0.2,
+      "c": 10.2,
+      "kcal": 45
+    },
+    "source": "usda"
+  },
+  {
+    "id": "rice-vinegar",
+    "name": "Rice Vinegar",
+    "category": "condiment",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 0.5,
+      "kcal": 18
+    },
+    "source": "ai"
+  },
+  {
+    "id": "shaoxing-wine",
+    "name": "Shaoxing Wine",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.5,
+      "f": 0,
+      "c": 5.0,
+      "kcal": 55
+    },
+    "source": "ai"
+  },
+  {
+    "id": "sriracha",
+    "name": "Sriracha",
+    "category": "condiment",
+    "per100g": {
+      "p": 1.0,
+      "f": 0.5,
+      "c": 18.0,
+      "kcal": 80
+    },
+    "source": "ai"
+  },
+  {
+    "id": "thai-chili-paste",
+    "name": "Thai Chili Paste (Nam Prik Pao)",
+    "category": "condiment",
+    "per100g": {
+      "p": 2.0,
+      "f": 8.0,
+      "c": 30.0,
+      "kcal": 200
+    },
+    "source": "ai"
+  },
+  {
+    "id": "thai-red-curry-paste",
+    "name": "Thai Red Curry Paste",
+    "category": "condiment",
+    "per100g": {
+      "p": 2.0,
+      "f": 6.0,
+      "c": 12.0,
+      "kcal": 100
+    },
+    "source": "ai"
+  },
+  {
+    "id": "tomato-passata",
+    "name": "Tomato Passata",
+    "category": "condiment",
+    "per100g": {
+      "p": 1.3,
+      "f": 0.1,
+      "c": 3.8,
+      "kcal": 24
+    },
+    "source": "ai"
+  },
+  {
+    "id": "vegetable-broth",
+    "name": "Vegetable Broth",
+    "category": "condiment",
+    "per100g": {
+      "p": 0.2,
+      "f": 0,
+      "c": 0.8,
+      "kcal": 6
+    },
+    "source": "ai"
+  },
+  {
+    "id": "black-pepper",
+    "name": "Black Pepper",
+    "category": "spice",
+    "per100g": {
+      "p": 10.4,
+      "f": 3.3,
+      "c": 38.6,
+      "kcal": 251
+    },
+    "source": "ai"
+  },
+  {
+    "id": "chili-flakes",
+    "name": "Chili Flakes",
+    "category": "spice",
+    "per100g": {
+      "p": 12.0,
+      "f": 17.3,
+      "c": 29.4,
+      "kcal": 318
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cinnamon",
+    "name": "Cinnamon (ground)",
+    "category": "spice",
+    "per100g": {
+      "p": 4.0,
+      "f": 1.2,
+      "c": 27.5,
+      "kcal": 247
+    },
+    "source": "ai"
+  },
+  {
+    "id": "coriander-ground",
+    "name": "Coriander (ground)",
+    "category": "spice",
+    "per100g": {
+      "p": 12.4,
+      "f": 17.8,
+      "c": 13.1,
+      "kcal": 298
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cumin",
+    "name": "Cumin (ground)",
+    "category": "spice",
+    "per100g": {
+      "p": 17.8,
+      "f": 22.3,
+      "c": 33.7,
+      "kcal": 375
+    },
+    "source": "ai"
+  },
+  {
+    "id": "five-spice",
+    "name": "Five Spice Powder",
+    "category": "spice",
+    "per100g": {
+      "p": 6.0,
+      "f": 8.0,
+      "c": 45.0,
+      "kcal": 310
+    },
+    "source": "ai"
+  },
+  {
+    "id": "nutmeg",
+    "name": "Nutmeg",
+    "category": "spice",
+    "per100g": {
+      "p": 5.8,
+      "f": 36.3,
+      "c": 28.5,
+      "kcal": 525
+    },
+    "source": "ai"
+  },
+  {
+    "id": "dried-oregano",
+    "name": "Oregano (dried)",
+    "category": "spice",
+    "per100g": {
+      "p": 9.0,
+      "f": 4.3,
+      "c": 25.7,
+      "kcal": 265
+    },
+    "source": "ai"
+  },
+  {
+    "id": "paprika",
+    "name": "Paprika",
+    "category": "spice",
+    "per100g": {
+      "p": 14.1,
+      "f": 13.0,
+      "c": 34.8,
+      "kcal": 282
+    },
+    "source": "ai"
+  },
+  {
+    "id": "salt",
+    "name": "Salt",
+    "category": "spice",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 0,
+      "kcal": 0
+    },
+    "source": "ai"
+  },
+  {
+    "id": "sichuan-pepper",
+    "name": "Sichuan Pepper",
+    "category": "spice",
+    "per100g": {
+      "p": 10.0,
+      "f": 3.0,
+      "c": 38.0,
+      "kcal": 248
+    },
+    "source": "ai"
+  },
+  {
+    "id": "smoked-paprika",
+    "name": "Smoked Paprika",
+    "category": "spice",
+    "per100g": {
+      "p": 14.1,
+      "f": 13.0,
+      "c": 34.8,
+      "kcal": 282
+    },
+    "source": "ai"
+  },
+  {
+    "id": "star-anise",
+    "name": "Star Anise",
+    "category": "spice",
+    "per100g": {
+      "p": 17.6,
+      "f": 15.9,
+      "c": 35.4,
+      "kcal": 337
+    },
+    "source": "ai"
+  },
+  {
+    "id": "turmeric",
+    "name": "Turmeric (ground)",
+    "category": "spice",
+    "per100g": {
+      "p": 7.8,
+      "f": 9.9,
+      "c": 44.4,
+      "kcal": 312
+    },
+    "source": "ai"
+  },
+  {
+    "id": "white-pepper",
+    "name": "White Pepper",
+    "category": "spice",
+    "per100g": {
+      "p": 10.4,
+      "f": 2.1,
+      "c": 42.4,
+      "kcal": 296
+    },
+    "source": "ai"
+  },
+  {
+    "id": "brown-sugar",
+    "name": "Brown Sugar",
+    "category": "other",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 97.3,
+      "kcal": 380
+    },
+    "source": "ai"
+  },
+  {
+    "id": "cornstarch",
+    "name": "Cornstarch",
+    "category": "other",
+    "per100g": {
+      "p": 0.3,
+      "f": 0.1,
+      "c": 91.3,
+      "kcal": 381
+    },
+    "source": "ai"
+  },
+  {
+    "id": "water",
+    "name": "Water",
+    "category": "other",
+    "per100g": {
+      "p": 0,
+      "f": 0,
+      "c": 0,
+      "kcal": 0
+    },
+    "source": "ai"
+  }
+]
