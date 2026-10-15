@@ -161,11 +161,11 @@ h1{font-family:'Cinzel',Georgia,serif;font-weight:600;font-size:1.25rem;letter-s
 
 <script>
 /* ===== CONFIG ===== */
-const EAA_P = 36, EAA_K = 180;
+let EAA_P = 36, EAA_K = 180;
 const MAX_MEALS = 2;
 
 /* ===== STATE ===== */
-let profile = { name: "User", kg: 65 };
+let profile = { name: "User", kg: 65, eaaP: 36, eaaK: 180 };
 let selectedMeals = []; // [{recipeId, scaledIngredients: [{id, grams}]}]
 let filtProt = null;
 let filtCuis = null;
@@ -183,13 +183,13 @@ let ING_MAP = {};
 
 /* ===== SOLVER ===== */
 function calcTargets(kg) {
-  const foodProt = Math.round(kg * 1.2) - EAA_P;
+  const foodProt = Math.round(kg * 1.2) - profile.eaaP;
   const fp = Math.max(foodProt, 10);
-  const totalProt = fp + EAA_P;
+  const totalProt = fp + profile.eaaP;
   const fat = 10;
   const carb = 30;
   const kcal = Math.round(totalProt * 4 + carb * 4 + fat * 9);
-  return { prot: totalProt, carb, fat, kcal, foodProt: fp, mealProt: Math.round(fp / MAX_MEALS) };
+  return { prot: totalProt, carb, fat, kcal, foodProt: fp, mealProt: Math.round(fp / MAX_MEALS), eaaP: profile.eaaP, eaaK: profile.eaaK };
 }
 
 /* Compute macros for an ingredient at given grams */
@@ -244,6 +244,7 @@ function load() {
       if (d.selectedMeals) selectedMeals = d.selectedMeals;
       if (d.filtProt) filtProt = d.filtProt;
       if (d.filtCuis) filtCuis = d.filtCuis;
+      if (d.profile && d.profile.eaaP == null) { d.profile.eaaP = 36; d.profile.eaaK = 180; }
     }
   } catch (e) {}
 }
@@ -283,9 +284,27 @@ function renderProfile() {
       <input type="text" value="${profile.name}" id="profName" placeholder="Name">
       <input type="number" value="${profile.kg}" id="profKg" min="30" max="200" step="1">
       <span class="unit">kg</span>
+    </div>
+    <div class="pick-label" style="margin-top:10px">EAA Supplement (per day)</div>
+    <div class="prof-row">
+      <span class="unit">Protein</span>
+      <input type="number" value="${profile.eaaP}" id="profEaaP" min="0" max="100" step="1">
+      <span class="unit">g</span>
+      <span class="unit" style="margin-left:8px">Kcal</span>
+      <input type="number" value="${profile.eaaK}" id="profEaaK" min="0" max="500" step="1">
+      <span class="unit">kcal</span>
     </div>`;
   document.getElementById("profName").addEventListener("change", e => {
     profile.name = e.target.value; save(); renderBudget();
+  });
+  document.getElementById("profEaaP").addEventListener("change", e => {
+    profile.eaaP = parseInt(e.target.value) || 0; save();
+    const t2 = calcTargets(profile.kg);
+    selectedMeals.forEach(sm => { const r = DB_RECIPES.find(x => x.id === sm.recipeId); if (r) sm.scaledIngredients = scaleRecipe(r, t2.mealProt); });
+    save(); renderBudget(); renderSelectedMeals(); renderRecipes();
+  });
+  document.getElementById("profEaaK").addEventListener("change", e => {
+    profile.eaaK = parseInt(e.target.value) || 0; save(); renderBudget();
   });
   document.getElementById("profKg").addEventListener("change", e => {
     profile.kg = parseInt(e.target.value) || 60;
@@ -305,7 +324,7 @@ function renderProfile() {
 function renderBudget() {
   const t = calcTargets(profile.kg);
   // Sum macros from selected meals
-  let dayP = EAA_P, dayC = 0, dayF = 0, dayK = EAA_K;
+  let dayP = t.eaaP, dayC = 0, dayF = 0, dayK = t.eaaK;
   selectedMeals.forEach(sm => {
     const m = recipeMacros(sm.scaledIngredients);
     dayP += m.p; dayC += m.c; dayF += m.f; dayK += m.kcal;
@@ -324,11 +343,12 @@ function renderBudget() {
     ["Fat", (Math.round(dayF * 10) / 10) + "", t.fat, "c"],
     ["Kcal", Math.round(dayK), t.kcal, "c"],
   ];
+  const eaaNote = `<div style="font-size:0.62rem;color:var(--muted);margin-top:4px;text-align:center">Includes EAA supplement: ${t.eaaP}g protein, ${t.eaaK} kcal</div>`;
 
   document.getElementById("budgetBar").innerHTML = `<h3>Daily Budget · ${profile.name} (${profile.kg}kg)</h3>
     <div class="budget-grid">${cells.map(([l, v, g, tp]) =>
       `<div class="bg-cell"><div class="lb">${l}</div><div class="vl ${stCl(parseFloat(v), g, tp)}">${v}</div><div class="tg">/ ${g}${l === "Kcal" ? "" : "g"}</div></div>`
-    ).join("")}</div>`;
+    ).join("")}</div>${eaaNote}`;
 }
 
 /* ===== RENDER: SELECTED MEALS ===== */
@@ -549,7 +569,7 @@ function renderAll() {
 
 /* ===== RESET ===== */
 document.getElementById("resetBtn").addEventListener("click", () => {
-  profile = { name: "User", kg: 65 };
+  profile = { name: "User", kg: 65, eaaP: 36, eaaK: 180 };
   selectedMeals = [];
   filtProt = null; filtCuis = null; searchQ = ""; expandedR = null;
   save(); renderAll();
