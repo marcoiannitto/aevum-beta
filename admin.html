@@ -747,7 +747,6 @@ function renderUserDetail(data) {
         ${isProg ? 'Switch to Free' : 'Activate Program'}
       </button>
     </div>
-    <span style="font-size:12px;color:var(--muted);">${profile.email || ''}</span>
     <span style="font-size:12px;color:var(--muted);">ID: ${activeUserDetail._userId}</span>
     <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || '-'}</span>
     <button class="btn btn-outline" style="border-color:var(--red);color:var(--red);font-size:12px;padding:6px 12px;margin-left:auto;" onclick="deleteUser('${esc(activeUserDetail._userId)}')">🗑 Delete User</button>
@@ -755,6 +754,16 @@ function renderUserDetail(data) {
 
   // ─── Editable fields row ───
   html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;">
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Name:
+      <input type="text" id="udName" value="${esc(profile.name || '')}"
+        style="width:140px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Email:
+      <input type="email" id="udEmail" value="${esc(profile.email || '')}"
+        style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Activation days:
       <input type="number" id="udActDays" value="${profile.activation_days || ''}" min="1" max="90"
@@ -1196,12 +1205,16 @@ async function toggleProgram() {
 async function saveUserFields() {
   if (!activeUserDetail) return;
   const updates = {};
+  const name = document.getElementById('udName').value.trim();
+  const email = document.getElementById('udEmail').value.trim();
   const actDays = document.getElementById('udActDays').value;
   const targetKcal = document.getElementById('udTargetKcal').value;
   const targetKg = document.getElementById('udTargetKg').value;
   const sex = document.getElementById('udSex').value;
   const dob = document.getElementById('udDob').value;
   const height = document.getElementById('udHeight').value;
+  if (name) updates.name = name;
+  if (email) updates.email = email;
   if (actDays !== '') updates.activation_days = parseInt(actDays);
   if (targetKcal !== '') updates.current_target_kcal = parseInt(targetKcal);
   if (targetKg !== '') updates.target_kg = parseFloat(targetKg);
