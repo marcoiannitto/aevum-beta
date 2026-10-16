@@ -748,7 +748,7 @@ function renderUserDetail(data) {
       </button>
     </div>
     <span style="font-size:12px;color:var(--muted);">ID: ${activeUserDetail._userId}</span>
-    <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || '-'}</span>
+    <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || 'not set'}</span>
     <button class="btn btn-outline" style="border-color:var(--red);color:var(--red);font-size:12px;padding:6px 12px;margin-left:auto;" onclick="deleteUser('${esc(activeUserDetail._userId)}')">🗑 Delete User</button>
   </div>`;
 
@@ -765,9 +765,29 @@ function renderUserDetail(data) {
         style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
-      Activation days:
-      <input type="number" id="udActDays" value="${profile.activation_days || ''}" min="1" max="90"
-        style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+      Start date:
+      <input type="date" id="udStartDate" value="${profile.start_date || ''}"
+        style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Loading:
+      <input type="number" id="udLoadDays" value="${profile.loading_days || ''}" min="1" max="30" placeholder="2"
+        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Activation:
+      <input type="number" id="udActDays" value="${profile.activation_days || ''}" min="1" max="90" placeholder="8"
+        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Transition:
+      <input type="number" id="udTransDays" value="${profile.transition_days || ''}" min="1" max="30" placeholder="3"
+        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
+    </label>
+    <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+      Stabilization:
+      <input type="number" id="udStabDays" value="${profile.stabilization_days || ''}" min="1" max="90" placeholder="18"
+        style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Target kcal:
@@ -1207,7 +1227,11 @@ async function saveUserFields() {
   const updates = {};
   const name = document.getElementById('udName').value.trim();
   const email = document.getElementById('udEmail').value.trim();
+  const startDate = document.getElementById('udStartDate').value;
+  const loadDays = document.getElementById('udLoadDays').value;
   const actDays = document.getElementById('udActDays').value;
+  const transDays = document.getElementById('udTransDays').value;
+  const stabDays = document.getElementById('udStabDays').value;
   const targetKcal = document.getElementById('udTargetKcal').value;
   const targetKg = document.getElementById('udTargetKg').value;
   const sex = document.getElementById('udSex').value;
@@ -1215,7 +1239,11 @@ async function saveUserFields() {
   const height = document.getElementById('udHeight').value;
   if (name) updates.name = name;
   if (email) updates.email = email;
+  if (startDate) updates.start_date = startDate;
+  if (loadDays !== '') updates.loading_days = parseInt(loadDays);
   if (actDays !== '') updates.activation_days = parseInt(actDays);
+  if (transDays !== '') updates.transition_days = parseInt(transDays);
+  if (stabDays !== '') updates.stabilization_days = parseInt(stabDays);
   if (targetKcal !== '') updates.current_target_kcal = parseInt(targetKcal);
   if (targetKg !== '') updates.target_kg = parseFloat(targetKg);
   updates.sex = sex;
@@ -1759,11 +1787,14 @@ async function initMealPlanBuilder(container) {
 }
 
 function getPhaseForDay(day, profile) {
-  const actDays = profile.activation_days || 8;
-  if (day <= PH_FIXED.loading) return 'loading';
-  if (day <= PH_FIXED.loading + actDays) return 'activation';
-  if (day <= PH_FIXED.loading + actDays + PH_FIXED.transition) return 'transition';
-  if (day <= PH_FIXED.loading + actDays + PH_FIXED.transition + PH_FIXED.stabilization) return 'stabilization';
+  const ld = +profile.loading_days || PH_FIXED.loading;
+  const ad = +profile.activation_days || 8;
+  const td = +profile.transition_days || PH_FIXED.transition;
+  const sd = +profile.stabilization_days || PH_FIXED.stabilization;
+  if (day <= ld) return 'loading';
+  if (day <= ld + ad) return 'activation';
+  if (day <= ld + ad + td) return 'transition';
+  if (day <= ld + ad + td + sd) return 'stabilization';
   return 'maintenance';
 }
 
@@ -1822,8 +1853,11 @@ let mpCalMonth = null; // {year, month} - set on first render
 
 function renderMealPlanBuilder(container) {
   const profile = activeUserDetail.profile || {};
-  const actDays = profile.activation_days || 8;
-  const totalDays = PH_FIXED.loading + actDays + PH_FIXED.transition + PH_FIXED.stabilization + 14; // +14 for maintenance
+  const ld = +profile.loading_days || PH_FIXED.loading;
+  const actDays = +profile.activation_days || 8;
+  const td = +profile.transition_days || PH_FIXED.transition;
+  const sd = +profile.stabilization_days || PH_FIXED.stabilization;
+  const totalDays = ld + actDays + td + sd + 14; // +14 for maintenance
   const phase = getPhaseForDay(mpState.day, profile);
   const targets = getPhaseTargets(phase, profile);
   const dayMeals = mpState.plan[mpState.day] || [];

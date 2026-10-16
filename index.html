@@ -1370,7 +1370,7 @@ function loadConfig(){
 
 /* ---- phase length helpers ---- */
 function actDays(){return (profile&&+profile.activation_days>0)?+profile.activation_days:8;}
-function phaseLens(){return {loading:PH_FIXED.loading,activation:actDays(),transition:PH_FIXED.transition,stabilization:PH_FIXED.stabilization};}
+function phaseLens(){return {loading:(profile&&+profile.loading_days>0)?+profile.loading_days:PH_FIXED.loading,activation:actDays(),transition:(profile&&+profile.transition_days>0)?+profile.transition_days:PH_FIXED.transition,stabilization:(profile&&+profile.stabilization_days>0)?+profile.stabilization_days:PH_FIXED.stabilization};}
 function totalDays(){const L=phaseLens();return L.loading+L.activation+L.transition+L.stabilization;}
 function applyPhaseConfig(){TOTAL_DAYS=totalDays();/* maintenance is open-ended: no clamp */}
 

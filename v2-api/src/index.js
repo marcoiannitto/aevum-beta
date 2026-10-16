@@ -375,6 +375,9 @@ async function getProfile(userId, db) {
       start_date: row.start_date || '',
       height: row.height,
       activation_days: row.activation_days,
+      loading_days: row.loading_days,
+      transition_days: row.transition_days,
+      stabilization_days: row.stabilization_days,
       stab_target_weight: row.stab_target_weight,
       current_target_kcal: row.current_target_kcal,
       prev_target_kcal: row.prev_target_kcal,
@@ -1162,7 +1165,16 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'weight', 'act', 'email', 'name'];
+  const allowed = ['program', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name'];
+
+  // Auto-set start_date when activating program and no start_date exists
+  if (body.program === 1 && !body.start_date) {
+    const row = await db.prepare('SELECT start_date FROM users WHERE id = ?').bind(targetId).first();
+    if (row && !row.start_date) {
+      body.start_date = new Date().toISOString().slice(0, 10);
+    }
+  }
+
   const sets = [];
   const vals = [];
   for (const key of allowed) {
