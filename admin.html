@@ -2232,7 +2232,7 @@ async function mpAddCateredMeal() {
 
 // ─── Body Scans ─────────────────────────────────────────────
 async function renderScansTab(el) {
-  const userId = activeUserDetail?.user?.id;
+  const userId = activeUserDetail?._userId;
   if (!userId) { el.innerHTML = '<p>No user selected</p>'; return; }
   el.innerHTML = '<p style="color:var(--muted)">Loading scans…</p>';
 
@@ -2335,7 +2335,7 @@ async function renderScansTab(el) {
 }
 
 async function saveScan() {
-  const userId = activeUserDetail?.user?.id;
+  const userId = activeUserDetail?._userId;
   if (!userId) return;
   const payload = { user_id: userId };
   const editId = document.getElementById('scanEditId')?.value;
