@@ -1457,6 +1457,7 @@ async function adminScanSave(body, db) {
   const scanType = String(body.scan_type || 'InBody');
 
   const fields = {
+    scan_height: body.scan_height ?? null,
     scan_weight: body.scan_weight ?? null,
     scan_bmi: body.scan_bmi ?? null,
     body_fat_pct: body.body_fat_pct ?? null,
@@ -1474,10 +1475,10 @@ async function adminScanSave(body, db) {
       .bind(body.id, userId).first();
     if (!existing) return { error: 'scan not found' };
     await db.prepare(
-      `UPDATE body_scans SET scan_date=?, scan_type=?, scan_weight=?, scan_bmi=?,
+      `UPDATE body_scans SET scan_date=?, scan_type=?, scan_height=?, scan_weight=?, scan_bmi=?,
        body_fat_pct=?, fat_mass=?, smm=?, tbw=?, scan_bmr=?, visceral_fat=?, body_score=?
        WHERE id=? AND user_id=?`
-    ).bind(scanDate, scanType, fields.scan_weight, fields.scan_bmi,
+    ).bind(scanDate, scanType, fields.scan_height, fields.scan_weight, fields.scan_bmi,
       fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
       fields.scan_bmr, fields.visceral_fat, fields.body_score,
       body.id, userId).run();
@@ -1490,10 +1491,10 @@ async function adminScanSave(body, db) {
   if (count.c >= 2) return { error: 'max 2 scans per user (Day 1 + end of treatment)' };
 
   const res = await db.prepare(
-    `INSERT INTO body_scans (user_id, scan_date, scan_type, scan_weight, scan_bmi,
+    `INSERT INTO body_scans (user_id, scan_date, scan_type, scan_height, scan_weight, scan_bmi,
      body_fat_pct, fat_mass, smm, tbw, scan_bmr, visceral_fat, body_score)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(userId, scanDate, scanType, fields.scan_weight, fields.scan_bmi,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(userId, scanDate, scanType, fields.scan_height, fields.scan_weight, fields.scan_bmi,
     fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
     fields.scan_bmr, fields.visceral_fat, fields.body_score).run();
   return { ok: true, id: res.meta.last_row_id };

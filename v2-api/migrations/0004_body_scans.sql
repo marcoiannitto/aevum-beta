@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS body_scans (
   user_id TEXT NOT NULL,
   scan_date TEXT NOT NULL,
   scan_type TEXT NOT NULL DEFAULT 'InBody',
+  scan_height REAL,
   scan_weight REAL,
   scan_bmi REAL,
   body_fat_pct REAL,

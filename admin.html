@@ -2242,6 +2242,7 @@ async function renderScansTab(el) {
   const scanFields = [
     { key: 'scan_date', label: 'Date', type: 'date' },
     { key: 'scan_type', label: 'Device', type: 'select', options: ['InBody','BIA-ACC','Other'] },
+    { key: 'scan_height', label: 'Height (cm)', type: 'number' },
     { key: 'scan_weight', label: 'Weight (kg)', type: 'number' },
     { key: 'scan_bmi', label: 'BMI', type: 'number' },
     { key: 'body_fat_pct', label: 'Body Fat %', type: 'number' },
@@ -2340,7 +2341,7 @@ async function saveScan() {
   const editId = document.getElementById('scanEditId')?.value;
   if (editId) payload.id = parseInt(editId);
 
-  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  const fields = ['scan_date','scan_type','scan_height','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
   for (const f of fields) {
     const el = document.getElementById('sf_' + f);
     if (!el) continue;
@@ -2361,7 +2362,7 @@ function editScan(id) {
   if (!scan) return;
   document.getElementById('scanEditId').value = id;
   document.getElementById('scanFormTitle').textContent = 'Edit Scan #' + id;
-  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  const fields = ['scan_date','scan_type','scan_height','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
   for (const f of fields) {
     const input = document.getElementById('sf_' + f);
     if (input) input.value = scan[f] ?? '';
@@ -2371,7 +2372,7 @@ function editScan(id) {
 function resetScanForm() {
   document.getElementById('scanEditId').value = '';
   document.getElementById('scanFormTitle').textContent = 'Add Scan';
-  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  const fields = ['scan_date','scan_type','scan_height','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
   for (const f of fields) {
     const input = document.getElementById('sf_' + f);
     if (input) input.value = (f === 'scan_type') ? 'InBody' : '';
