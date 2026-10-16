@@ -13,7 +13,7 @@
  * Admin routes (require admin token):
  *   admin_users, admin_export, admin_seed,
  *   admin_intake_create, admin_intakes_list, admin_intake_get,
- *   admin_intake_update, admin_intake_status, admin_intake_resend
+ *   admin_intake_update, admin_intake_status, admin_intake_resend, admin_intake_delete
  *
  * Public intake routes (token in URL, no auth):
  *   GET  /intake/:token       - load form
@@ -166,6 +166,7 @@ export default {
       if (action === 'admin_intake_update' && isAdmin) return json(await adminIntakeUpdate(body, db), cors);
       if (action === 'admin_intake_status' && isAdmin) return json(await adminIntakeStatus(body, db), cors);
       if (action === 'admin_intake_resend' && isAdmin) return json(await adminIntakeResend(body, db), cors);
+      if (action === 'admin_intake_delete' && isAdmin) return json(await adminIntakeDelete(body, db), cors);
       if (action === 'admin_mealplan' && isAdmin) {
         const targetId = String(body.user_id || '');
         if (!targetId) return json({ error: 'user_id required' }, cors, 400);
@@ -1236,7 +1237,7 @@ async function handleIntakePublic(request, url, db, cors) {
     // Check disqualifiers
     let status = 'submitted';
     if (resp.pregnant === true || resp.pregnant === 'yes') status = 'review_required';
-    if (resp.medical_conditions && String(resp.medical_conditions).length > 0) status = 'review_required';
+    if (resp.has_medical_conditions === true) status = 'review_required';
 
     await db.prepare(
       "UPDATE intake_tokens SET response_json = ?, current_step = 5, status = ?, submitted_at = datetime('now') WHERE token = ?"
@@ -1308,10 +1309,13 @@ async function adminIntakeGet(body, db) {
   if (!token) return { error: 'token required' };
   const row = await db.prepare('SELECT * FROM intake_tokens WHERE token = ?').bind(token).first();
   if (!row) return { error: 'not found' };
+  // Look up linked user (created on submit, stores intake_token)
+  const user = await db.prepare('SELECT id FROM users WHERE intake_token = ?').bind(token).first();
   return {
     ...row,
     prefill: JSON.parse(row.prefill_json || '{}'),
-    response: row.response_json ? JSON.parse(row.response_json) : null
+    response: row.response_json ? JSON.parse(row.response_json) : null,
+    user_id: user ? user.id : null
   };
 }
 
@@ -1361,4 +1365,13 @@ async function adminIntakeResend(body, db) {
   ]);
 
   return { ok: true, token: newToken, url: '/intake/' + newToken };
+}
+
+async function adminIntakeDelete(body, db) {
+  const token = String(body.token || '');
+  if (!token) return { error: 'token required' };
+  const row = await db.prepare('SELECT token FROM intake_tokens WHERE token = ?').bind(token).first();
+  if (!row) return { error: 'not found' };
+  await db.prepare('DELETE FROM intake_tokens WHERE token = ?').bind(token).run();
+  return { ok: true };
 }

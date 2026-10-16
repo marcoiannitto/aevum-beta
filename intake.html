@@ -660,18 +660,6 @@ body {
         </div>
       </div>
 
-      <div class="field">
-        <label>Emergency contact name *</label>
-        <input id="fEmergencyName" placeholder="Full name">
-        <div class="error">Emergency contact name is required</div>
-      </div>
-
-      <div class="field">
-        <label>Emergency contact phone *</label>
-        <input id="fEmergencyPhone" type="tel" placeholder="+65 9123 4567">
-        <div class="error">Emergency contact phone is required</div>
-      </div>
-
       <div class="btn-row">
         <button class="btn btn-back" onclick="goTo(2)">Back</button>
         <button class="btn btn-primary" onclick="advance(3)">Continue</button>
@@ -681,34 +669,28 @@ body {
     <!-- Screen 4: Getting Started -->
     <div class="screen" id="screen4">
       <h3 class="screen-title">Getting started.</h3>
-      <p class="screen-subtitle">Pick a time for your InBody scan so we can set your baseline.</p>
+      <p class="screen-subtitle">Pick up to 5 preferred dates for your InBody scan so we can set your baseline.</p>
 
-      <div class="field">
-        <label>Preferred InBody scan date *</label>
-        <input type="date" id="fScanDate" min="">
-        <div class="error">Please select a future date</div>
+      <div class="field" id="scanDatesWrap">
+        <label>Preferred dates * (at least 1)</label>
+        <input type="date" id="fScanDate1" class="scan-date" min="">
+        <input type="date" id="fScanDate2" class="scan-date" min="" style="margin-top:8px">
+        <input type="date" id="fScanDate3" class="scan-date" min="" style="margin-top:8px">
+        <input type="date" id="fScanDate4" class="scan-date" min="" style="margin-top:8px">
+        <input type="date" id="fScanDate5" class="scan-date" min="" style="margin-top:8px">
+        <div class="error">Please select at least one future date</div>
       </div>
 
       <div class="field">
-        <label>Preferred time *</label>
+        <label>Preferred time range *</label>
         <select id="fScanTime">
-          <option value="">Select a time...</option>
-          <option value="09:00">9:00 AM</option>
-          <option value="09:30">9:30 AM</option>
-          <option value="10:00">10:00 AM</option>
-          <option value="10:30">10:30 AM</option>
-          <option value="11:00">11:00 AM</option>
-          <option value="11:30">11:30 AM</option>
-          <option value="12:00">12:00 PM</option>
-          <option value="14:00">2:00 PM</option>
-          <option value="14:30">2:30 PM</option>
-          <option value="15:00">3:00 PM</option>
-          <option value="15:30">3:30 PM</option>
-          <option value="16:00">4:00 PM</option>
-          <option value="16:30">4:30 PM</option>
-          <option value="17:00">5:00 PM</option>
+          <option value="">Select...</option>
+          <option value="8-10">8am - 10am</option>
+          <option value="10-12">10am - 12pm</option>
+          <option value="12-3">12pm - 3pm</option>
+          <option value="3-5">3pm - 5pm</option>
         </select>
-        <div class="error">Please select a time</div>
+        <div class="error">Please select a time range</div>
       </div>
 
       <div class="btn-row">
@@ -771,9 +753,9 @@ body {
 const API = 'https://aevum-api-v2.marco-iannitto.workers.dev';
 const DIET_OPTIONS = ['Vegetarian','Vegan','Halal','No pork','No beef','No shellfish','No nuts','Gluten-free','Other'];
 const DELIVERY_SLOTS = [
-  { id: 'early', label: 'Early (2-3pm)' },
-  { id: 'mid', label: 'Mid (3-4:30pm)' },
-  { id: 'late', label: 'Late (5-6pm)' }
+  { id: 'early', label: 'Early (8am-11am)' },
+  { id: 'mid', label: 'Mid (11am-2pm)' },
+  { id: 'late', label: 'Late (2pm-6pm)' }
 ];
 const TOTAL_SCREENS = 6; // 0-5
 
@@ -789,11 +771,11 @@ async function init() {
   TOKEN = params.get('t') || params.get('token') || '';
   if (!TOKEN) { showState('stateInvalid'); return; }
 
-  // Set min date for scan picker
+  // Set min date for scan pickers
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const el = document.getElementById('fScanDate');
-  if (el) el.min = tomorrow.toISOString().split('T')[0];
+  const minDate = tomorrow.toISOString().split('T')[0];
+  document.querySelectorAll('.scan-date').forEach(el => el.min = minDate);
 
   try {
     const res = await fetch(API + '/intake/' + TOKEN);
@@ -894,21 +876,19 @@ function getSelectedChips() {
 // --- Delivery slots ---
 function renderSlots() {
   const wrap = document.getElementById('deliverySlots');
-  const sel = response.delivery_time || '';
+  const sel = response.delivery_times || (response.delivery_time ? [response.delivery_time] : []);
   wrap.innerHTML = DELIVERY_SLOTS.map(s =>
-    `<div class="slot${sel === s.id ? ' selected' : ''}" data-val="${s.id}" onclick="selectSlot(this)">${s.label}</div>`
+    `<div class="slot${sel.includes(s.id) ? ' selected' : ''}" data-val="${s.id}" onclick="selectSlot(this)">${s.label}</div>`
   ).join('');
 }
 
 function selectSlot(el) {
-  document.querySelectorAll('#deliverySlots .slot').forEach(s => s.classList.remove('selected'));
-  el.classList.add('selected');
+  el.classList.toggle('selected');
   el.closest('.field')?.classList.remove('has-error');
 }
 
-function getSelectedSlot() {
-  const sel = document.querySelector('#deliverySlots .slot.selected');
-  return sel ? sel.dataset.val : '';
+function getSelectedSlots() {
+  return Array.from(document.querySelectorAll('#deliverySlots .slot.selected')).map(s => s.dataset.val);
 }
 
 // --- Toggle switches ---
@@ -955,9 +935,12 @@ function restoreState() {
   if (r.pregnant) {
     document.getElementById('tPregnant').classList.add('on');
   }
-  if (r.emergency_name) document.getElementById('fEmergencyName').value = r.emergency_name;
-  if (r.emergency_phone) document.getElementById('fEmergencyPhone').value = r.emergency_phone;
-  if (r.scan_date) document.getElementById('fScanDate').value = r.scan_date;
+  if (r.scan_dates && Array.isArray(r.scan_dates)) {
+    r.scan_dates.forEach((d, i) => {
+      const el = document.getElementById('fScanDate' + (i + 1));
+      if (el) el.value = d;
+    });
+  }
   if (r.scan_time) document.getElementById('fScanTime').value = r.scan_time;
   if (r.consent) document.getElementById('fConsent').checked = true;
   if (r.age_confirm) document.getElementById('fAge').checked = true;
@@ -969,7 +952,7 @@ function collectResponse() {
   return {
     food_preferences: getSelectedChips(),
     dislikes: val('fDislikes'),
-    delivery_time: getSelectedSlot(),
+    delivery_times: getSelectedSlots(),
     exercise: val('fExercise'),
     travel_planned: isOn('tTravel'),
     travel_from: val('fTravelFrom'),
@@ -981,9 +964,7 @@ function collectResponse() {
     has_medical_conditions: isOn('tMedical'),
     medical_conditions: val('fMedicalConditions'),
     pregnant: isOn('tPregnant'),
-    emergency_name: val('fEmergencyName'),
-    emergency_phone: val('fEmergencyPhone'),
-    scan_date: val('fScanDate'),
+    scan_dates: getSelectedScanDates(),
     scan_time: val('fScanTime'),
     consent: document.getElementById('fConsent')?.checked || false,
     age_confirm: document.getElementById('fAge')?.checked || false,
@@ -993,6 +974,15 @@ function collectResponse() {
 
 function val(id) { return (document.getElementById(id)?.value || '').trim(); }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function getSelectedScanDates() {
+  const dates = [];
+  for (let i = 1; i <= 5; i++) {
+    const v = val('fScanDate' + i);
+    if (v && new Date(v) > new Date()) dates.push(v);
+  }
+  return dates;
+}
 
 // --- Navigation ---
 function goTo(screen) {
@@ -1022,8 +1012,7 @@ function advance(fromScreen) {
   let valid = true;
 
   if (fromScreen === 1) {
-    // Delivery time required
-    if (!getSelectedSlot()) {
+    if (getSelectedSlots().length === 0) {
       document.getElementById('deliverySlots').closest('.field').classList.add('has-error');
       valid = false;
     }
@@ -1036,14 +1025,8 @@ function advance(fromScreen) {
     }
   }
 
-  if (fromScreen === 3) {
-    if (!val('fEmergencyName')) { setError('fEmergencyName'); valid = false; }
-    if (!val('fEmergencyPhone')) { setError('fEmergencyPhone'); valid = false; }
-  }
-
   if (fromScreen === 4) {
-    const scanDate = val('fScanDate');
-    if (!scanDate || new Date(scanDate) <= new Date()) { setError('fScanDate'); valid = false; }
+    if (getSelectedScanDates().length === 0) { setError('fScanDate1'); valid = false; }
     if (!val('fScanTime')) { setError('fScanTime'); valid = false; }
   }
 
