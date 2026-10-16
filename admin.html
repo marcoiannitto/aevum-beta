@@ -2262,6 +2262,7 @@ async function renderScansTab(el) {
     <input type="hidden" id="scanEditId">
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">`;
 
+  const refFields = scanFields.filter(f => f.key !== 'scan_date' && f.key !== 'scan_type' && f.key !== 'scan_height');
   for (const f of scanFields) {
     if (f.type === 'select') {
       html += `<label style="font-size:12px;color:var(--muted)">${esc(f.label)}
@@ -2276,6 +2277,20 @@ async function renderScansTab(el) {
     }
   }
 
+  // Reference range inputs
+  html += `</div>
+    <h4 style="margin:16px 0 8px;font-family:var(--serif);font-size:13px;color:var(--muted)">Reference Ranges</h4>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">`;
+  for (const f of refFields) {
+    html += `<label style="font-size:12px;color:var(--muted)">${esc(f.label)}
+      <div style="display:flex;gap:4px">
+        <input type="number" id="ref_min_${f.key}" step="any" placeholder="min"
+          style="width:50%;padding:6px;border:1px solid var(--line);border-radius:4px;font-size:12px">
+        <input type="number" id="ref_max_${f.key}" step="any" placeholder="max"
+          style="width:50%;padding:6px;border:1px solid var(--line);border-radius:4px;font-size:12px">
+      </div></label>`;
+  }
+
   html += `</div>
     <div style="margin-top:12px;display:flex;gap:8px">
       <button onclick="saveScan()" style="background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px">Save Scan</button>
@@ -2285,25 +2300,41 @@ async function renderScansTab(el) {
 
   // ── Scans table with delta ──
   if (scans.length > 0) {
+    // Parse reference_json for each scan
+    for (const s of scans) {
+      s._ref = {};
+      try { if (s.reference_json) s._ref = JSON.parse(s.reference_json); } catch {}
+    }
     const dataFields = scanFields.filter(f => f.key !== 'scan_date' && f.key !== 'scan_type');
-    html += `<table><thead><tr><th></th>`;
+    html += `<table><thead><tr><th></th><th>Reference</th>`;
     for (const s of scans) html += `<th>${esc(s.scan_date)}<br><span style="font-weight:normal;color:var(--muted)">${esc(s.scan_type)}</span></th>`;
     if (scans.length === 2) html += `<th>Delta (Δ)</th>`;
     html += `<th></th></tr></thead><tbody>`;
 
     for (const f of dataFields) {
+      // Get reference from the first scan that has it
+      const ref = scans[0]._ref[f.key] || scans[scans.length - 1]?._ref[f.key] || {};
+      const refStr = ref.min != null && ref.max != null ? `${ref.min} – ${ref.max}`
+        : ref.min != null ? `≥ ${ref.min}`
+        : ref.max != null ? `≤ ${ref.max}` : '–';
+
       html += `<tr><td style="font-weight:600">${esc(f.label)}</td>`;
+      html += `<td style="color:var(--muted);font-size:12px">${refStr}</td>`;
       for (const s of scans) {
         const v = s[f.key];
-        html += `<td>${v != null ? v : '–'}</td>`;
+        // Color red if outside reference range
+        let style = '';
+        if (v != null && (ref.min != null || ref.max != null)) {
+          const outOfRange = (ref.min != null && v < ref.min) || (ref.max != null && v > ref.max);
+          if (outOfRange) style = 'color:var(--red)';
+        }
+        html += `<td style="${style}">${v != null ? v : '–'}</td>`;
       }
       if (scans.length === 2) {
         const v1 = scans[0][f.key], v2 = scans[1][f.key];
         if (v1 != null && v2 != null) {
           const d = (v2 - v1).toFixed(1);
           const sign = d > 0 ? '+' : '';
-          // For body_fat_pct, fat_mass, visceral_fat: decrease is good (green)
-          // For smm, tbw, scan_bmr, body_score: increase is good (green)
           const goodDown = ['body_fat_pct','fat_mass','visceral_fat','scan_bmi','scan_weight'].includes(f.key);
           const color = d == 0 ? 'var(--muted)' : (goodDown ? (d < 0 ? 'var(--green)' : 'var(--red)') : (d > 0 ? 'var(--green)' : 'var(--red)'));
           html += `<td style="color:${color};font-weight:600">${sign}${d}</td>`;
@@ -2350,6 +2381,21 @@ async function saveScan() {
     else if (v !== '') { payload[f] = parseFloat(v); }
   }
 
+  // Collect reference ranges
+  const refKeys = ['scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  const reference_json = {};
+  for (const k of refKeys) {
+    const minEl = document.getElementById('ref_min_' + k);
+    const maxEl = document.getElementById('ref_max_' + k);
+    const minV = minEl?.value.trim(), maxV = maxEl?.value.trim();
+    if (minV !== '' || maxV !== '') {
+      reference_json[k] = {};
+      if (minV !== '') reference_json[k].min = parseFloat(minV);
+      if (maxV !== '') reference_json[k].max = parseFloat(maxV);
+    }
+  }
+  if (Object.keys(reference_json).length > 0) payload.reference_json = reference_json;
+
   if (!payload.scan_date) { alert('Date is required'); return; }
   const res = await api('admin_scan_save', payload);
   if (res.error) { alert(res.error); return; }
@@ -2367,6 +2413,16 @@ function editScan(id) {
     const input = document.getElementById('sf_' + f);
     if (input) input.value = scan[f] ?? '';
   }
+  // Populate reference fields
+  let ref = {};
+  try { if (scan.reference_json) ref = JSON.parse(scan.reference_json); } catch {}
+  const refKeys = ['scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  for (const k of refKeys) {
+    const minEl = document.getElementById('ref_min_' + k);
+    const maxEl = document.getElementById('ref_max_' + k);
+    if (minEl) minEl.value = ref[k]?.min ?? '';
+    if (maxEl) maxEl.value = ref[k]?.max ?? '';
+  }
 }
 
 function resetScanForm() {
@@ -2376,6 +2432,13 @@ function resetScanForm() {
   for (const f of fields) {
     const input = document.getElementById('sf_' + f);
     if (input) input.value = (f === 'scan_type') ? 'InBody' : '';
+  }
+  const refKeys = ['scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  for (const k of refKeys) {
+    const minEl = document.getElementById('ref_min_' + k);
+    const maxEl = document.getElementById('ref_max_' + k);
+    if (minEl) minEl.value = '';
+    if (maxEl) maxEl.value = '';
   }
 }
 

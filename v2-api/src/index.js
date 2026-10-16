@@ -1469,6 +1469,8 @@ async function adminScanSave(body, db) {
     body_score: body.body_score ?? null
   };
 
+  const refJson = body.reference_json ? JSON.stringify(body.reference_json) : null;
+
   // Update existing or insert new
   if (body.id) {
     const existing = await db.prepare('SELECT id FROM body_scans WHERE id = ? AND user_id = ?')
@@ -1476,12 +1478,12 @@ async function adminScanSave(body, db) {
     if (!existing) return { error: 'scan not found' };
     await db.prepare(
       `UPDATE body_scans SET scan_date=?, scan_type=?, scan_height=?, scan_weight=?, scan_bmi=?,
-       body_fat_pct=?, fat_mass=?, smm=?, tbw=?, scan_bmr=?, visceral_fat=?, body_score=?
-       WHERE id=? AND user_id=?`
+       body_fat_pct=?, fat_mass=?, smm=?, tbw=?, scan_bmr=?, visceral_fat=?, body_score=?,
+       reference_json=? WHERE id=? AND user_id=?`
     ).bind(scanDate, scanType, fields.scan_height, fields.scan_weight, fields.scan_bmi,
       fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
       fields.scan_bmr, fields.visceral_fat, fields.body_score,
-      body.id, userId).run();
+      refJson, body.id, userId).run();
     return { ok: true, id: body.id };
   }
 
@@ -1492,11 +1494,11 @@ async function adminScanSave(body, db) {
 
   const res = await db.prepare(
     `INSERT INTO body_scans (user_id, scan_date, scan_type, scan_height, scan_weight, scan_bmi,
-     body_fat_pct, fat_mass, smm, tbw, scan_bmr, visceral_fat, body_score)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     body_fat_pct, fat_mass, smm, tbw, scan_bmr, visceral_fat, body_score, reference_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(userId, scanDate, scanType, fields.scan_height, fields.scan_weight, fields.scan_bmi,
     fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
-    fields.scan_bmr, fields.visceral_fat, fields.body_score).run();
+    fields.scan_bmr, fields.visceral_fat, fields.body_score, refJson).run();
   return { ok: true, id: res.meta.last_row_id };
 }
 
