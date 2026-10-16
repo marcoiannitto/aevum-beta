@@ -1259,15 +1259,31 @@ async function handleIntakePublic(request, url, db, cors) {
     const userId = base + '_' + rnd;
     const userToken = crypto.randomUUID();
 
-    await db.batch([
-      db.prepare(
-        `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
-          current_target_kcal, program, email, intake_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
-      ).bind(userId, name, sex, dob || null, age, height, weight, act, parseFloat(prefill.target_kg) || null, tdee, prefill.email || null, token),
-      db.prepare(
-        'INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)'
-      ).bind(userToken, userId, 'user')
-    ]);
+    // Create user + auth token; intake_token column added in migration 0003
+    try {
+      await db.batch([
+        db.prepare(
+          `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
+            current_target_kcal, program, email, intake_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+        ).bind(userId, name, sex, dob || null, age, height, weight, act, parseFloat(prefill.target_kg) || null, tdee, prefill.email || null, token),
+        db.prepare(
+          'INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)'
+        ).bind(userToken, userId, 'user')
+      ]);
+    } catch (e) {
+      // Fallback if intake_token column not yet migrated
+      if (String(e).includes('intake_token')) {
+        await db.batch([
+          db.prepare(
+            `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
+              current_target_kcal, program, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`
+          ).bind(userId, name, sex, dob || null, age, height, weight, act, parseFloat(prefill.target_kg) || null, tdee, prefill.email || null),
+          db.prepare(
+            'INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)'
+          ).bind(userToken, userId, 'user')
+        ]);
+      } else { throw e; }
+    }
 
     return json({ ok: true, status, user_id: userId }, cors);
   }
@@ -1310,12 +1326,16 @@ async function adminIntakeGet(body, db) {
   const row = await db.prepare('SELECT * FROM intake_tokens WHERE token = ?').bind(token).first();
   if (!row) return { error: 'not found' };
   // Look up linked user (created on submit, stores intake_token)
-  const user = await db.prepare('SELECT id FROM users WHERE intake_token = ?').bind(token).first();
+  let userId = null;
+  try {
+    const user = await db.prepare('SELECT id FROM users WHERE intake_token = ?').bind(token).first();
+    if (user) userId = user.id;
+  } catch (_) { /* intake_token column may not exist yet */ }
   return {
     ...row,
     prefill: JSON.parse(row.prefill_json || '{}'),
     response: row.response_json ? JSON.parse(row.response_json) : null,
-    user_id: user ? user.id : null
+    user_id: userId
   };
 }
 
