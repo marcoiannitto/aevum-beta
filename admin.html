@@ -564,7 +564,9 @@ function renderActions(name) {
   meta.textContent = d ? d.current.length + ' rows' : '';
 
   if (def.mode === 'users') {
-    acts.innerHTML = '<button class="btn btn-secondary" onclick="refreshTable(\'' + name + '\')">Refresh</button>';
+    acts.innerHTML = `
+      <button class="btn btn-secondary" onclick="refreshTable('${name}')">Refresh</button>
+      <button class="btn btn-primary" onclick="showNewUserForm()">+ New User</button>`;
     return;
   }
 
@@ -748,6 +750,7 @@ function renderUserDetail(data) {
     <span style="font-size:12px;color:var(--muted);">${profile.email || ''}</span>
     <span style="font-size:12px;color:var(--muted);">ID: ${activeUserDetail._userId}</span>
     <span style="font-size:12px;color:var(--muted);">Start: ${profile.start_date || '-'}</span>
+    <button class="btn btn-outline" style="border-color:var(--red);color:var(--red);font-size:12px;padding:6px 12px;margin-left:auto;" onclick="deleteUser('${esc(activeUserDetail._userId)}')">🗑 Delete User</button>
   </div>`;
 
   // ─── Editable fields row ───
@@ -1099,6 +1102,75 @@ function csvVal(v) {
   const s = String(v);
   if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
   return s;
+}
+
+// ─── Create / Delete user ───────────────────────────────────
+function showNewUserForm() {
+  const wrap = document.getElementById('tableContent');
+  document.getElementById('tableTitle').textContent = 'New User';
+  document.getElementById('btnBack').classList.remove('hidden');
+  document.getElementById('tableActions').innerHTML = '';
+
+  wrap.innerHTML = `<div class="intake-form">
+    <h2>Create User</h2>
+    <div class="if-grid">
+      <div class="if-group"><label>Full name *</label><input id="nuName" type="text" placeholder="John Doe"></div>
+      <div class="if-group"><label>Email *</label><input id="nuEmail" type="email" placeholder="john@example.com"></div>
+      <div class="if-group"><label>Phone</label><input id="nuPhone" type="tel" placeholder="+65 9123 4567"></div>
+      <div class="if-group"><label>Sex</label>
+        <select id="nuSex"><option value="m">Male</option><option value="f">Female</option></select>
+      </div>
+      <div class="if-group"><label>Date of birth *</label><input id="nuDob" type="date"></div>
+      <div class="if-group"><label>Height (cm) *</label><input id="nuHeight" type="number" min="100" max="250" placeholder="175"></div>
+      <div class="if-group"><label>Weight (kg) *</label><input id="nuWeight" type="number" min="30" max="300" step="0.1" placeholder="80"></div>
+      <div class="if-group"><label>Target weight (kg)</label><input id="nuTargetKg" type="number" min="30" max="200" step="0.1" placeholder="75"></div>
+    </div>
+    <div class="if-actions" style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="createUser()">Create User</button>
+      <button class="btn btn-outline" onclick="backToUsers()">Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function createUser() {
+  const name = document.getElementById('nuName').value.trim();
+  const email = document.getElementById('nuEmail').value.trim();
+  const dob = document.getElementById('nuDob').value;
+  const height = document.getElementById('nuHeight').value;
+  const weight = document.getElementById('nuWeight').value;
+
+  if (!name) { toast('Name is required', true); return; }
+  if (!email) { toast('Email is required', true); return; }
+  if (!dob) { toast('Date of birth is required', true); return; }
+  if (!height) { toast('Height is required', true); return; }
+  if (!weight) { toast('Weight is required', true); return; }
+
+  try {
+    const res = await api('admin_user_create', {
+      name,
+      email,
+      sex: document.getElementById('nuSex').value,
+      dob,
+      height: parseFloat(height),
+      weight: parseFloat(weight),
+      target_kg: parseFloat(document.getElementById('nuTargetKg').value) || null
+    });
+    toast('User created: ' + res.user_id);
+    delete store.users;
+    openUser(res.user_id);
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+async function deleteUser(userId) {
+  if (!confirm('Delete user "' + userId + '" permanently? This removes all their logs, meal plans, and auth tokens.')) return;
+  try {
+    await api('admin_user_delete', { id: userId });
+    toast('User deleted');
+    activeUserDetail = null;
+    delete store.users;
+    document.getElementById('btnBack').classList.add('hidden');
+    selectTable('users');
+  } catch (e) { toast('Error: ' + e.message, true); }
 }
 
 // ─── Toggle program status ──────────────────────────────────

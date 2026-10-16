@@ -160,6 +160,8 @@ export default {
 	  if (action === 'admin_list' && isAdmin)   return json(await adminList(body, db), cors);
 	  if (action === 'admin_import' && isAdmin) return json(await adminImport(body, db), cors);
       if (action === 'admin_update_user' && isAdmin) return json(await adminUpdateUser(body, db), cors);
+      if (action === 'admin_user_create' && isAdmin) return json(await adminUserCreate(body, db), cors);
+      if (action === 'admin_user_delete' && isAdmin) return json(await adminUserDelete(body, db), cors);
       if (action === 'admin_intake_create' && isAdmin) return json(await adminIntakeCreate(body, db), cors);
       if (action === 'admin_intakes_list' && isAdmin) return json(await adminIntakesList(body, db), cors);
       if (action === 'admin_intake_get' && isAdmin) return json(await adminIntakeGet(body, db), cors);
@@ -1169,6 +1171,49 @@ async function adminUpdateUser(body, db) {
   if (!sets.length) return { error: 'nothing to update' };
   vals.push(targetId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+  return { ok: true };
+}
+
+async function adminUserCreate(body, db) {
+  const name = String(body.name || '').trim();
+  if (!name) return { error: 'name required' };
+  const base = name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 8) || 'user';
+  const rnd = Math.random().toString(36).slice(2, 6);
+  const userId = base + '_' + rnd;
+
+  const sex = String(body.sex || 'm').toLowerCase();
+  const dob = body.dob || null;
+  const age = dob ? dobToAge(dob) : 0;
+  const height = parseFloat(body.height) || 0;
+  const weight = parseFloat(body.weight) || 0;
+  const email = body.email || null;
+  const s = sex === 'm' ? 5 : -161;
+  const act = 1.55;
+  const tdee = (height && weight && age) ? Math.round((10 * weight + 6.25 * height - 5 * age + s) * act) : 0;
+
+  const userToken = crypto.randomUUID();
+  await db.batch([
+    db.prepare(
+      `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
+        current_target_kcal, program, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`
+    ).bind(userId, name, sex, dob, age, height, weight, act, parseFloat(body.target_kg) || null, tdee, email),
+    db.prepare('INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)').bind(userToken, userId, 'user')
+  ]);
+
+  return { ok: true, user_id: userId, auth_token: userToken };
+}
+
+async function adminUserDelete(body, db) {
+  const id = String(body.id || '').toLowerCase();
+  if (!id) return { error: 'id required' };
+  const user = await db.prepare('SELECT id FROM users WHERE id = ?').bind(id).first();
+  if (!user) return { error: 'user not found' };
+  await db.batch([
+    db.prepare('DELETE FROM daily_logs WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM meal_plans WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM auth_tokens WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM users WHERE id = ?').bind(id)
+  ]);
   return { ok: true };
 }
 
