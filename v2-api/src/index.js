@@ -1,5 +1,5 @@
 /**
- * AEVUM API v2.0.1
+ * AEVUM API v2.0.2
  *
  * Replaces both the GAS backend and the proxy Worker.
  * Uses Cloudflare D1 (SQLite) instead of Google Sheets.
@@ -169,6 +169,9 @@ export default {
       if (action === 'admin_intake_status' && isAdmin) return json(await adminIntakeStatus(body, db), cors);
       if (action === 'admin_intake_resend' && isAdmin) return json(await adminIntakeResend(body, db), cors);
       if (action === 'admin_intake_delete' && isAdmin) return json(await adminIntakeDelete(body, db), cors);
+      if (action === 'admin_scan_save' && isAdmin) return json(await adminScanSave(body, db), cors);
+      if (action === 'admin_scan_list' && isAdmin) return json(await adminScanList(body, db), cors);
+      if (action === 'admin_scan_delete' && isAdmin) return json(await adminScanDelete(body, db), cors);
       if (action === 'admin_mealplan' && isAdmin) {
         const targetId = String(body.user_id || '');
         if (!targetId) return json({ error: 'user_id required' }, cors, 400);
@@ -1211,6 +1214,7 @@ async function adminUserDelete(body, db) {
   await db.batch([
     db.prepare('DELETE FROM daily_logs WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM meal_plans WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM body_scans WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM auth_tokens WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM users WHERE id = ?').bind(id)
   ]);
@@ -1438,5 +1442,77 @@ async function adminIntakeDelete(body, db) {
   const row = await db.prepare('SELECT token FROM intake_tokens WHERE token = ?').bind(token).first();
   if (!row) return { error: 'not found' };
   await db.prepare('DELETE FROM intake_tokens WHERE token = ?').bind(token).run();
+  return { ok: true };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BODY SCANS
+// ═══════════════════════════════════════════════════════════════
+
+async function adminScanSave(body, db) {
+  const userId = String(body.user_id || '');
+  if (!userId) return { error: 'user_id required' };
+  const scanDate = String(body.scan_date || '');
+  if (!scanDate) return { error: 'scan_date required' };
+  const scanType = String(body.scan_type || 'InBody');
+
+  const fields = {
+    scan_weight: body.scan_weight ?? null,
+    scan_bmi: body.scan_bmi ?? null,
+    body_fat_pct: body.body_fat_pct ?? null,
+    fat_mass: body.fat_mass ?? null,
+    smm: body.smm ?? null,
+    tbw: body.tbw ?? null,
+    scan_bmr: body.scan_bmr ?? null,
+    visceral_fat: body.visceral_fat ?? null,
+    body_score: body.body_score ?? null
+  };
+
+  // Update existing or insert new
+  if (body.id) {
+    const existing = await db.prepare('SELECT id FROM body_scans WHERE id = ? AND user_id = ?')
+      .bind(body.id, userId).first();
+    if (!existing) return { error: 'scan not found' };
+    await db.prepare(
+      `UPDATE body_scans SET scan_date=?, scan_type=?, scan_weight=?, scan_bmi=?,
+       body_fat_pct=?, fat_mass=?, smm=?, tbw=?, scan_bmr=?, visceral_fat=?, body_score=?
+       WHERE id=? AND user_id=?`
+    ).bind(scanDate, scanType, fields.scan_weight, fields.scan_bmi,
+      fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
+      fields.scan_bmr, fields.visceral_fat, fields.body_score,
+      body.id, userId).run();
+    return { ok: true, id: body.id };
+  }
+
+  // Check max 2 scans per user
+  const count = await db.prepare('SELECT COUNT(*) as c FROM body_scans WHERE user_id = ?')
+    .bind(userId).first();
+  if (count.c >= 2) return { error: 'max 2 scans per user (Day 1 + end of treatment)' };
+
+  const res = await db.prepare(
+    `INSERT INTO body_scans (user_id, scan_date, scan_type, scan_weight, scan_bmi,
+     body_fat_pct, fat_mass, smm, tbw, scan_bmr, visceral_fat, body_score)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(userId, scanDate, scanType, fields.scan_weight, fields.scan_bmi,
+    fields.body_fat_pct, fields.fat_mass, fields.smm, fields.tbw,
+    fields.scan_bmr, fields.visceral_fat, fields.body_score).run();
+  return { ok: true, id: res.meta.last_row_id };
+}
+
+async function adminScanList(body, db) {
+  const userId = String(body.user_id || '');
+  if (!userId) return { error: 'user_id required' };
+  const rows = await db.prepare(
+    'SELECT * FROM body_scans WHERE user_id = ? ORDER BY scan_date ASC'
+  ).bind(userId).all();
+  return { ok: true, scans: rows.results };
+}
+
+async function adminScanDelete(body, db) {
+  const id = body.id;
+  if (!id) return { error: 'id required' };
+  const row = await db.prepare('SELECT id FROM body_scans WHERE id = ?').bind(id).first();
+  if (!row) return { error: 'scan not found' };
+  await db.prepare('DELETE FROM body_scans WHERE id = ?').bind(id).run();
   return { ok: true };
 }

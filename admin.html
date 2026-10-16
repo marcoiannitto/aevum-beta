@@ -814,6 +814,7 @@ function renderUserDetail(data) {
       <div class="ud-tab" data-tab="mealplan" onclick="switchLogTab(this,'mealplan')">Meal Plan</div>
       <div class="ud-tab" data-tab="notes" onclick="switchLogTab(this,'notes')">Notes</div>
       <div class="ud-tab" data-tab="vitals" onclick="switchLogTab(this,'vitals')">Vitals</div>
+      <div class="ud-tab" data-tab="scans" onclick="switchLogTab(this,'scans')">Body Scans</div>
     </div>
     <div class="ud-log-scroll" id="logTabContent"></div>
   </div>`;
@@ -957,6 +958,7 @@ function renderLogTab(tab, parsed) {
   else if (tab === 'mealplan') { el.innerHTML = ''; initMealPlanBuilder(el); return; }
   else if (tab === 'notes') el.innerHTML = renderNotesTable(parsed);
   else if (tab === 'vitals') el.innerHTML = renderVitalsTable(parsed);
+  else if (tab === 'scans') { renderScansTab(el); return; }
 }
 
 function renderLogsTable(parsed) {
@@ -2226,6 +2228,161 @@ async function mpAddCateredMeal() {
   toast('Added catered meal');
   const container = document.getElementById('logTabContent');
   renderMealPlanBuilder(container);
+}
+
+// ─── Body Scans ─────────────────────────────────────────────
+async function renderScansTab(el) {
+  const userId = activeUserDetail?.user?.id;
+  if (!userId) { el.innerHTML = '<p>No user selected</p>'; return; }
+  el.innerHTML = '<p style="color:var(--muted)">Loading scans…</p>';
+
+  const res = await api('admin_scan_list', { user_id: userId });
+  const scans = res.scans || [];
+
+  const scanFields = [
+    { key: 'scan_date', label: 'Date', type: 'date' },
+    { key: 'scan_type', label: 'Device', type: 'select', options: ['InBody','BIA-ACC','Other'] },
+    { key: 'scan_weight', label: 'Weight (kg)', type: 'number' },
+    { key: 'scan_bmi', label: 'BMI', type: 'number' },
+    { key: 'body_fat_pct', label: 'Body Fat %', type: 'number' },
+    { key: 'fat_mass', label: 'Fat Mass (kg)', type: 'number' },
+    { key: 'smm', label: 'SMM (kg)', type: 'number' },
+    { key: 'tbw', label: 'TBW (L)', type: 'number' },
+    { key: 'scan_bmr', label: 'BMR (kcal)', type: 'number' },
+    { key: 'visceral_fat', label: 'Visceral Fat', type: 'number' },
+    { key: 'body_score', label: 'Body Score', type: 'number' }
+  ];
+
+  let html = '';
+
+  // ── Scan form ──
+  html += `<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px">
+    <h3 style="margin:0 0 12px;font-family:var(--serif);font-size:15px" id="scanFormTitle">Add Scan</h3>
+    <input type="hidden" id="scanEditId">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">`;
+
+  for (const f of scanFields) {
+    if (f.type === 'select') {
+      html += `<label style="font-size:12px;color:var(--muted)">${esc(f.label)}
+        <select id="sf_${f.key}" style="width:100%;padding:6px;border:1px solid var(--line);border-radius:4px;font-size:13px">
+          ${f.options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('')}
+        </select></label>`;
+    } else {
+      html += `<label style="font-size:12px;color:var(--muted)">${esc(f.label)}
+        <input type="${f.type}" id="sf_${f.key}" step="any"
+          style="width:100%;padding:6px;border:1px solid var(--line);border-radius:4px;font-size:13px">
+        </label>`;
+    }
+  }
+
+  html += `</div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button onclick="saveScan()" style="background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px">Save Scan</button>
+      <button onclick="resetScanForm()" style="background:var(--card);border:1px solid var(--line);padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px">Clear</button>
+    </div>
+  </div>`;
+
+  // ── Scans table with delta ──
+  if (scans.length > 0) {
+    const dataFields = scanFields.filter(f => f.key !== 'scan_date' && f.key !== 'scan_type');
+    html += `<table><thead><tr><th></th>`;
+    for (const s of scans) html += `<th>${esc(s.scan_date)}<br><span style="font-weight:normal;color:var(--muted)">${esc(s.scan_type)}</span></th>`;
+    if (scans.length === 2) html += `<th>Delta (Δ)</th>`;
+    html += `<th></th></tr></thead><tbody>`;
+
+    for (const f of dataFields) {
+      html += `<tr><td style="font-weight:600">${esc(f.label)}</td>`;
+      for (const s of scans) {
+        const v = s[f.key];
+        html += `<td>${v != null ? v : '–'}</td>`;
+      }
+      if (scans.length === 2) {
+        const v1 = scans[0][f.key], v2 = scans[1][f.key];
+        if (v1 != null && v2 != null) {
+          const d = (v2 - v1).toFixed(1);
+          const sign = d > 0 ? '+' : '';
+          // For body_fat_pct, fat_mass, visceral_fat: decrease is good (green)
+          // For smm, tbw, scan_bmr, body_score: increase is good (green)
+          const goodDown = ['body_fat_pct','fat_mass','visceral_fat','scan_bmi','scan_weight'].includes(f.key);
+          const color = d == 0 ? 'var(--muted)' : (goodDown ? (d < 0 ? 'var(--green)' : 'var(--red)') : (d > 0 ? 'var(--green)' : 'var(--red)'));
+          html += `<td style="color:${color};font-weight:600">${sign}${d}</td>`;
+        } else {
+          html += `<td>–</td>`;
+        }
+      }
+      html += `<td></td></tr>`;
+    }
+
+    // Action rows
+    html += `<tr><td style="font-weight:600">Actions</td>`;
+    for (const s of scans) {
+      html += `<td>
+        <button onclick="editScan(${s.id})" style="font-size:11px;padding:2px 8px;border:1px solid var(--line);border-radius:3px;cursor:pointer;background:var(--card)">Edit</button>
+        <button onclick="deleteScan(${s.id})" style="font-size:11px;padding:2px 8px;border:1px solid var(--red);border-radius:3px;cursor:pointer;background:var(--card);color:var(--red)">Del</button>
+      </td>`;
+    }
+    if (scans.length === 2) html += '<td></td>';
+    html += '<td></td></tr>';
+    html += '</tbody></table>';
+  } else {
+    html += '<p style="color:var(--muted);text-align:center;padding:24px">No body scans recorded yet.</p>';
+  }
+
+  el.innerHTML = html;
+  // Store scans for edit
+  el._scans = scans;
+}
+
+async function saveScan() {
+  const userId = activeUserDetail?.user?.id;
+  if (!userId) return;
+  const payload = { user_id: userId };
+  const editId = document.getElementById('scanEditId')?.value;
+  if (editId) payload.id = parseInt(editId);
+
+  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  for (const f of fields) {
+    const el = document.getElementById('sf_' + f);
+    if (!el) continue;
+    const v = el.value.trim();
+    if (f === 'scan_date' || f === 'scan_type') { payload[f] = v; }
+    else if (v !== '') { payload[f] = parseFloat(v); }
+  }
+
+  if (!payload.scan_date) { alert('Date is required'); return; }
+  const res = await api('admin_scan_save', payload);
+  if (res.error) { alert(res.error); return; }
+  renderScansTab(document.getElementById('logTabContent'));
+}
+
+function editScan(id) {
+  const el = document.getElementById('logTabContent');
+  const scan = (el._scans || []).find(s => s.id === id);
+  if (!scan) return;
+  document.getElementById('scanEditId').value = id;
+  document.getElementById('scanFormTitle').textContent = 'Edit Scan #' + id;
+  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  for (const f of fields) {
+    const input = document.getElementById('sf_' + f);
+    if (input) input.value = scan[f] ?? '';
+  }
+}
+
+function resetScanForm() {
+  document.getElementById('scanEditId').value = '';
+  document.getElementById('scanFormTitle').textContent = 'Add Scan';
+  const fields = ['scan_date','scan_type','scan_weight','scan_bmi','body_fat_pct','fat_mass','smm','tbw','scan_bmr','visceral_fat','body_score'];
+  for (const f of fields) {
+    const input = document.getElementById('sf_' + f);
+    if (input) input.value = (f === 'scan_type') ? 'InBody' : '';
+  }
+}
+
+async function deleteScan(id) {
+  if (!confirm('Delete this scan?')) return;
+  const res = await api('admin_scan_delete', { id });
+  if (res.error) { alert(res.error); return; }
+  renderScansTab(document.getElementById('logTabContent'));
 }
 
 // ─── Logout ─────────────────────────────────────────────────
