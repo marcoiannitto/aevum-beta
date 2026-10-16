@@ -1244,10 +1244,10 @@ async function handleIntakePublic(request, url, db, cors) {
 
     // Create user record from intake data
     const name = prefill.full_name || row.client_name;
-    const dob = prefill.date_of_birth || '';
+    const dob = prefill.dob || prefill.date_of_birth || '';
     const age = dob ? dobToAge(dob) : 0;
-    const height = parseFloat(prefill.height_cm) || 0;
-    const weight = parseFloat(prefill.weight_kg) || 0;
+    const height = parseFloat(prefill.height || prefill.height_cm) || 0;
+    const weight = parseFloat(prefill.weight || prefill.weight_kg) || 0;
     const sex = String(prefill.sex || 'm').toLowerCase();
     const act = 1.55; // default activity factor
     const s = sex === 'm' ? 5 : -161;

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AEVUM Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1A1A1A;
+  --ink-2: #111010;
+  --ink-soft: #4a463f;
+  --gold: #B08D2E;
+  --gold-deep: #8f6f1f;
+  --gold-light: #d8b95e;
+  --paper: #FBFAF7;
+  --card: #ffffff;
+  --line: #EBE5D8;
+  --line-soft: #F2EDE2;
+  --muted: #938c7d;
+  --muted-dk: #9a9385;
+  --red: #c0392b;
+  --green: #27ae60;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Layout */
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  min-height: 100vh;
+}
+
+/* Header */
+.brand {
+  text-align: center;
+  padding: 32px 0 8px;
+}
+.brand h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  color: var(--ink-2);
+}
+.brand-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Progress */
+.progress-wrap {
+  margin: 24px 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.progress-bar {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.4s ease;
+  border-radius: 1px;
+}
+.progress-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Screens */
+.screen {
+  display: none;
+  animation: fadeIn 0.35s ease;
+}
+.screen.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Part A card */
+.summary-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px 24px;
+  margin-bottom: 24px;
+}
+.summary-card h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 15px;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-label { color: var(--muted); flex-shrink: 0; margin-right: 16px; }
+.summary-value { color: var(--ink); text-align: right; word-break: break-word; }
+.summary-goals {
+  padding: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.summary-goals .summary-label { display: block; margin-bottom: 6px; }
+.summary-goals .summary-value { text-align: left; }
+.summary-note {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  text-align: center;
+}
+.summary-note a {
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 14px;
+}
+.summary-note a:hover { color: var(--gold-deep); }
+
+/* Section titles */
+.screen-title {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.screen-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* Form elements */
+.field {
+  margin-bottom: 24px;
+}
+.field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--card);
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.field textarea { resize: vertical; min-height: 80px; }
+.field .error {
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 6px;
+  display: none;
+}
+.field.has-error input,
+.field.has-error textarea,
+.field.has-error select { border-color: var(--red); }
+.field.has-error .error { display: block; }
+
+/* Chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.chip.selected {
+  background: var(--ink-2);
+  color: var(--card);
+  border-color: var(--ink-2);
+}
+.chip:active { transform: scale(0.96); }
+
+/* Slot buttons (delivery time) */
+.slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.slot {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slot.selected {
+  border-color: var(--gold);
+  background: rgba(176, 141, 46, 0.06);
+  color: var(--ink);
+  font-weight: 500;
+}
+.slot:active { transform: scale(0.98); }
+
+/* Toggle */
+.toggle-group {
+  margin-bottom: 20px;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.toggle-label {
+  font-size: 15px;
+  color: var(--ink);
+  flex: 1;
+  padding-right: 16px;
+  line-height: 1.4;
+}
+.toggle {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--line);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--gold); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.toggle.on::after { transform: translateX(20px); }
+.toggle-detail {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease, opacity 0.3s;
+  opacity: 0;
+}
+.toggle-detail.open {
+  max-height: 300px;
+  opacity: 1;
+}
+.toggle-detail input,
+.toggle-detail textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--card);
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+.toggle-detail input:focus,
+.toggle-detail textarea:focus { outline: none; border-color: var(--gold); }
+.toggle-detail textarea { resize: vertical; min-height: 60px; }
+
+/* Consent */
+.consent-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.consent-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+}
+.check-row input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+.check-row label {
+  font-size: 15px;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+.btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 52px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--ink-2);
+  color: white;
+}
+.btn-primary:hover { background: #2a2a2a; }
+.btn-primary:disabled {
+  background: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.btn-back {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  flex: 0 0 auto;
+  padding: 16px 24px;
+}
+.btn-back:hover { background: var(--line-soft); }
+.btn-submit {
+  background: var(--gold);
+  color: white;
+}
+.btn-submit:hover { background: var(--gold-deep); }
+.btn-submit:disabled {
+  background: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* Completion */
+.done-icon {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 48px;
+}
+.done-steps {
+  list-style: none;
+  counter-reset: step;
+}
+.done-steps li {
+  counter-increment: step;
+  padding: 12px 0;
+  padding-left: 36px;
+  position: relative;
+  font-size: 15px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.done-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: white;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.done-note {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* States */
+.state-screen {
+  display: none;
+  text-align: center;
+  padding: 60px 16px;
+}
+.state-screen.active { display: block; }
+.state-screen h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 12px;
+}
+.state-screen p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Privacy */
+.privacy-note {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 28px;
+  padding: 0 8px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink-2);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 100;
+  max-width: 90%;
+  text-align: center;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.toast.err { background: var(--red); }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Loading -->
+  <div class="state-screen active" id="stateLoading">
+    <div class="brand"><h1>AEVUM</h1><div class="brand-sub">The science of balance</div></div>
+    <div style="margin-top:40px"><div class="spinner"></div><p>Loading your form...</p></div>
+  </div>
+
+  <!-- Error states -->
+  <div class="state-screen" id="stateExpired">
+    <div class="brand"><h1>AEVUM</h1><div class="brand-sub">The science of balance</div></div>
+    <h2>Link Expired</h2>
+    <p>This link has expired. Please contact Marco to get a new one.</p>
+    <div style="margin-top:24px"><a href="https://wa.me/6591234567" style="color:var(--gold);font-size:15px;">Message Marco on WhatsApp</a></div>
+  </div>
+
+  <div class="state-screen" id="stateInvalid">
+    <div class="brand"><h1>AEVUM</h1><div class="brand-sub">The science of balance</div></div>
+    <h2>Link Not Found</h2>
+    <p>This link is invalid. If you think this is an error, please contact Marco.</p>
+  </div>
+
+  <div class="state-screen" id="stateSubmitted">
+    <div class="brand"><h1>AEVUM</h1><div class="brand-sub">The science of balance</div></div>
+    <h2>Already Submitted</h2>
+    <p>You've already completed your onboarding form. Need to change something?</p>
+    <div style="margin-top:24px"><a href="https://wa.me/6591234567" style="color:var(--gold);font-size:15px;">Message Marco on WhatsApp</a></div>
+  </div>
+
+  <!-- Form -->
+  <div id="formWrap" style="display:none">
+    <div class="brand"><h1>AEVUM</h1><div class="brand-sub">The science of balance</div></div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">Step 1 of 6</div>
+    </div>
+
+    <div class="privacy-note">Your information is stored securely and used only to deliver your AEVUM program. We do not share your data with third parties.</div>
+
+    <!-- Screen 0: Part A summary -->
+    <div class="screen active" id="screen0">
+      <h3 class="screen-title">Here's what we discussed.</h3>
+      <p class="screen-subtitle">Review the details from your consultation. If anything looks off, let Marco know.</p>
+      <div class="summary-card" id="summaryCard"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goTo(1)">Looks good, let's go</button>
+      </div>
+    </div>
+
+    <!-- Screen 1: Food & Schedule -->
+    <div class="screen" id="screen1">
+      <h3 class="screen-title">Your food and schedule.</h3>
+      <p class="screen-subtitle">Help us tailor your meals. This takes about 5 minutes.</p>
+
+      <div class="field">
+        <label>Any dietary preferences or restrictions?</label>
+        <div class="chips" id="dietChips"></div>
+      </div>
+
+      <div class="field">
+        <label>Foods you dislike or want us to avoid</label>
+        <textarea id="fDislikes" placeholder="e.g. mushrooms, celery, blue cheese..." rows="2"></textarea>
+      </div>
+
+      <div class="field">
+        <label>When would you like your meals delivered?</label>
+        <div class="slots" id="deliverySlots"></div>
+        <div class="error">Please select a delivery time</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(0)">Back</button>
+        <button class="btn btn-primary" onclick="advance(1)">Continue</button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Lifestyle -->
+    <div class="screen" id="screen2">
+      <h3 class="screen-title">Your lifestyle.</h3>
+      <p class="screen-subtitle">A couple of quick questions so we can adjust your plan.</p>
+
+      <div class="field">
+        <label>Do you exercise regularly?</label>
+        <select id="fExercise">
+          <option value="">Select...</option>
+          <option value="none">No</option>
+          <option value="light">Light (1-2x/week)</option>
+          <option value="moderate">Moderate (3-4x/week)</option>
+          <option value="intense">Intense (5+/week)</option>
+        </select>
+        <div class="error">Please select an option</div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Any travel planned in the next 5 weeks?</span>
+          <div class="toggle" id="tTravel" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-detail" id="tTravelDetail">
+          <input type="date" id="fTravelFrom" placeholder="From">
+          <input type="date" id="fTravelTo" placeholder="To">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(1)">Back</button>
+        <button class="btn btn-primary" onclick="advance(2)">Continue</button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Health Check -->
+    <div class="screen" id="screen3">
+      <h3 class="screen-title">Health check.</h3>
+      <p class="screen-subtitle">We need to know a few things to keep you safe on the program.</p>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Do you have any allergies or food intolerances?</span>
+          <div class="toggle" id="tAllergy" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-detail" id="tAllergyDetail">
+          <textarea id="fAllergies" placeholder="Please describe..." rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Are you currently taking any medications?</span>
+          <div class="toggle" id="tMeds" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-detail" id="tMedsDetail">
+          <textarea id="fMedications" placeholder="Please list..." rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Do you have any medical conditions we should know about?</span>
+          <div class="toggle" id="tMedical" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-detail" id="tMedicalDetail">
+          <textarea id="fMedicalConditions" placeholder="Please describe..." rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Are you pregnant or breastfeeding?</span>
+          <div class="toggle" id="tPregnant" onclick="toggleSwitch(this)"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Emergency contact name *</label>
+        <input id="fEmergencyName" placeholder="Full name">
+        <div class="error">Emergency contact name is required</div>
+      </div>
+
+      <div class="field">
+        <label>Emergency contact phone *</label>
+        <input id="fEmergencyPhone" type="tel" placeholder="+65 9123 4567">
+        <div class="error">Emergency contact phone is required</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(2)">Back</button>
+        <button class="btn btn-primary" onclick="advance(3)">Continue</button>
+      </div>
+    </div>
+
+    <!-- Screen 4: Getting Started -->
+    <div class="screen" id="screen4">
+      <h3 class="screen-title">Getting started.</h3>
+      <p class="screen-subtitle">Pick a time for your InBody scan so we can set your baseline.</p>
+
+      <div class="field">
+        <label>Preferred InBody scan date *</label>
+        <input type="date" id="fScanDate" min="">
+        <div class="error">Please select a future date</div>
+      </div>
+
+      <div class="field">
+        <label>Preferred time *</label>
+        <select id="fScanTime">
+          <option value="">Select a time...</option>
+          <option value="09:00">9:00 AM</option>
+          <option value="09:30">9:30 AM</option>
+          <option value="10:00">10:00 AM</option>
+          <option value="10:30">10:30 AM</option>
+          <option value="11:00">11:00 AM</option>
+          <option value="11:30">11:30 AM</option>
+          <option value="12:00">12:00 PM</option>
+          <option value="14:00">2:00 PM</option>
+          <option value="14:30">2:30 PM</option>
+          <option value="15:00">3:00 PM</option>
+          <option value="15:30">3:30 PM</option>
+          <option value="16:00">4:00 PM</option>
+          <option value="16:30">4:30 PM</option>
+          <option value="17:00">5:00 PM</option>
+        </select>
+        <div class="error">Please select a time</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(3)">Back</button>
+        <button class="btn btn-primary" onclick="advance(4)">Continue</button>
+      </div>
+    </div>
+
+    <!-- Screen 5: Consent & Signature -->
+    <div class="screen" id="screen5">
+      <h3 class="screen-title">Almost done.</h3>
+      <p class="screen-subtitle">Please review and confirm.</p>
+
+      <div class="consent-text">
+        By confirming below, I, <span class="consent-name" id="consentName"></span>, confirm that this information is accurate, I understand AEVUM is a wellness program (not medical treatment), and I'm happy for my anonymized results to be shared.
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="fConsent">
+        <label for="fConsent">I confirm the above statement</label>
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="fAge">
+        <label for="fAge">I confirm I am 18 or older</label>
+      </div>
+
+      <div class="check-row" style="border-top:1px solid var(--line-soft);padding-top:16px;margin-top:8px">
+        <input type="checkbox" id="fTestimonial">
+        <label for="fTestimonial">I'd also be happy to share my experience as a testimonial (optional)</label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(4)">Back</button>
+        <button class="btn btn-submit" id="btnSubmit" onclick="submitForm()">Submit</button>
+      </div>
+    </div>
+
+    <!-- Completion -->
+    <div class="screen" id="screenDone">
+      <div class="done-icon">✓</div>
+      <h3 class="screen-title" style="text-align:center">You're in, <span id="doneName"></span>.</h3>
+      <p class="screen-subtitle" style="text-align:center">Here's what happens next.</p>
+
+      <ol class="done-steps">
+        <li>Marco books your InBody scan (within 24h)</li>
+        <li>Your personalized menu gets built (3 days)</li>
+        <li>Your kit ships</li>
+        <li>Day 1</li>
+      </ol>
+
+      <div class="done-note">Keep an eye on WhatsApp.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://aevum-api-v2.marco-iannitto.workers.dev';
+const DIET_OPTIONS = ['Vegetarian','Vegan','Halal','No pork','No beef','No shellfish','No nuts','Gluten-free','Other'];
+const DELIVERY_SLOTS = [
+  { id: 'early', label: 'Early (2-3pm)' },
+  { id: 'mid', label: 'Mid (3-4:30pm)' },
+  { id: 'late', label: 'Late (5-6pm)' }
+];
+const TOTAL_SCREENS = 6; // 0-5
+
+let TOKEN = '';
+let prefill = {};
+let response = {};
+let currentScreen = 0;
+let saving = false;
+
+// --- Init ---
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  TOKEN = params.get('t') || params.get('token') || '';
+  if (!TOKEN) { showState('stateInvalid'); return; }
+
+  // Set min date for scan picker
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const el = document.getElementById('fScanDate');
+  if (el) el.min = tomorrow.toISOString().split('T')[0];
+
+  try {
+    const res = await fetch(API + '/intake/' + TOKEN);
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 410) { showState('stateExpired'); return; }
+      if (res.status === 404) { showState('stateInvalid'); return; }
+      showState('stateInvalid'); return;
+    }
+
+    if (data.submitted) {
+      showState('stateSubmitted');
+      return;
+    }
+
+    prefill = data.prefill || {};
+    response = data.response || {};
+    currentScreen = data.current_step || 0;
+
+    renderSummaryCard();
+    renderChips();
+    renderSlots();
+    restoreState();
+
+    document.getElementById('stateLoading').classList.remove('active');
+    document.getElementById('formWrap').style.display = 'block';
+
+    // Consent name
+    document.getElementById('consentName').textContent = prefill.full_name || '';
+    document.getElementById('doneName').textContent = (prefill.full_name || '').split(' ')[0];
+
+    goTo(currentScreen);
+  } catch (err) {
+    console.error(err);
+    showState('stateInvalid');
+  }
+}
+
+function showState(id) {
+  document.querySelectorAll('.state-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// --- Part A summary ---
+function renderSummaryCard() {
+  const card = document.getElementById('summaryCard');
+  const rows = [
+    ['Name', prefill.full_name],
+    ['Email', prefill.email],
+    ['Date of birth', formatDate(prefill.dob)],
+    ['Weight', prefill.weight ? prefill.weight + ' kg' : ''],
+    ['Height', prefill.height ? prefill.height + ' cm' : ''],
+    ['Delivery address', prefill.address],
+    ['Postal code', prefill.postal_code],
+  ];
+  let html = '<h2>Your consultation summary</h2>';
+  rows.forEach(([label, val]) => {
+    if (val) html += `<div class="summary-row"><span class="summary-label">${label}</span><span class="summary-value">${esc(val)}</span></div>`;
+  });
+  if (prefill.goals) {
+    html += `<div class="summary-goals"><span class="summary-label">Goals</span><span class="summary-value">${esc(prefill.goals)}</span></div>`;
+  }
+  html += `<div class="summary-note"><a href="https://wa.me/${cleanPhone(prefill.phone)}?text=${encodeURIComponent("Hi Marco, something on my onboarding form doesn't look right.")}">Something's not right? Let Marco know</a></div>`;
+  card.innerHTML = html;
+}
+
+function cleanPhone(p) {
+  if (!p) return '';
+  return p.replace(/[^0-9+]/g, '').replace(/^\+/, '');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  try {
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch { return d; }
+}
+
+// --- Chips (diet preferences) ---
+function renderChips() {
+  const wrap = document.getElementById('dietChips');
+  const selected = response.food_preferences || [];
+  wrap.innerHTML = DIET_OPTIONS.map(opt =>
+    `<div class="chip${selected.includes(opt) ? ' selected' : ''}" data-val="${opt}" onclick="toggleChip(this)">${opt}</div>`
+  ).join('');
+}
+
+function toggleChip(el) {
+  el.classList.toggle('selected');
+}
+
+function getSelectedChips() {
+  return Array.from(document.querySelectorAll('#dietChips .chip.selected')).map(c => c.dataset.val);
+}
+
+// --- Delivery slots ---
+function renderSlots() {
+  const wrap = document.getElementById('deliverySlots');
+  const sel = response.delivery_time || '';
+  wrap.innerHTML = DELIVERY_SLOTS.map(s =>
+    `<div class="slot${sel === s.id ? ' selected' : ''}" data-val="${s.id}" onclick="selectSlot(this)">${s.label}</div>`
+  ).join('');
+}
+
+function selectSlot(el) {
+  document.querySelectorAll('#deliverySlots .slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  el.closest('.field')?.classList.remove('has-error');
+}
+
+function getSelectedSlot() {
+  const sel = document.querySelector('#deliverySlots .slot.selected');
+  return sel ? sel.dataset.val : '';
+}
+
+// --- Toggle switches ---
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+  const detail = document.getElementById(el.id + 'Detail');
+  if (detail) {
+    detail.classList.toggle('open', el.classList.contains('on'));
+  }
+}
+
+function isOn(id) {
+  return document.getElementById(id)?.classList.contains('on') || false;
+}
+
+// --- Restore saved state ---
+function restoreState() {
+  const r = response;
+  if (r.dislikes) document.getElementById('fDislikes').value = r.dislikes;
+  if (r.exercise) document.getElementById('fExercise').value = r.exercise;
+
+  if (r.travel_planned) {
+    document.getElementById('tTravel').classList.add('on');
+    document.getElementById('tTravelDetail').classList.add('open');
+    if (r.travel_from) document.getElementById('fTravelFrom').value = r.travel_from;
+    if (r.travel_to) document.getElementById('fTravelTo').value = r.travel_to;
+  }
+
+  if (r.has_allergies) {
+    document.getElementById('tAllergy').classList.add('on');
+    document.getElementById('tAllergyDetail').classList.add('open');
+    if (r.allergies) document.getElementById('fAllergies').value = r.allergies;
+  }
+  if (r.has_medications) {
+    document.getElementById('tMeds').classList.add('on');
+    document.getElementById('tMedsDetail').classList.add('open');
+    if (r.medications) document.getElementById('fMedications').value = r.medications;
+  }
+  if (r.has_medical_conditions) {
+    document.getElementById('tMedical').classList.add('on');
+    document.getElementById('tMedicalDetail').classList.add('open');
+    if (r.medical_conditions) document.getElementById('fMedicalConditions').value = r.medical_conditions;
+  }
+  if (r.pregnant) {
+    document.getElementById('tPregnant').classList.add('on');
+  }
+  if (r.emergency_name) document.getElementById('fEmergencyName').value = r.emergency_name;
+  if (r.emergency_phone) document.getElementById('fEmergencyPhone').value = r.emergency_phone;
+  if (r.scan_date) document.getElementById('fScanDate').value = r.scan_date;
+  if (r.scan_time) document.getElementById('fScanTime').value = r.scan_time;
+  if (r.consent) document.getElementById('fConsent').checked = true;
+  if (r.age_confirm) document.getElementById('fAge').checked = true;
+  if (r.testimonial) document.getElementById('fTestimonial').checked = true;
+}
+
+// --- Collect response ---
+function collectResponse() {
+  return {
+    food_preferences: getSelectedChips(),
+    dislikes: val('fDislikes'),
+    delivery_time: getSelectedSlot(),
+    exercise: val('fExercise'),
+    travel_planned: isOn('tTravel'),
+    travel_from: val('fTravelFrom'),
+    travel_to: val('fTravelTo'),
+    has_allergies: isOn('tAllergy'),
+    allergies: val('fAllergies'),
+    has_medications: isOn('tMeds'),
+    medications: val('fMedications'),
+    has_medical_conditions: isOn('tMedical'),
+    medical_conditions: val('fMedicalConditions'),
+    pregnant: isOn('tPregnant'),
+    emergency_name: val('fEmergencyName'),
+    emergency_phone: val('fEmergencyPhone'),
+    scan_date: val('fScanDate'),
+    scan_time: val('fScanTime'),
+    consent: document.getElementById('fConsent')?.checked || false,
+    age_confirm: document.getElementById('fAge')?.checked || false,
+    testimonial: document.getElementById('fTestimonial')?.checked || false,
+  };
+}
+
+function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// --- Navigation ---
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen' + screen);
+  if (target) {
+    target.classList.add('active');
+    currentScreen = screen;
+    updateProgress(screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function updateProgress(screen) {
+  const pct = Math.round((screen / (TOTAL_SCREENS - 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  if (screen === 0) {
+    document.getElementById('progressLabel').textContent = 'Review';
+  } else {
+    document.getElementById('progressLabel').textContent = 'Step ' + screen + ' of 5';
+  }
+}
+
+// --- Validation & advance ---
+function advance(fromScreen) {
+  clearErrors();
+  let valid = true;
+
+  if (fromScreen === 1) {
+    // Delivery time required
+    if (!getSelectedSlot()) {
+      document.getElementById('deliverySlots').closest('.field').classList.add('has-error');
+      valid = false;
+    }
+  }
+
+  if (fromScreen === 2) {
+    if (!val('fExercise')) {
+      setError('fExercise');
+      valid = false;
+    }
+  }
+
+  if (fromScreen === 3) {
+    if (!val('fEmergencyName')) { setError('fEmergencyName'); valid = false; }
+    if (!val('fEmergencyPhone')) { setError('fEmergencyPhone'); valid = false; }
+  }
+
+  if (fromScreen === 4) {
+    const scanDate = val('fScanDate');
+    if (!scanDate || new Date(scanDate) <= new Date()) { setError('fScanDate'); valid = false; }
+    if (!val('fScanTime')) { setError('fScanTime'); valid = false; }
+  }
+
+  if (!valid) return;
+
+  response = collectResponse();
+  autoSave(fromScreen + 1);
+  goTo(fromScreen + 1);
+}
+
+function setError(id) {
+  document.getElementById(id)?.closest('.field')?.classList.add('has-error');
+}
+
+function clearErrors() {
+  document.querySelectorAll('.has-error').forEach(f => f.classList.remove('has-error'));
+}
+
+// --- Auto-save ---
+async function autoSave(step) {
+  if (saving) return;
+  saving = true;
+  try {
+    await fetch(API + '/intake/' + TOKEN + '/save', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ response, current_step: step })
+    });
+  } catch (err) {
+    console.error('Auto-save failed:', err);
+  }
+  saving = false;
+}
+
+// --- Submit ---
+async function submitForm() {
+  if (!document.getElementById('fConsent').checked) {
+    toast('Please confirm the statement above', true);
+    return;
+  }
+  if (!document.getElementById('fAge').checked) {
+    toast('Please confirm you are 18 or older', true);
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  response = collectResponse();
+
+  try {
+    const res = await fetch(API + '/intake/' + TOKEN + '/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ response })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast(data.error || 'Something went wrong. Please try again.', true);
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+      return;
+    }
+
+    // Show completion
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screenDone').classList.add('active');
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressLabel').textContent = 'Complete';
+  } catch (err) {
+    toast('Network error. Please check your connection and try again.', true);
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  }
+}
+
+// --- Toast ---
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// --- Boot ---
+init();
+</script>
+</body>
+</html>
