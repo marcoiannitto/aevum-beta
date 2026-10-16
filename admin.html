@@ -140,6 +140,38 @@ tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:
   .ud-stats{grid-template-columns:1fr 1fr;}
 }
 
+/* INTAKES */
+.intake-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:capitalize;}
+.badge-draft{background:var(--line-soft);color:var(--muted);}
+.badge-sent{background:#D4EDFF;color:#0C5285;}
+.badge-in_progress{background:#FFF3CD;color:#856404;}
+.badge-submitted{background:#E8F2EF;color:var(--green);}
+.badge-review_required{background:#F8D7DA;color:var(--red);}
+.badge-approved{background:rgba(176,141,46,.12);color:var(--gold-deep);}
+.intake-row{cursor:pointer;transition:background .15s;}
+.intake-row:hover{background:#f5f0e5!important;}
+.intake-detail{padding:24px 28px;display:flex;flex-direction:column;gap:20px;}
+.intake-section{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.intake-section h3{font-family:var(--serif);font-size:16px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.intake-field{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line-soft);font-size:13px;}
+.intake-field:last-child{border-bottom:none;}
+.intake-field .if-label{width:160px;flex-shrink:0;color:var(--muted);font-size:12px;}
+.intake-field .if-value{flex:1;font-weight:500;}
+.intake-form{padding:24px 28px;}
+.intake-form h2{font-family:var(--serif);font-size:20px;margin-bottom:20px;}
+.if-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.if-grid .if-full{grid-column:1/-1;}
+.if-group label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+.if-group input,.if-group select,.if-group textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--card);}
+.if-group input:focus,.if-group select:focus,.if-group textarea:focus{border-color:var(--gold);outline:none;}
+.if-group textarea{min-height:80px;resize:vertical;}
+.if-actions{display:flex;gap:10px;margin-top:20px;}
+.link-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+.link-url{font-family:monospace;font-size:13px;word-break:break-all;padding:10px;background:var(--paper);border-radius:6px;border:1px solid var(--line-soft);}
+.link-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.intake-status-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+@media(max-width:600px){.if-grid{grid-template-columns:1fr;}}
+
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:100;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
 .toast.show{opacity:1;transform:translateY(0);}
@@ -248,6 +280,8 @@ tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:
     <div class="sb-section">Meal Plan</div>
     <div class="sb-item" data-table="ingredients" onclick="selectTable('ingredients')">Ingredients<span class="dot"></span><span class="sb-count"></span></div>
     <div class="sb-item" data-table="catered_menu" onclick="selectTable('catered_menu')">Catered Menu<span class="dot"></span><span class="sb-count"></span></div>
+    <div class="sb-section">Onboarding</div>
+    <div class="sb-item" data-table="intakes" onclick="selectTable('intakes')">Intakes<span class="dot"></span><span class="sb-count"></span></div>
     <div class="sb-section">People</div>
     <div class="sb-item" data-table="users" onclick="selectTable('users')">Users<span class="dot"></span><span class="sb-count"></span></div>
     <div class="sb-bottom">
@@ -257,7 +291,7 @@ tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:
   <div id="main">
     <div class="topbar-admin">
       <div style="display:flex;align-items:baseline;">
-        <button class="btn-back hidden" id="btnBack" onclick="backToUsers()">&#8592; Users</button>
+        <button class="btn-back hidden" id="btnBack" onclick="handleBack()">&#8592; Back</button>
         <h1 id="tableTitle">Rules</h1>
         <span class="meta" id="tableMeta"></span>
       </div>
@@ -385,7 +419,8 @@ const TABLES = {
       { key:'serving_g', label:'Serving g', w:'col-narrow', type:'number' }
     ]
   },
-  users: { mode:'users' }
+  users: { mode:'users' },
+  intakes: { mode:'intakes' }
 };
 
 // ─── Data store ──────────────────────────────────────────────
@@ -444,6 +479,7 @@ async function doLogin() {
 async function selectTable(name) {
   activeTable = name;
   activeUserDetail = null;
+  activeIntakeDetail = null;
   document.getElementById('btnBack').classList.add('hidden');
   document.querySelectorAll('.sb-item').forEach(el => {
     el.classList.toggle('active', el.dataset.table === name);
@@ -467,6 +503,9 @@ async function loadTable(name) {
   if (name === 'users') {
     const res = await api('admin_users');
     rows = res.users || [];
+  } else if (name === 'intakes') {
+    const res = await api('admin_intakes_list');
+    rows = res.intakes || [];
   } else {
     const res = await api('admin_list', { table: name });
     rows = res.rows || [];
@@ -499,6 +538,7 @@ function renderView(name) {
   const def = TABLES[name];
   if (def.mode === 'cards') renderPolicyCards(name);
   else if (def.mode === 'users') renderUsersTable(name);
+  else if (def.mode === 'intakes') renderIntakesView();
   else renderDataTable(name);
   renderActions(name);
 }
@@ -515,10 +555,24 @@ function renderActions(name) {
     return;
   }
 
+  if (activeIntakeDetail) {
+    meta.textContent = '';
+    acts.innerHTML = '';
+    return;
+  }
+
   meta.textContent = d ? d.current.length + ' rows' : '';
 
   if (def.mode === 'users') {
     acts.innerHTML = '<button class="btn btn-secondary" onclick="refreshTable(\'' + name + '\')">Refresh</button>';
+    return;
+  }
+
+  if (def.mode === 'intakes') {
+    acts.innerHTML = `
+      <button class="btn btn-secondary" onclick="refreshTable('intakes')">Refresh</button>
+      <button class="btn btn-primary" onclick="showNewIntakeForm()">+ New Intake</button>
+    `;
     return;
   }
 
@@ -629,6 +683,11 @@ async function openUser(userId) {
   } catch (e) {
     document.getElementById('tableContent').innerHTML = '<div class="empty-state"><p>Error: ' + e.message + '</p></div>';
   }
+}
+
+function handleBack() {
+  if (activeIntakeDetail || activeTable === 'intakes') { backToIntakes(); return; }
+  backToUsers();
 }
 
 function backToUsers() {
@@ -1169,6 +1228,360 @@ async function refreshTable(name) {
   delete store[name];
   await selectTable(name);
   toast('Refreshed ' + name);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTAKES TAB
+// ═══════════════════════════════════════════════════════════════
+
+let activeIntakeDetail = null;
+
+function intakeBadge(status) {
+  const labels = { draft:'Draft', sent:'Sent', in_progress:'In Progress', submitted:'Submitted', review_required:'Review Required', approved:'Approved' };
+  return `<span class="intake-badge badge-${status}">${labels[status] || status}</span>`;
+}
+
+function renderIntakesView() {
+  if (activeIntakeDetail) { renderIntakeDetail(activeIntakeDetail); return; }
+  const rows = store.intakes?.current || [];
+  const wrap = document.getElementById('tableContent');
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  html += '<th>Client</th><th>Status</th><th>Step</th><th>Created</th><th>Submitted</th><th>Expires</th>';
+  html += '</tr></thead><tbody>';
+
+  for (const r of rows) {
+    html += `<tr class="intake-row" onclick="openIntake('${esc(r.token)}')">
+      <td style="padding:8px 12px;font-weight:500;">${esc(r.client_name || '')}</td>
+      <td style="padding:8px 12px;">${intakeBadge(r.status)}</td>
+      <td style="padding:8px 12px;text-align:center;">${r.current_step || 0}/5</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--muted);">${(r.created_at || '').split('T')[0]}</td>
+      <td style="padding:8px 12px;font-size:12px;">${r.submitted_at ? r.submitted_at.split('T')[0] : '-'}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--muted);">${(r.expires_at || '').split('T')[0]}</td>
+    </tr>`;
+  }
+
+  if (!rows.length) {
+    html += '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">No intakes yet. Click "+ New Intake" to create one.</td></tr>';
+  }
+
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+
+// ─── New Intake Form ──────────────────────────────────────
+function showNewIntakeForm(prefillData) {
+  activeIntakeDetail = null;
+  const wrap = document.getElementById('tableContent');
+  const p = prefillData || {};
+  document.getElementById('tableTitle').textContent = 'New Intake';
+  document.getElementById('btnBack').classList.remove('hidden');
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+
+  const acts = document.getElementById('tableActions');
+  acts.innerHTML = '';
+  document.getElementById('tableMeta').textContent = '';
+
+  wrap.innerHTML = `<div class="intake-form">
+    <h2>Part A — Meeting Notes</h2>
+    <div class="if-grid">
+      <div class="if-group"><label>Full name *</label><input id="ifName" value="${esc(p.full_name||'')}" placeholder="Client full name"></div>
+      <div class="if-group"><label>Email *</label><input id="ifEmail" type="email" value="${esc(p.email||'')}" placeholder="email@example.com"></div>
+      <div class="if-group"><label>Phone (WhatsApp) *</label><input id="ifPhone" value="${esc(p.phone||'')}" placeholder="+65 9123 4567"></div>
+      <div class="if-group"><label>Date of birth *</label><input id="ifDob" type="date" value="${p.dob||''}"></div>
+      <div class="if-group"><label>Current weight (kg) *</label><input id="ifWeight" type="number" value="${p.weight||''}" min="30" max="300" step="0.1"></div>
+      <div class="if-group"><label>Height (cm) *</label><input id="ifHeight" type="number" value="${p.height||''}" min="100" max="250"></div>
+      <div class="if-group if-full"><label>Delivery address *</label><textarea id="ifAddress" placeholder="Full delivery address">${esc(p.address||'')}</textarea></div>
+      <div class="if-group"><label>Postal code *</label><input id="ifPostal" value="${esc(p.postal_code||'')}" placeholder="6-digit postal code" maxlength="6"></div>
+      <div class="if-group"><label>Referral source *</label>
+        <select id="ifReferral">
+          <option value="">Select...</option>
+          <option value="launch_event" ${p.referral==='launch_event'?'selected':''}>Launch Event</option>
+          <option value="friend" ${p.referral==='friend'?'selected':''}>Friend</option>
+          <option value="social" ${p.referral==='social'?'selected':''}>Social Media</option>
+          <option value="other" ${p.referral==='other'?'selected':''}>Other</option>
+        </select>
+      </div>
+      <div class="if-group if-full"><label>Goals *</label><textarea id="ifGoals" placeholder="What does the client want from this program? (min 20 chars)">${esc(p.goals||'')}</textarea></div>
+    </div>
+    <div class="if-actions">
+      <button class="btn btn-primary" onclick="createIntake()">Create & Generate Link</button>
+      <button class="btn btn-secondary" onclick="backToIntakes()">Cancel</button>
+    </div>
+    <div id="intakeLinkBox"></div>
+  </div>`;
+}
+
+async function createIntake() {
+  const prefill = {
+    full_name: document.getElementById('ifName').value.trim(),
+    email: document.getElementById('ifEmail').value.trim(),
+    phone: document.getElementById('ifPhone').value.trim(),
+    dob: document.getElementById('ifDob').value,
+    weight: parseFloat(document.getElementById('ifWeight').value) || null,
+    height: parseFloat(document.getElementById('ifHeight').value) || null,
+    address: document.getElementById('ifAddress').value.trim(),
+    postal_code: document.getElementById('ifPostal').value.trim(),
+    referral: document.getElementById('ifReferral').value,
+    goals: document.getElementById('ifGoals').value.trim()
+  };
+
+  // Validate required fields
+  if (!prefill.full_name) { toast('Name is required', true); return; }
+  if (!prefill.email) { toast('Email is required', true); return; }
+  if (!prefill.phone) { toast('Phone is required', true); return; }
+  if (!prefill.dob) { toast('Date of birth is required', true); return; }
+  if (!prefill.weight) { toast('Weight is required', true); return; }
+  if (!prefill.height) { toast('Height is required', true); return; }
+  if (!prefill.address || prefill.address.length < 10) { toast('Full address required (min 10 chars)', true); return; }
+  if (!prefill.postal_code || prefill.postal_code.length !== 6) { toast('Valid 6-digit postal code required', true); return; }
+  if (!prefill.goals || prefill.goals.length < 20) { toast('Goals required (min 20 chars)', true); return; }
+
+  try {
+    const res = await api('admin_intake_create', { prefill });
+    toast('Intake created');
+    delete store.intakes; // force reload
+    showIntakeLink(res.token);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+function showIntakeLink(token) {
+  const baseUrl = 'https://beta.niramaya.sg/intake?t=' + token;
+  const waMsg = encodeURIComponent('Hi! Here\'s your AEVUM intake form. Takes about 5 minutes:\\n' + baseUrl);
+  const box = document.getElementById('intakeLinkBox');
+  box.innerHTML = `<div class="link-box">
+    <div style="font-weight:600;font-size:14px;color:var(--green);">✓ Link generated</div>
+    <div class="link-url">${esc(baseUrl)}</div>
+    <div class="link-btns">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${baseUrl}');toast('Link copied')">Copy Link</button>
+      <button class="btn btn-secondary" onclick="window.open('https://wa.me/?text=${waMsg}','_blank')">Send via WhatsApp</button>
+      <button class="btn btn-outline" onclick="backToIntakes()">Done</button>
+    </div>
+  </div>`;
+}
+
+function backToIntakes() {
+  activeIntakeDetail = null;
+  document.getElementById('btnBack').classList.add('hidden');
+  selectTable('intakes');
+}
+
+// ─── Intake Detail ────────────────────────────────────────
+async function openIntake(token) {
+  document.getElementById('tableContent').innerHTML = '<div class="empty-state"><p>Loading intake...</p></div>';
+  document.getElementById('btnBack').classList.remove('hidden');
+
+  try {
+    const data = await api('admin_intake_get', { token });
+    activeIntakeDetail = data;
+    document.getElementById('tableTitle').textContent = data.client_name || token;
+    document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+    const acts = document.getElementById('tableActions');
+    acts.innerHTML = '';
+    document.getElementById('tableMeta').textContent = '';
+    renderIntakeDetail(data);
+  } catch (e) {
+    document.getElementById('tableContent').innerHTML = '<div class="empty-state"><p>Error: ' + e.message + '</p></div>';
+  }
+}
+
+function renderIntakeDetail(data) {
+  const wrap = document.getElementById('tableContent');
+  const p = data.prefill || {};
+  const r = data.response || {};
+  const isDraft = data.status === 'draft';
+
+  let html = '<div class="intake-detail">';
+
+  // Status bar
+  html += `<div class="intake-status-bar">
+    ${intakeBadge(data.status)}
+    <span style="font-size:12px;color:var(--muted);">Token: ${data.token}</span>
+    <span style="font-size:12px;color:var(--muted);">Created: ${(data.created_at||'').replace('T',' ').slice(0,16)}</span>
+    ${data.submitted_at ? '<span style="font-size:12px;color:var(--green);">Submitted: '+data.submitted_at.replace('T',' ').slice(0,16)+'</span>' : ''}
+    ${data.expires_at ? '<span style="font-size:12px;color:var(--muted);">Expires: '+data.expires_at.split('T')[0]+'</span>' : ''}
+  </div>`;
+
+  // Action buttons
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+  if (data.status === 'submitted' || data.status === 'review_required') {
+    html += `<button class="btn btn-primary" onclick="setIntakeStatus('${data.token}','approved')">✓ Approve</button>`;
+  }
+  if (data.status === 'review_required') {
+    html += `<button class="btn btn-outline" style="border-color:var(--red);color:var(--red);" onclick="setIntakeStatus('${data.token}','draft')">↩ Back to Draft</button>`;
+  }
+  if (isDraft) {
+    html += `<button class="btn btn-secondary" onclick="editIntakePrefill('${data.token}')">Edit Part A</button>`;
+    html += `<button class="btn btn-primary" onclick="markSentAndCopyLink('${data.token}')">Mark Sent & Copy Link</button>`;
+  }
+  html += `<button class="btn btn-outline" onclick="resendIntake('${data.token}')">Re-send Link</button>`;
+  html += `<button class="btn btn-outline" onclick="duplicateIntake('${data.token}')">Duplicate</button>`;
+  html += '</div>';
+
+  // Part A
+  html += '<div class="intake-section"><h3>Part A — Meeting Notes' + (isDraft ? ' <span style="font-size:11px;color:var(--muted);font-weight:400;">(editable)</span>' : ' <span style="font-size:11px;color:var(--muted);font-weight:400;">(locked)</span>') + '</h3>';
+  const fields_a = [
+    ['Full name', p.full_name], ['Email', p.email], ['Phone', p.phone],
+    ['Date of birth', p.dob], ['Weight', p.weight ? p.weight+' kg' : ''], ['Height', p.height ? p.height+' cm' : ''],
+    ['Address', p.address], ['Postal code', p.postal_code],
+    ['Referral', p.referral], ['Goals', p.goals]
+  ];
+  for (const [label, val] of fields_a) {
+    html += `<div class="intake-field"><div class="if-label">${label}</div><div class="if-value">${esc(String(val||'-'))}</div></div>`;
+  }
+  html += '</div>';
+
+  // Part B (if any)
+  if (r && Object.keys(r).length > 0) {
+    html += '<div class="intake-section"><h3>Part B — Client Responses</h3>';
+
+    // Screen 1: Food & Schedule
+    if (r.food_preferences || r.dislikes || r.delivery_time) {
+      html += '<div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">Food & Schedule</div>';
+      if (r.food_preferences) html += `<div class="intake-field"><div class="if-label">Preferences</div><div class="if-value">${esc(Array.isArray(r.food_preferences) ? r.food_preferences.join(', ') : String(r.food_preferences))}</div></div>`;
+      if (r.dislikes) html += `<div class="intake-field"><div class="if-label">Dislikes</div><div class="if-value">${esc(r.dislikes)}</div></div>`;
+      if (r.delivery_time) html += `<div class="intake-field"><div class="if-label">Delivery time</div><div class="if-value">${esc(r.delivery_time)}</div></div>`;
+    }
+
+    // Screen 2: Lifestyle
+    if (r.exercise || r.travel_planned !== undefined) {
+      html += '<div style="margin-top:12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">Lifestyle</div>';
+      if (r.exercise) html += `<div class="intake-field"><div class="if-label">Exercise</div><div class="if-value">${esc(r.exercise)}</div></div>`;
+      if (r.travel_planned !== undefined) {
+        html += `<div class="intake-field"><div class="if-label">Travel planned</div><div class="if-value">${r.travel_planned ? 'Yes' + (r.travel_dates ? ' — '+esc(r.travel_dates) : '') : 'No'}</div></div>`;
+      }
+    }
+
+    // Screen 3: Health
+    if (r.allergies !== undefined || r.medications !== undefined || r.medical_conditions !== undefined || r.pregnant !== undefined) {
+      html += '<div style="margin-top:12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">Health Check</div>';
+      if (r.allergies !== undefined) html += `<div class="intake-field"><div class="if-label">Allergies</div><div class="if-value">${r.allergies ? esc(r.allergies_detail || 'Yes') : 'None'}</div></div>`;
+      if (r.medications !== undefined) html += `<div class="intake-field"><div class="if-label">Medications</div><div class="if-value">${r.medications ? esc(r.medications_detail || 'Yes') : 'None'}</div></div>`;
+      if (r.medical_conditions !== undefined) html += `<div class="intake-field"><div class="if-label">Medical conditions</div><div class="if-value">${r.medical_conditions ? esc(r.medical_conditions_detail || 'Yes') : 'None'}</div></div>`;
+      if (r.pregnant !== undefined) html += `<div class="intake-field"><div class="if-label">Pregnant / breastfeeding</div><div class="if-value">${r.pregnant ? '<span style="color:var(--red);font-weight:600;">Yes ⚠</span>' : 'No'}</div></div>`;
+      if (r.emergency_name) html += `<div class="intake-field"><div class="if-label">Emergency contact</div><div class="if-value">${esc(r.emergency_name)}${r.emergency_phone ? ' — '+esc(r.emergency_phone) : ''}</div></div>`;
+    }
+
+    // Screen 4: InBody
+    if (r.inbody_date) {
+      html += '<div style="margin-top:12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">Getting Started</div>';
+      html += `<div class="intake-field"><div class="if-label">InBody scan</div><div class="if-value">${esc(r.inbody_date)}${r.inbody_time ? ' at '+esc(r.inbody_time) : ''}</div></div>`;
+    }
+
+    // Screen 5: Consent
+    if (r.consent) {
+      html += '<div style="margin-top:12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">Consent</div>';
+      html += `<div class="intake-field"><div class="if-label">Confirmed</div><div class="if-value" style="color:var(--green);">✓ Yes</div></div>`;
+      if (r.testimonial_ok !== undefined) html += `<div class="intake-field"><div class="if-label">Testimonial OK</div><div class="if-value">${r.testimonial_ok ? 'Yes' : 'No'}</div></div>`;
+      if (r.age_confirmed) html += `<div class="intake-field"><div class="if-label">Age confirmed 18+</div><div class="if-value">✓</div></div>`;
+    }
+
+    html += '</div>';
+  } else if (data.status !== 'draft') {
+    html += '<div class="intake-section"><h3>Part B — Client Responses</h3><p style="color:var(--muted);font-size:13px;">Not yet started.</p></div>';
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+async function setIntakeStatus(token, status) {
+  try {
+    await api('admin_intake_status', { token, status });
+    toast('Status updated to ' + status);
+    delete store.intakes;
+    const data = await api('admin_intake_get', { token });
+    activeIntakeDetail = data;
+    renderIntakeDetail(data);
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+async function markSentAndCopyLink(token) {
+  const url = 'https://beta.niramaya.sg/intake?t=' + token;
+  try {
+    await api('admin_intake_status', { token, status: 'sent' });
+    await navigator.clipboard.writeText(url);
+    toast('Marked as sent — link copied');
+    delete store.intakes;
+    const data = await api('admin_intake_get', { token });
+    activeIntakeDetail = data;
+    renderIntakeDetail(data);
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+function editIntakePrefill(token) {
+  const data = activeIntakeDetail;
+  if (!data || data.status !== 'draft') { toast('Can only edit draft intakes', true); return; }
+  showNewIntakeForm(data.prefill);
+  // Override form to do update instead of create
+  const actionsDiv = document.querySelector('.if-actions');
+  actionsDiv.innerHTML = `
+    <button class="btn btn-primary" onclick="updateIntakePrefill('${token}')">Save Changes</button>
+    <button class="btn btn-secondary" onclick="openIntake('${token}')">Cancel</button>
+  `;
+  document.querySelector('.intake-form h2').textContent = 'Edit Part A — ' + (data.client_name || '');
+}
+
+async function updateIntakePrefill(token) {
+  const prefill = {
+    full_name: document.getElementById('ifName').value.trim(),
+    email: document.getElementById('ifEmail').value.trim(),
+    phone: document.getElementById('ifPhone').value.trim(),
+    dob: document.getElementById('ifDob').value,
+    weight: parseFloat(document.getElementById('ifWeight').value) || null,
+    height: parseFloat(document.getElementById('ifHeight').value) || null,
+    address: document.getElementById('ifAddress').value.trim(),
+    postal_code: document.getElementById('ifPostal').value.trim(),
+    referral: document.getElementById('ifReferral').value,
+    goals: document.getElementById('ifGoals').value.trim()
+  };
+
+  try {
+    await api('admin_intake_update', { token, prefill, client_name: prefill.full_name });
+    toast('Part A updated');
+    delete store.intakes;
+    openIntake(token);
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+async function resendIntake(token) {
+  if (!confirm('This will expire the current link and generate a new one. Continue?')) return;
+  try {
+    const res = await api('admin_intake_resend', { token });
+    toast('New link generated');
+    delete store.intakes;
+    activeIntakeDetail = null;
+
+    // Show the new link
+    const wrap = document.getElementById('tableContent');
+    const baseUrl = 'https://beta.niramaya.sg/intake?t=' + res.token;
+    const waMsg = encodeURIComponent('Hi! Here\'s your updated AEVUM intake link:\\n' + baseUrl);
+    wrap.innerHTML = `<div class="intake-form">
+      <h2>New Link Generated</h2>
+      <div class="link-box">
+        <div style="font-weight:600;font-size:14px;color:var(--green);">✓ Old link expired. New link ready.</div>
+        <div class="link-url">${esc(baseUrl)}</div>
+        <div class="link-btns">
+          <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${baseUrl}');toast('Link copied')">Copy Link</button>
+          <button class="btn btn-secondary" onclick="window.open('https://wa.me/?text=${waMsg}','_blank')">Send via WhatsApp</button>
+          <button class="btn btn-outline" onclick="openIntake('${res.token}')">View Intake</button>
+          <button class="btn btn-outline" onclick="backToIntakes()">Back to List</button>
+        </div>
+      </div>
+    </div>`;
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+async function duplicateIntake(token) {
+  try {
+    const data = await api('admin_intake_get', { token });
+    const prefill = data.prefill || {};
+    prefill.full_name = (prefill.full_name || '') + ' (copy)';
+    showNewIntakeForm(prefill);
+    toast('Prefilled from existing intake — edit and save');
+  } catch (e) { toast('Error: ' + e.message, true); }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────

@@ -11,7 +11,14 @@
  *   shoplist, mealengine
  *
  * Admin routes (require admin token):
- *   admin_users, admin_export, admin_seed
+ *   admin_users, admin_export, admin_seed,
+ *   admin_intake_create, admin_intakes_list, admin_intake_get,
+ *   admin_intake_update, admin_intake_status, admin_intake_resend
+ *
+ * Public intake routes (token in URL, no auth):
+ *   GET  /intake/:token       - load form
+ *   PUT  /intake/:token/save  - auto-save progress
+ *   POST /intake/:token/submit - final submission
  */
 
 // ─── Constants ───────────────────────────────────────────────
@@ -54,7 +61,7 @@ function corsHeaders(origin, allowed) {
   if (!ok) return null;
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
     'Access-Control-Max-Age': '86400'
   };
@@ -101,8 +108,18 @@ export default {
 
     if (request.method === 'OPTIONS') {
       if (!cors) return new Response('Forbidden', { status: 403 });
-      return new Response(null, { status: 204, headers: cors });
+      return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS' } });
     }
+
+    // Allow GET/PUT for intake public endpoints
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/intake/')) {
+      if (!cors) return new Response('Forbidden', { status: 403 });
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (!rateCheck(ip)) return json({ error: 'Too many requests' }, cors, 429);
+      return handleIntakePublic(request, url, env.DB, cors);
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
@@ -143,6 +160,12 @@ export default {
 	  if (action === 'admin_list' && isAdmin)   return json(await adminList(body, db), cors);
 	  if (action === 'admin_import' && isAdmin) return json(await adminImport(body, db), cors);
       if (action === 'admin_update_user' && isAdmin) return json(await adminUpdateUser(body, db), cors);
+      if (action === 'admin_intake_create' && isAdmin) return json(await adminIntakeCreate(body, db), cors);
+      if (action === 'admin_intakes_list' && isAdmin) return json(await adminIntakesList(body, db), cors);
+      if (action === 'admin_intake_get' && isAdmin) return json(await adminIntakeGet(body, db), cors);
+      if (action === 'admin_intake_update' && isAdmin) return json(await adminIntakeUpdate(body, db), cors);
+      if (action === 'admin_intake_status' && isAdmin) return json(await adminIntakeStatus(body, db), cors);
+      if (action === 'admin_intake_resend' && isAdmin) return json(await adminIntakeResend(body, db), cors);
       if (action === 'admin_mealplan' && isAdmin) {
         const targetId = String(body.user_id || '');
         if (!targetId) return json({ error: 'user_id required' }, cors, 400);
@@ -1146,4 +1169,196 @@ async function adminUpdateUser(body, db) {
   vals.push(targetId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
   return { ok: true };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTAKE FORM
+// ═══════════════════════════════════════════════════════════════
+
+function generateToken() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let t = '';
+  for (let i = 0; i < 21; i++) t += chars[Math.floor(Math.random() * chars.length)];
+  return t;
+}
+
+// Public intake routes (no auth, token in URL)
+async function handleIntakePublic(request, url, db, cors) {
+  // /intake/:token
+  const parts = url.pathname.split('/').filter(Boolean);
+  if (parts.length < 2) return json({ error: 'Token required' }, cors, 400);
+  const token = parts[1];
+  const sub = parts[2] || '';
+
+  const row = await db.prepare('SELECT * FROM intake_tokens WHERE token = ?').bind(token).first();
+  if (!row) return json({ error: 'Invalid or expired link' }, cors, 404);
+  if (row.expires_at && new Date(row.expires_at + 'Z') < new Date()) {
+    return json({ error: 'This link has expired. Please contact Marco.' }, cors, 410);
+  }
+  if (row.status === 'submitted' || row.status === 'review_required' || row.status === 'approved') {
+    if (request.method === 'GET' && !sub) {
+      return json({ status: row.status, submitted: true, client_name: JSON.parse(row.prefill_json).full_name || row.client_name }, cors);
+    }
+    return json({ error: 'Already submitted' }, cors, 409);
+  }
+
+  // GET /intake/:token - load form
+  if (request.method === 'GET' && !sub) {
+    // Mark as in_progress if still sent
+    if (row.status === 'sent') {
+      await db.prepare("UPDATE intake_tokens SET status = 'in_progress' WHERE token = ?").bind(token).run();
+    }
+    const prefill = JSON.parse(row.prefill_json || '{}');
+    const response = row.response_json ? JSON.parse(row.response_json) : null;
+    return json({ prefill, response, current_step: row.current_step, status: row.status }, cors);
+  }
+
+  // PUT/POST /intake/:token/save - auto-save progress
+  if (sub === 'save' && (request.method === 'PUT' || request.method === 'POST')) {
+    let body;
+    try { body = JSON.parse(await request.text()); } catch { return json({ error: 'Invalid JSON' }, cors, 400); }
+    const responseJson = JSON.stringify(body.response || {});
+    const step = parseInt(body.current_step) || 0;
+    await db.prepare(
+      "UPDATE intake_tokens SET response_json = ?, current_step = ?, status = 'in_progress' WHERE token = ?"
+    ).bind(responseJson, step, token).run();
+    return json({ ok: true }, cors);
+  }
+
+  // POST /intake/:token/submit - final submission
+  if (sub === 'submit' && request.method === 'POST') {
+    let body;
+    try { body = JSON.parse(await request.text()); } catch { return json({ error: 'Invalid JSON' }, cors, 400); }
+    const responseJson = JSON.stringify(body.response || {});
+    const prefill = JSON.parse(row.prefill_json || '{}');
+    const resp = body.response || {};
+
+    // Check disqualifiers
+    let status = 'submitted';
+    if (resp.pregnant === true || resp.pregnant === 'yes') status = 'review_required';
+    if (resp.medical_conditions && String(resp.medical_conditions).length > 0) status = 'review_required';
+
+    await db.prepare(
+      "UPDATE intake_tokens SET response_json = ?, current_step = 5, status = ?, submitted_at = datetime('now') WHERE token = ?"
+    ).bind(responseJson, status, token).run();
+
+    // Create user record from intake data
+    const name = prefill.full_name || row.client_name;
+    const dob = prefill.date_of_birth || '';
+    const age = dob ? dobToAge(dob) : 0;
+    const height = parseFloat(prefill.height_cm) || 0;
+    const weight = parseFloat(prefill.weight_kg) || 0;
+    const sex = String(prefill.sex || 'm').toLowerCase();
+    const act = 1.55; // default activity factor
+    const s = sex === 'm' ? 5 : -161;
+    const tdee = (height && weight && age) ? Math.round((10 * weight + 6.25 * height - 5 * age + s) * act) : 0;
+
+    const base = name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 8) || 'user';
+    const rnd = Math.random().toString(36).slice(2, 6);
+    const userId = base + '_' + rnd;
+    const userToken = crypto.randomUUID();
+
+    await db.batch([
+      db.prepare(
+        `INSERT INTO users (id, name, sex, dob, age, height, start_weight, activity, target_kg,
+          current_target_kcal, program, email, intake_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+      ).bind(userId, name, sex, dob || null, age, height, weight, act, parseFloat(prefill.target_kg) || null, tdee, prefill.email || null, token),
+      db.prepare(
+        'INSERT INTO auth_tokens (token, user_id, role) VALUES (?, ?, ?)'
+      ).bind(userToken, userId, 'user')
+    ]);
+
+    return json({ ok: true, status, user_id: userId }, cors);
+  }
+
+  return json({ error: 'Not found' }, cors, 404);
+}
+
+// Admin: create new intake
+async function adminIntakeCreate(body, db) {
+  const prefill = body.prefill || {};
+  const name = String(prefill.full_name || body.client_name || '').trim();
+  if (!name) return { error: 'client name required' };
+
+  const token = generateToken();
+  const expiryDays = parseInt(body.expiry_days) || 14;
+
+  await db.prepare(
+    `INSERT INTO intake_tokens (token, client_name, prefill_json, status, expires_at)
+     VALUES (?, ?, ?, 'draft', datetime('now', '+' || ? || ' days'))`
+  ).bind(token, name, JSON.stringify(prefill), expiryDays).run();
+
+  return { ok: true, token, url: '/intake/' + token };
+}
+
+// Admin: list all intakes
+async function adminIntakesList(body, db) {
+  const status = body.status || null;
+  let q = 'SELECT token, client_name, status, current_step, created_at, expires_at, submitted_at FROM intake_tokens';
+  const params = [];
+  if (status) { q += ' WHERE status = ?'; params.push(status); }
+  q += ' ORDER BY created_at DESC';
+  const rows = await db.prepare(q).bind(...params).all();
+  return { intakes: rows.results };
+}
+
+// Admin: get single intake
+async function adminIntakeGet(body, db) {
+  const token = String(body.token || '');
+  if (!token) return { error: 'token required' };
+  const row = await db.prepare('SELECT * FROM intake_tokens WHERE token = ?').bind(token).first();
+  if (!row) return { error: 'not found' };
+  return {
+    ...row,
+    prefill: JSON.parse(row.prefill_json || '{}'),
+    response: row.response_json ? JSON.parse(row.response_json) : null
+  };
+}
+
+// Admin: edit Part A (only while draft)
+async function adminIntakeUpdate(body, db) {
+  const token = String(body.token || '');
+  if (!token) return { error: 'token required' };
+  const row = await db.prepare('SELECT status FROM intake_tokens WHERE token = ?').bind(token).first();
+  if (!row) return { error: 'not found' };
+  if (row.status !== 'draft') return { error: 'Cannot edit: intake already sent' };
+
+  const prefill = body.prefill || {};
+  const name = String(prefill.full_name || body.client_name || '').trim();
+  await db.prepare(
+    'UPDATE intake_tokens SET prefill_json = ?, client_name = ? WHERE token = ?'
+  ).bind(JSON.stringify(prefill), name || undefined, token).run();
+  return { ok: true };
+}
+
+// Admin: update status
+async function adminIntakeStatus(body, db) {
+  const token = String(body.token || '');
+  const status = String(body.status || '');
+  if (!token || !status) return { error: 'token and status required' };
+  const valid = ['draft', 'sent', 'in_progress', 'submitted', 'review_required', 'approved'];
+  if (!valid.includes(status)) return { error: 'invalid status' };
+  await db.prepare('UPDATE intake_tokens SET status = ? WHERE token = ?').bind(status, token).run();
+  return { ok: true };
+}
+
+// Admin: resend (new token, expire old)
+async function adminIntakeResend(body, db) {
+  const oldToken = String(body.token || '');
+  if (!oldToken) return { error: 'token required' };
+  const row = await db.prepare('SELECT * FROM intake_tokens WHERE token = ?').bind(oldToken).first();
+  if (!row) return { error: 'not found' };
+
+  const newToken = generateToken();
+  await db.batch([
+    // Expire old token
+    db.prepare("UPDATE intake_tokens SET expires_at = datetime('now'), status = 'draft' WHERE token = ?").bind(oldToken),
+    // Create new one with same prefill
+    db.prepare(
+      `INSERT INTO intake_tokens (token, client_name, prefill_json, status, expires_at)
+       VALUES (?, ?, ?, 'draft', datetime('now', '+14 days'))`
+    ).bind(newToken, row.client_name, row.prefill_json)
+  ]);
+
+  return { ok: true, token: newToken, url: '/intake/' + newToken };
 }
