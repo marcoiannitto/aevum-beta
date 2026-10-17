@@ -350,9 +350,9 @@ async function onClientChange() {
   try {
     const res = await api('admin_export', { id });
     selectedProfile = res.profile || {};
-    // Pre-fill weight
-    const w = selectedProfile.start_weight || selectedProfile.weight;
-    if (w) document.getElementById('inputWeight').value = w;
+    // Pre-fill weight — check multiple fields
+    const w = parseFloat(selectedProfile.start_weight) || parseFloat(selectedProfile.weight) || parseFloat(selectedProfile.current_weight) || 0;
+    if (w > 0) document.getElementById('inputWeight').value = w;
     // Pre-fill kcal target if set
     if (selectedProfile.current_target_kcal) {
       document.getElementById('inputKcal').value = selectedProfile.current_target_kcal;
@@ -560,6 +560,7 @@ function recalc() {
   renderWarnings('meal1Warnings', m1totals, m1budget);
   renderWarnings('meal2Warnings', m2totals, m2budget);
   renderSummary(t, m1totals, m2totals);
+  if (!document.getElementById('portionsPanel').classList.contains('hidden')) renderPortions();
 }
 
 // ─── Render net budget ───────────────────────────────────────
