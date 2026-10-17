@@ -59,12 +59,21 @@ input,select{font-family:inherit;font-size:13px;color:var(--ink);}
 .fg input:focus,.fg select:focus{border-color:var(--gold);outline:none;}
 
 /* INGREDIENT PICKER */
+.ing-search{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23938c7d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 110-10 5 5 0 010 10z'/%3E%3C/svg%3E") no-repeat 10px center;margin-bottom:12px;}
+.ing-search:focus{border-color:var(--gold);outline:none;}
 .cat-section{margin-bottom:14px;}
 .cat-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;font-weight:600;}
 .ing-grid{display:flex;flex-wrap:wrap;gap:6px;}
 .ing-chip{padding:6px 12px;border:1px solid var(--line);border-radius:20px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none;}
 .ing-chip:hover{border-color:var(--gold);background:#faf6ee;}
 .ing-chip.selected{background:var(--gold);color:#fff;border-color:var(--gold);}
+
+/* PORTION REFERENCE TABLE */
+.ref-table{width:100%;border-collapse:collapse;}
+.ref-table th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--line);}
+.ref-table td{padding:7px 10px;border-bottom:1px solid var(--line-soft);font-size:13px;}
+.ref-table .num{text-align:right;font-variant-numeric:tabular-nums;}
+.ref-table tr:hover{background:var(--line-soft);}
 
 /* BASKET TABLE */
 .basket-table{width:100%;border-collapse:collapse;margin-top:12px;}
@@ -198,6 +207,7 @@ input,select{font-family:inherit;font-size:13px;color:var(--ink);}
     <div class="tab active" data-meal="1" onclick="switchMeal(1)">Meal 1</div>
     <div class="tab" data-meal="2" onclick="switchMeal(2)">Meal 2</div>
     <div class="tab" data-meal="summary" onclick="switchMeal('summary')">Summary</div>
+    <div class="tab" data-meal="portions" onclick="switchMeal('portions')">Portions</div>
   </div>
 
   <!-- MEAL 1 -->
@@ -233,6 +243,15 @@ input,select{font-family:inherit;font-size:13px;color:var(--ink);}
     <div class="card">
       <h2>Daily Summary</h2>
       <div id="summaryContent"></div>
+    </div>
+  </div>
+
+  <!-- PORTIONS REFERENCE -->
+  <div id="portionsPanel" class="hidden">
+    <div class="card">
+      <h2>Protein Portions per Meal</h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Grams needed if this is the only protein source in a meal (50% split). Based on current targets.</p>
+      <div id="portionsContent"></div>
     </div>
   </div>
 </div>
@@ -350,10 +369,12 @@ function renderPickers() {
   renderPicker('meal2Picker', 2);
 }
 
-function renderPicker(containerId, mealNum) {
+function renderPicker(containerId, mealNum, filter) {
   const el = document.getElementById(containerId);
+  const q = (filter || '').toLowerCase();
   const cats = { protein: [], vegetable: [], fruit: [] };
   ingredients.forEach(ing => {
+    if (q && !ing.name.toLowerCase().includes(q)) return;
     const cat = (ing.category || '').toLowerCase();
     if (cats[cat]) cats[cat].push(ing);
     else {
@@ -362,7 +383,10 @@ function renderPicker(containerId, mealNum) {
     }
   });
 
-  let html = '';
+  // Keep search bar value
+  const searchId = `search_meal${mealNum}`;
+  let html = `<input type="text" class="ing-search" id="${searchId}" placeholder="Search ingredients..." oninput="onIngSearch(${mealNum})" value="${(filter||'').replace(/"/g,'&quot;')}">`;
+
   const order = ['protein', 'vegetable', 'fruit', 'other'];
   order.forEach(cat => {
     const items = cats[cat];
@@ -375,6 +399,15 @@ function renderPicker(containerId, mealNum) {
     html += '</div></div>';
   });
   el.innerHTML = html;
+}
+
+function onIngSearch(mealNum) {
+  const input = document.getElementById(`search_meal${mealNum}`);
+  const q = input ? input.value : '';
+  renderPicker(`meal${mealNum}Picker`, mealNum, q);
+  // Restore focus and cursor position
+  const newInput = document.getElementById(`search_meal${mealNum}`);
+  if (newInput) { newInput.focus(); newInput.selectionStart = newInput.selectionEnd = q.length; }
 }
 
 // ─── Toggle ingredient ───────────────────────────────────────
@@ -676,6 +709,54 @@ function switchMeal(m) {
   document.getElementById('meal1Panel').classList.toggle('hidden', m !== 1);
   document.getElementById('meal2Panel').classList.toggle('hidden', m !== 2);
   document.getElementById('summaryPanel').classList.toggle('hidden', m !== 'summary');
+  document.getElementById('portionsPanel').classList.toggle('hidden', m !== 'portions');
+  if (m === 'portions') renderPortions();
+}
+
+// ─── Portions reference ──────────────────────────────────────
+function renderPortions() {
+  const el = document.getElementById('portionsContent');
+  const t = getTargets();
+  if (!t.weight) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Set body weight first.</p>'; return; }
+
+  const mealProtein = t.net.protein * mealSplit;
+  const mealFat = t.net.fat * mealSplit;
+  const mealKcal = t.net.kcal * mealSplit;
+
+  // Only protein sources
+  const proteins = ingredients.filter(i => (i.category || '').toLowerCase() === 'protein');
+  if (!proteins.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No protein ingredients loaded.</p>'; return; }
+
+  let html = `<table class="ref-table">
+    <thead><tr><th>Protein Source</th><th class="num">Grams/meal</th><th class="num">Kcal</th><th class="num">P (g)</th><th class="num">F (g)</th><th class="num">C (g)</th><th class="num">Notes</th></tr></thead><tbody>`;
+
+  proteins.forEach(food => {
+    const p100 = food.per_100g_p || 0;
+    if (!p100) return;
+    const grams = Math.round((mealProtein / p100) * 100);
+    const kcal = Math.round((food.per_100g_kcal || 0) * grams / 100);
+    const fat = +((food.per_100g_f || 0) * grams / 100).toFixed(1);
+    const carbs = +((food.per_100g_c || 0) * grams / 100).toFixed(1);
+    const prot = +((food.per_100g_p || 0) * grams / 100).toFixed(1);
+
+    let note = '';
+    if (fat > mealFat) note = '<span style="color:var(--red);">fat over budget</span>';
+    else if (kcal > mealKcal * 0.8) note = '<span style="color:#c4880d;">high kcal</span>';
+
+    html += `<tr>
+      <td>${food.name}</td>
+      <td class="num" style="font-weight:600;">${grams}g</td>
+      <td class="num">${kcal}</td>
+      <td class="num">${prot}</td>
+      <td class="num">${fat}</td>
+      <td class="num">${carbs}</td>
+      <td class="num">${note}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  html += `<p style="font-size:11px;color:var(--muted);margin-top:10px;">Meal protein target: ${mealProtein.toFixed(1)}g (${t.net.protein.toFixed(1)}g daily, 50/50 split)</p>`;
+  el.innerHTML = html;
 }
 
 // ─── Reset ───────────────────────────────────────────────────
