@@ -371,6 +371,12 @@ textarea.notes::placeholder{color:var(--muted);}
 
 /* ===== FOOD CHECK ===== */
 .fc-open{font-size:13px;color:var(--ink);font-weight:600;border:1px solid var(--gold);border-radius:20px;padding:6px 14px;background:var(--gold);}
+.fc-open.locked{opacity:.45;pointer-events:none;}
+.lock-gate{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;gap:16px;}
+.lock-gate .lock-ic{font-size:40px;opacity:.25;}
+.lock-gate h3{font-family:var(--serif);font-size:18px;color:var(--ink);margin:0;}
+.lock-gate p{font-size:14px;color:var(--muted);margin:0;max-width:260px;line-height:1.5;}
+.lock-gate .lock-cta{display:inline-block;margin-top:8px;padding:10px 24px;border-radius:24px;background:var(--gold);color:var(--ink);font-weight:600;font-size:14px;text-decoration:none;border:none;cursor:pointer;}
 .fc-rule{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:16px;line-height:1.45;}
 .fc-searchrow{display:flex;gap:8px;}
 .fc-input{flex:1;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:var(--card);}
@@ -971,6 +977,14 @@ textarea.notes::placeholder{color:var(--muted);}
       <button class="sub-tab on" data-sub="plan">Meals</button>
       <button class="sub-tab" data-sub="recipes">Recipes</button>
       <button class="sub-tab" data-sub="fitness">Move</button>
+    </div>
+
+    <!-- LOCK GATE (free users) -->
+    <div class="lock-gate hidden" id="planLockGate">
+      <div class="lock-ic">🔒</div>
+      <h3>Available with AEVUM program</h3>
+      <p>Meal plans, recipes and fitness routines are part of the AEVUM program.</p>
+      <a class="lock-cta" href="https://niramaya.sg" target="_blank">Learn more</a>
     </div>
 
     <!-- PLAN -->
@@ -2212,14 +2226,15 @@ function calcAdjustedTarget(){
   const win=CALBANK_WINDOW;
   const daily=maintTarget();
   const windowTarget=daily*win;
-  let prevKcal=0;
+  let prevKcal=0, daysWithData=0;
   for(let i=1;i<win;i++){
     const d=currentDay-i;if(d<1)continue;
     const raw=localStorage.getItem(K('day_'+d));
     let k=0;
-    if(raw){const o=JSON.parse(raw);k=Math.round(o.kcal||0)||(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);}
+    if(raw){const o=JSON.parse(raw);k=Math.round(o.kcal||0)||(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);daysWithData++;}
     prevKcal+=k;
   }
+  if(!daysWithData) return daily;
   const remaining=windowTarget-prevKcal;
   return Math.max(Math.round(daily*0.6), Math.min(Math.round(daily*1.4), Math.round(remaining)));
 }
@@ -2238,7 +2253,16 @@ function switchTab(name){
   g('daybar').style.display = hideDay?'none':'flex';
   g('phaseBar').style.display = (hideDay||!IS_PROGRAM)?'none':'flex';
   if(name==='trends')renderTrends();
-  if(name==='nutrition'){rcFilter.phase=aiPhaseKey(currentDay);loadRecipes();if(rcLoaded){buildPhaseChips();renderRecipeList();}loadPlan();}
+  if(name==='nutrition'){
+    if(!IS_PROGRAM){
+      g('planLockGate').classList.remove('hidden');
+      document.querySelectorAll('#tab-nutrition .sub-tabs, #tab-nutrition .sub-panel').forEach(e=>e.classList.add('hidden'));
+    } else {
+      g('planLockGate').classList.add('hidden');
+      document.querySelectorAll('#tab-nutrition .sub-tabs').forEach(e=>e.classList.remove('hidden'));
+      rcFilter.phase=aiPhaseKey(currentDay);loadRecipes();if(rcLoaded){buildPhaseChips();renderRecipeList();}loadPlan();
+    }
+  }
   scrollTo(0,0);
 }
 function switchSub(sub){
@@ -3627,7 +3651,11 @@ function wire(){
   document.querySelectorAll('.sub-tab').forEach(t=>t.onclick=()=>{planAction=null;switchSub(t.dataset.sub);});
   g('rcScrim').onclick=closeRecipe;
   g('rcClose').onclick=closeRecipe;
-  g('fcOpen').onclick=()=>openFoodHub('guide');
+  g('fcOpen').onclick=()=>{
+    if(!IS_PROGRAM){switchTab('nutrition');return;}
+    openFoodHub('guide');
+  };
+  if(!IS_PROGRAM) g('fcOpen').classList.add('locked');
   g('fhClose').onclick=closeFoodHub;
   g('fhScrim').onclick=closeFoodHub;
   g('fcCheck').onclick=doFoodCheck;
