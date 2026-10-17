@@ -1463,7 +1463,7 @@ async function createIntake() {
 }
 
 function showIntakeLink(token) {
-  const baseUrl = 'https://beta.niramaya.sg/intake.html?t=' + token;
+  const baseUrl = 'https://app.niramaya.sg/intake.html?t=' + token;
   const waMsg = encodeURIComponent('Hi! Here\'s your AEVUM intake form. Takes about 5 minutes:\\n' + baseUrl);
   const box = document.getElementById('intakeLinkBox');
   box.innerHTML = `<div class="link-box">
@@ -1520,7 +1520,7 @@ function renderIntakeDetail(data) {
   </div>`;
 
   // Action buttons
-  const intakeUrl = 'https://beta.niramaya.sg/intake.html?t=' + data.token;
+  const intakeUrl = 'https://app.niramaya.sg/intake.html?t=' + data.token;
   html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
   html += `<button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${intakeUrl}');toast('URL copied')">📋 Copy Onboarding URL</button>`;
   if (data.status === 'submitted' || data.status === 'review_required') {
@@ -1622,7 +1622,7 @@ async function setIntakeStatus(token, status) {
 }
 
 async function markSentAndCopyLink(token) {
-  const url = 'https://beta.niramaya.sg/intake.html?t=' + token;
+  const url = 'https://app.niramaya.sg/intake.html?t=' + token;
   try {
     await api('admin_intake_status', { token, status: 'sent' });
     await navigator.clipboard.writeText(url);
@@ -1679,7 +1679,7 @@ async function resendIntake(token) {
 
     // Show the new link
     const wrap = document.getElementById('tableContent');
-    const baseUrl = 'https://beta.niramaya.sg/intake.html?t=' + res.token;
+    const baseUrl = 'https://app.niramaya.sg/intake.html?t=' + res.token;
     const waMsg = encodeURIComponent('Hi! Here\'s your updated AEVUM intake link:\\n' + baseUrl);
     wrap.innerHTML = `<div class="intake-form">
       <h2>New Link Generated</h2>

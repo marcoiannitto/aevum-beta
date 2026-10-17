@@ -42,7 +42,7 @@ async function main() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Origin': 'https://beta.niramaya.sg',
+      'Origin': 'https://app.niramaya.sg',
       'Authorization': 'Bearer ' + token
     },
     body: JSON.stringify({ action: 'admin_import', table: 'daily_logs', rows: [row] })

@@ -4,7 +4,7 @@ AEVUM is the tracker app for [Niramaya's](https://niramaya.sg) metabolic wellnes
 
 > **Do NOT confuse with `aevum-app`** (V1 production). That repo is legacy and should not be modified.
 
-Live at: **https://beta.niramaya.sg**
+Live at: **https://app.niramaya.sg**
 
 
 ## Architecture
@@ -16,7 +16,7 @@ Live at: **https://beta.niramaya.sg**
 │   admin.html            │───────>│   /v2-api/src/index.js           │
 │                         │  JSON  │                                  │
 │   Hosted: GitHub Pages  │<───────│   Hosted: Cloudflare Workers     │
-│   beta.niramaya.sg      │        │   aevum-api-v2.marco-iannitto.   │
+│   app.niramaya.sg      │        │   aevum-api-v2.marco-iannitto.   │
 │                         │        │     workers.dev                  │
 └─────────────────────────┘        └──────────┬───────────────────────┘
                                               │
@@ -33,8 +33,8 @@ Live at: **https://beta.niramaya.sg**
 
 | Layer       | Technology                | Location                          |
 |-------------|---------------------------|-----------------------------------|
-| Frontend    | Vanilla HTML/JS (single file SPA) | GitHub Pages, `beta.niramaya.sg` |
-| Admin panel | Vanilla HTML/JS           | GitHub Pages, `beta.niramaya.sg/admin.html` |
+| Frontend    | Vanilla HTML/JS (single file SPA) | GitHub Pages, `app.niramaya.sg` |
+| Admin panel | Vanilla HTML/JS           | GitHub Pages, `app.niramaya.sg/admin.html` |
 | Backend API | Cloudflare Worker (ES modules) | `aevum-api-v2.marco-iannitto.workers.dev` |
 | Database    | Cloudflare D1 (SQLite)    | `aevum-db`                        |
 | AI features | Cloudflare AI Worker + Anthropic Claude Haiku | Proxied via separate worker |
@@ -71,7 +71,7 @@ aevum-beta/
 
 ### Frontend (automatic)
 
-Every push to `main` auto-deploys to GitHub Pages at `beta.niramaya.sg`.
+Every push to `main` auto-deploys to GitHub Pages at `app.niramaya.sg`.
 
 No build step. The HTML files are served as-is.
 
@@ -105,7 +105,7 @@ All requests are JSON with an `action` field. Auth is via `Authorization: Bearer
 ### CORS
 
 Allowed origins:
-- `https://beta.niramaya.sg` (production)
+- `https://app.niramaya.sg` (production)
 - `http://localhost:*` (development)
 
 ### Unauthenticated Routes
@@ -266,7 +266,7 @@ For backend changes, deploy to the live Worker and test against it.
 
 ## Admin Panel
 
-Access: `https://beta.niramaya.sg/admin.html`
+Access: `https://app.niramaya.sg/admin.html`
 
 Login with an admin token (a token in `auth_tokens` with `role = 'admin'`).
 

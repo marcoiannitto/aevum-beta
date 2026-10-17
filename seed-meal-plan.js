@@ -16,7 +16,7 @@ async function callAPI(action, body, token, api) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Origin': 'https://beta.niramaya.sg',
+      'Origin': 'https://app.niramaya.sg',
       'Authorization': 'Bearer ' + token
     },
     body: JSON.stringify({ action, ...body })

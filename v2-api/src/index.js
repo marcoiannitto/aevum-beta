@@ -103,7 +103,7 @@ function resetDay(profile) {
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
-    const allowed = env.ALLOWED_ORIGIN || 'https://beta.niramaya.sg';
+    const allowed = env.ALLOWED_ORIGIN || 'https://app.niramaya.sg';
     const cors = corsHeaders(origin, allowed);
 
     if (request.method === 'OPTIONS') {
