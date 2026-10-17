@@ -590,6 +590,11 @@ textarea.notes::placeholder{color:var(--muted);}
 .prof-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;}
 .prof-row .pr-label{color:var(--muted);}
 .prof-row .pr-value{font-weight:500;}
+.prof-edit-btn{font-size:12px;color:var(--gold);background:none;border:none;cursor:pointer;font-weight:500;padding:0;}
+.prof-edit-input{width:100px;text-align:right;font-size:14px;font-weight:500;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-family:inherit;}
+.prof-edit-select{text-align:right;font-size:14px;font-weight:500;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-family:inherit;-webkit-appearance:auto;}
+.prof-save-btn{width:100%;padding:12px;border:none;border-radius:12px;background:var(--gold);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;}
+.prof-cancel-btn{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;margin-top:6px;}
 .prof-link{display:block;padding:10px 0;font-size:14px;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line);}
 .prof-link:last-child{border-bottom:none;}
 .prof-ver{font-size:11px;color:var(--muted);text-align:center;margin-top:24px;}
@@ -1039,8 +1044,12 @@ textarea.notes::placeholder{color:var(--muted);}
   <div class="prof-name" id="profName"></div>
   <div class="prof-sub" id="profSub"></div>
   <div class="prof-section">
-    <div class="prof-section-title">Profile</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="prof-section-title" style="margin-bottom:0;">Profile</div>
+      <button class="prof-edit-btn" id="profEditBtn">Edit</button>
+    </div>
     <div id="profStats"></div>
+    <div id="profEditActions" class="hidden"></div>
   </div>
   <div class="prof-section" id="profReportsSection">
     <div class="prof-section-title">Reports</div>
@@ -1248,7 +1257,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.40.0';
+const APP_VERSION='v1.41.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -3537,21 +3546,65 @@ function closeRecipe(){
 
 
 /* ---- Profile panel ---- */
-function actLabel(v){return{'1.2':'Sedentary','1.375':'Light','1.55':'Moderate','1.725':'Active','1.9':'Very active','2.1':'Athlete'}[v]||v;}
+const ACT_OPTIONS=[['1.2','Sedentary'],['1.375','Light'],['1.55','Moderate'],['1.725','Active'],['1.9','Very active'],['2.1','Athlete']];
+function actLabel(v){for(const a of ACT_OPTIONS)if(a[0]===String(v))return a[1];return v||'—';}
+let profEditing=false;
+function renderProfileView(){
+  const rows=[
+    ['Sex',profile.sex==='m'?'Male':(profile.sex==='f'?'Female':'—')],
+    ['DOB',profile.dob||'—'],
+    ['Age',profile.dob?dobToAge(profile.dob):(profile.age||'—')],
+    ['Height',profile.height?profile.height+' cm':'—'],
+    ['Start weight',(profile.start_weight||profile.weight||'—')+' kg'],
+    ['Target',profile.target_kg?profile.target_kg+' kg':'—'],
+    ['Activity',actLabel(profile.act)]
+  ];
+  g('profStats').innerHTML=rows.map(r=>`<div class="prof-row"><span class="pr-label">${r[0]}</span><span class="pr-value">${r[1]}</span></div>`).join('');
+  g('profEditActions').classList.add('hidden');
+  g('profEditBtn').textContent='Edit';
+  profEditing=false;
+}
+function renderProfileEdit(){
+  const sexSel=`<select class="prof-edit-select" id="peSex"><option value="m"${profile.sex==='m'?' selected':''}>Male</option><option value="f"${profile.sex==='f'?' selected':''}>Female</option></select>`;
+  const actSel='<select class="prof-edit-select" id="peAct">'+ACT_OPTIONS.map(a=>`<option value="${a[0]}"${String(profile.act)===a[0]?' selected':''}>${a[1]}</option>`).join('')+'</select>';
+  const rows=[
+    ['Name',`<input class="prof-edit-input" id="peName" value="${profile.name||''}">`],
+    ['Sex',sexSel],
+    ['DOB',`<input class="prof-edit-input" id="peDob" type="date" value="${profile.dob||''}">`],
+    ['Height (cm)',`<input class="prof-edit-input" id="peHeight" type="number" value="${profile.height||''}">`],
+    ['Target (kg)',`<input class="prof-edit-input" id="peTarget" type="number" step="0.1" value="${profile.target_kg||''}">`],
+    ['Activity',actSel]
+  ];
+  g('profStats').innerHTML=rows.map(r=>`<div class="prof-row"><span class="pr-label">${r[0]}</span><span class="pr-value">${r[1]}</span></div>`).join('');
+  g('profEditActions').innerHTML='<button class="prof-save-btn" onclick="saveProfile()">Save</button><button class="prof-cancel-btn" onclick="cancelProfileEdit()">Cancel</button>';
+  g('profEditActions').classList.remove('hidden');
+  g('profEditBtn').textContent='';
+  profEditing=true;
+}
+function cancelProfileEdit(){renderProfileView();}
+async function saveProfile(){
+  const body={action:'update_profile'};
+  const name=g('peName').value.trim();if(name)body.name=name;
+  body.sex=g('peSex').value;
+  const dob=g('peDob').value;if(dob)body.dob=dob;
+  const h=g('peHeight').value;if(h)body.height=parseFloat(h);
+  const t=g('peTarget').value;if(t)body.target_kg=parseFloat(t);
+  body.act=g('peAct').value;
+  try{
+    const res=await postJSON(BACKEND_URL,body);
+    if(res.error){showToast('Error: '+res.error);return;}
+    if(res.profile){profile=res.profile;localStorage.setItem(K('profile'),JSON.stringify(profile));}
+    showToast('Profile updated');
+    renderProfileView();
+    g('profName').textContent=profile.name;
+    g('whoName').textContent=profile.name;
+  }catch(e){showToast('Save failed');}
+}
 function openProfile(){
   if(!profile)return;
   g('profName').textContent=profile.name;
   g('profSub').textContent='AEVUM'+(IS_PROGRAM?' Program':' Tracker');
-  const rows=[
-    ['Sex',profile.sex==='m'?'Male':'Female'],
-    ['DOB',profile.dob||'—'],
-    ['Age',profile.dob?dobToAge(profile.dob):profile.age],
-    ['Height',profile.height+' cm'],
-    ['Start weight',(profile.start_weight||profile.weight)+' kg'],
-    ['Target',profile.target_kg?profile.target_kg+' kg':'--'],
-    ['Activity',actLabel(profile.act)]
-  ];
-  g('profStats').innerHTML=rows.map(r=>`<div class="prof-row"><span class="pr-label">${r[0]}</span><span class="pr-value">${r[1]}</span></div>`).join('');
+  renderProfileView();
   // #26: Report cards
   const L=phaseLens();const resetDay=L.loading+L.activation+L.transition;
   const td=todayDayNum()||currentDay;
@@ -3612,6 +3665,7 @@ function openProfile(){
 }
 function closeProfile(){
   if(!g('profPanel').classList.contains('show'))return;
+  if(profEditing)cancelProfileEdit();
   if(history.state&&history.state.sheet==='profile')history.back();
   else{g('profScrim').classList.remove('show');g('profPanel').classList.remove('show');}
 }
@@ -3673,6 +3727,7 @@ function wire(){
   g('rtClose')&&(g('rtClose').onclick=closeRoutine);g('rtScrim')&&(g('rtScrim').onclick=closeRoutine);
   g('mvClose')&&(g('mvClose').onclick=closeMovement);g('mvScrim')&&(g('mvScrim').onclick=closeMovement);
   g('whoName').onclick=openProfile;g('profClose').onclick=closeProfile;g('profScrim').onclick=closeProfile;
+  g('profEditBtn').onclick=()=>{if(profEditing)cancelProfileEdit();else renderProfileEdit();};
   wireGradOnboard();
   g('dPhase').onclick=openPhaseSheet;
   g('phClose').onclick=closePhaseSheet;g('phScrim').onclick=closePhaseSheet;

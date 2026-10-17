@@ -182,6 +182,7 @@ export default {
       switch (action) {
         case 'profile':    return json(await getProfile(userId, db), cors);
         case 'complete_profile': return json(await completeProfile(userId, body, db), cors);
+        case 'update_profile':  return json(await updateProfile(userId, body, db), cors);
         case 'sync':       return json(await syncRow(userId, body, db), cors);
         case 'getdays':    return json(await getDays(userId, db), cors);
         case 'rules':      return json(await getRules(userId, db), cors);
@@ -358,6 +359,47 @@ async function completeProfile(userId, body, db) {
   return { ok: true, current_target_kcal: tdee };
 }
 
+// ─── Update profile (user self-service) ─────────────────────
+async function updateProfile(userId, body, db) {
+  const allowed = ['name', 'sex', 'dob', 'height', 'target_kg', 'act'];
+  const sets = [];
+  const vals = [];
+  for (const key of allowed) {
+    if (body[key] !== undefined && body[key] !== '') {
+      if (key === 'sex') {
+        const s = String(body.sex).toLowerCase();
+        if (s !== 'm' && s !== 'f') continue;
+        sets.push('sex = ?'); vals.push(s);
+      } else if (key === 'dob') {
+        sets.push('dob = ?'); vals.push(body.dob);
+        sets.push('age = ?'); vals.push(dobToAge(body.dob));
+      } else if (key === 'act') {
+        sets.push('activity = ?'); vals.push(parseFloat(body.act));
+      } else if (key === 'height') {
+        sets.push('height = ?'); vals.push(parseFloat(body.height));
+      } else if (key === 'target_kg') {
+        sets.push('target_kg = ?'); vals.push(parseFloat(body.target_kg));
+      } else if (key === 'name') {
+        sets.push('name = ?'); vals.push(String(body.name).trim());
+      }
+    }
+  }
+  if (!sets.length) return { error: 'nothing to update' };
+  vals.push(userId);
+  await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+  // Recompute TDEE if relevant fields changed
+  const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+  if (row && row.sex && row.height && (row.dob || row.age) && row.start_weight) {
+    const age = row.dob ? dobToAge(row.dob) : row.age;
+    const act = parseFloat(row.activity) || 1.55;
+    const s = row.sex === 'm' ? 5 : -161;
+    const tw = parseFloat(row.target_kg) || parseFloat(row.start_weight);
+    const tdee = Math.round((10 * tw + 6.25 * row.height - 5 * age + s) * act);
+    await db.prepare('UPDATE users SET current_target_kcal = ? WHERE id = ?').bind(tdee, userId).run();
+  }
+  return await getProfile(userId, db);
+}
+
 // ─── Profile ─────────────────────────────────────────────────
 async function getProfile(userId, db) {
   const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
@@ -372,13 +414,16 @@ async function getProfile(userId, db) {
       age: row.dob ? dobToAge(row.dob) : row.age,
       target_kg: row.target_kg,
       start_weight: row.start_weight,
+      weight: row.start_weight,
       start_date: row.start_date || '',
       height: row.height,
+      act: row.activity || '',
       activation_days: row.activation_days,
       loading_days: row.loading_days,
       transition_days: row.transition_days,
       stabilization_days: row.stabilization_days,
       stab_target_weight: row.stab_target_weight,
+      maint_target_weight: row.maint_target_weight || null,
       current_target_kcal: row.current_target_kcal,
       prev_target_kcal: row.prev_target_kcal,
       last_review_date: row.last_review_date || '',
