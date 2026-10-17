@@ -1257,7 +1257,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.41.0';
+const APP_VERSION='v1.41.1';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1859,7 +1859,7 @@ function render(){
     g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;
     g('dPhase').style.display='';
   }else{
-    const dt=dayToDate(currentDay);g('dNum').textContent=dt?fmtShort(dt):'';
+    const dt=dayToDate(currentDay)||new Date(Date.now()+(currentDay-todayDayNum())*86400000);g('dNum').textContent=fmtShort(dt);
     g('dPhase').style.display='none';
   }
   g('prevDay').disabled=currentDay<=1;g('nextDay').disabled=false; /* maintenance: no upper bound */
@@ -2547,7 +2547,7 @@ function trendsPhaseStrip(d0,dN){
   // maintenance user: single full-width bar, no prior-phase labels
   if(cur==='maintenance'){
     const segs=`<rect x="${padL}" y="0" width="${(W-padL-padR).toFixed(1)}" height="6" rx="3" fill="${MAINT_COLOR}"/>`;
-    const labels=`<span class="cur" style="left:50%">Maintenance</span>`;
+    const labels=`<span class="cur" style="left:50%">${IS_PROGRAM?'Maintenance':'Tracking'}</span>`;
     return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6">${segs}</svg><div class="trphase-labels">${labels}</div>`;
   }
   const L=phaseLens();
@@ -2580,7 +2580,7 @@ function phaseTargetLabel(dayNum){
   const ph=phaseFor(dayNum);
   if(ph.key==='loading')return 'Loading, eat high';
   if(ph.key==='activation'||ph.key==='transition')return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
-  if(ph.key==='maintenance')return 'Maintenance, target ~'+maintTarget()+' kcal';
+  if(ph.key==='maintenance')return (IS_PROGRAM?'Maintenance':'Tracking')+', target ~'+maintTarget()+' kcal';
   return 'Stabilization, target ~'+effectiveStabTarget(dayNum)+' kcal';
 }
 function collectMacroDays(){
