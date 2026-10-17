@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<!-- AEVUM Food Quantity Calculator · v1.0.0 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>AEVUM Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1A1A;--ink-soft:#4a463f;--gold:#B08D2E;--gold-deep:#8f6f1f;
+  --paper:#FBFAF7;--card:#ffffff;--line:#EBE5D8;--line-soft:#F2EDE2;--muted:#938c7d;
+  --red:#A13024;--green:#2d6a4f;--blue:#4a6fa5;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,select{font-family:inherit;font-size:13px;color:var(--ink);}
+.hidden{display:none!important;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--ink);color:#fff;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;}
+.brand{font-family:var(--serif);font-size:34px;font-weight:500;letter-spacing:.16em;}
+.brand-sub{color:var(--gold);font-size:11px;letter-spacing:.28em;margin-top:6px;}
+.login-box{margin-top:48px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px;}
+.login-box input{width:100%;padding:14px;background:#242320;border:1px solid #34322d;border-radius:12px;color:#fff;font-size:15px;text-align:center;letter-spacing:.04em;}
+.login-box input::placeholder{color:#6b665c;}
+.btn-login{padding:14px;background:var(--gold);color:var(--ink);border-radius:12px;font-size:15px;font-weight:600;transition:opacity .15s;}
+.btn-login:hover{opacity:.9;}
+.login-err{color:#e05c4d;font-size:13px;min-height:20px;}
+
+/* LAYOUT */
+#app{max-width:900px;margin:0 auto;padding:16px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:16px;border-bottom:1px solid var(--line);}
+.topbar h1{font-family:var(--serif);font-size:20px;font-weight:500;}
+.topbar .ver{font-size:11px;color:var(--muted);margin-left:8px;}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:opacity .15s;}
+.btn-primary{background:var(--gold);color:var(--ink);}
+.btn-secondary{background:var(--line);color:var(--ink-soft);}
+.btn-outline{border:1px solid var(--line);color:var(--ink-soft);background:transparent;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn:hover:not(:disabled){opacity:.85;}
+.btn:disabled{opacity:.4;cursor:default;}
+
+/* CARD */
+.card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:16px;}
+.card h2{font-family:var(--serif);font-size:16px;font-weight:500;margin-bottom:14px;}
+.card h3{font-family:var(--serif);font-size:14px;font-weight:500;margin-bottom:10px;color:var(--ink-soft);}
+
+/* FORM GRID */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+.fg label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);display:flex;flex-direction:column;gap:4px;}
+.fg input,.fg select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);}
+.fg input:focus,.fg select:focus{border-color:var(--gold);outline:none;}
+
+/* INGREDIENT PICKER */
+.cat-section{margin-bottom:14px;}
+.cat-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.ing-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.ing-chip{padding:6px 12px;border:1px solid var(--line);border-radius:20px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none;}
+.ing-chip:hover{border-color:var(--gold);background:#faf6ee;}
+.ing-chip.selected{background:var(--gold);color:#fff;border-color:var(--gold);}
+
+/* BASKET TABLE */
+.basket-table{width:100%;border-collapse:collapse;margin-top:12px;}
+.basket-table th{text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--line);}
+.basket-table td{padding:6px 8px;border-bottom:1px solid var(--line-soft);font-size:13px;}
+.basket-table .num{text-align:right;font-variant-numeric:tabular-nums;}
+.basket-table .total-row td{font-weight:600;border-top:2px solid var(--line);border-bottom:none;}
+.basket-table input[type="number"]{width:60px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;text-align:right;font-size:13px;}
+.basket-table input[type="number"]:focus{border-color:var(--gold);outline:none;}
+.remove-btn{color:var(--red);font-size:16px;cursor:pointer;opacity:.5;padding:2px 6px;}
+.remove-btn:hover{opacity:1;}
+
+/* BUDGET BARS */
+.budget-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.budget-item{flex:1;min-width:100px;}
+.budget-label{font-size:11px;color:var(--muted);margin-bottom:3px;display:flex;justify-content:space-between;}
+.budget-bar{height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden;}
+.budget-fill{height:100%;border-radius:4px;transition:width .2s;}
+.budget-fill.ok{background:var(--green);}
+.budget-fill.warn{background:#c4880d;}
+.budget-fill.over{background:var(--red);}
+
+/* SUMMARY TABLE */
+.summary-table{width:100%;border-collapse:collapse;}
+.summary-table th,.summary-table td{padding:8px 10px;text-align:right;font-size:13px;}
+.summary-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--line);}
+.summary-table td{border-bottom:1px solid var(--line-soft);}
+.summary-table .delta-ok{color:var(--green);}
+.summary-table .delta-warn{color:#c4880d;}
+.summary-table .delta-over{color:var(--red);}
+
+/* WARNINGS */
+.warning{padding:8px 12px;background:#fff3e0;border:1px solid #ffe0b2;border-radius:8px;font-size:12px;color:#e65100;margin-top:8px;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:16px;}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  #app{padding:12px;}
+  .fg{grid-template-columns:1fr 1fr;}
+  .budget-row{flex-direction:column;}
+  .topbar h1{font-size:17px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="brand">AEVUM</div>
+  <div class="brand-sub">FOOD CALCULATOR</div>
+  <div class="login-box">
+    <input type="text" id="tokenInput" placeholder="Admin token" autocomplete="off">
+    <button class="btn-login" onclick="doLogin()">Enter</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div style="display:flex;align-items:baseline;">
+      <h1>Food Calculator</h1>
+      <span class="ver">v1.0.0</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="resetAll()">Reset</button>
+      <button class="btn btn-secondary" onclick="location.href='admin.html'">Admin</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: Client + Setup -->
+  <div class="card" id="setupCard">
+    <h2>1. Client Setup</h2>
+    <div class="fg" style="margin-bottom:14px;">
+      <label>Client
+        <select id="clientSelect" onchange="onClientChange()">
+          <option value="">Select client...</option>
+        </select>
+      </label>
+      <label>Body weight (kg)
+        <input type="number" id="inputWeight" step="0.1" min="30" max="300" onchange="recalc()">
+      </label>
+    </div>
+
+    <h3>Daily Targets</h3>
+    <div class="fg" style="margin-bottom:14px;">
+      <label>Kcal/day
+        <input type="number" id="inputKcal" value="700" step="50" min="200" max="2000" onchange="recalc()">
+      </label>
+      <label>Protein (g/kg BW)
+        <input type="number" id="inputProteinPerKg" value="1.3" step="0.1" min="0.5" max="3" onchange="recalc()">
+      </label>
+      <label>Fat (g/day)
+        <input type="number" id="inputFat" value="15" step="1" min="0" max="100" onchange="recalc()">
+      </label>
+      <label>Carbs (g/day)
+        <input type="number" id="inputCarbs" value="30" step="1" min="0" max="200" onchange="recalc()">
+      </label>
+    </div>
+
+    <h3>Supplement (per serve, 2x/day)</h3>
+    <div class="fg">
+      <label>Kcal
+        <input type="number" id="suppKcal" value="0" step="1" min="0" onchange="recalc()">
+      </label>
+      <label>Protein (g)
+        <input type="number" id="suppP" value="0" step="0.1" min="0" onchange="recalc()">
+      </label>
+      <label>Fat (g)
+        <input type="number" id="suppF" value="0" step="0.1" min="0" onchange="recalc()">
+      </label>
+      <label>Carbs (g)
+        <input type="number" id="suppC" value="0" step="0.1" min="0" onchange="recalc()">
+      </label>
+    </div>
+  </div>
+
+  <!-- NET FOOD TARGETS -->
+  <div class="card" id="netCard">
+    <h2>Net Food Targets (after supplements)</h2>
+    <div class="budget-row" id="netBudget"></div>
+  </div>
+
+  <!-- MEAL TABS -->
+  <div class="tabs">
+    <div class="tab active" data-meal="1" onclick="switchMeal(1)">Meal 1</div>
+    <div class="tab" data-meal="2" onclick="switchMeal(2)">Meal 2</div>
+    <div class="tab" data-meal="summary" onclick="switchMeal('summary')">Summary</div>
+  </div>
+
+  <!-- MEAL 1 -->
+  <div id="meal1Panel">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Meal 1 Basket</h2>
+        <span style="font-size:12px;color:var(--muted);" id="meal1Split">~50% of daily food</span>
+      </div>
+      <div class="budget-row" id="meal1Budget"></div>
+      <div id="meal1Picker"></div>
+      <div id="meal1Basket"></div>
+      <div id="meal1Warnings"></div>
+    </div>
+  </div>
+
+  <!-- MEAL 2 -->
+  <div id="meal2Panel" class="hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Meal 2 Basket</h2>
+        <span style="font-size:12px;color:var(--muted);">Remaining budget</span>
+      </div>
+      <div class="budget-row" id="meal2Budget"></div>
+      <div id="meal2Picker"></div>
+      <div id="meal2Basket"></div>
+      <div id="meal2Warnings"></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="summaryPanel" class="hidden">
+    <div class="card">
+      <h2>Daily Summary</h2>
+      <div id="summaryContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://aevum-api-v2.marco-iannitto.workers.dev';
+let TOKEN = '';
+let allUsers = [];
+let ingredients = [];
+let selectedProfile = null;
+
+// Meal baskets: { ingredientId: { food, grams } }
+let meals = { 1: {}, 2: {} };
+let mealSplit = 0.5; // meal 1 gets 50%
+
+// ─── API ─────────────────────────────────────────────────────
+async function api(action, data = {}) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+    body: JSON.stringify({ action, ...data })
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json;
+}
+
+// ─── Login ───────────────────────────────────────────────────
+async function doLogin() {
+  const inp = document.getElementById('tokenInput');
+  const err = document.getElementById('loginErr');
+  const token = inp.value.trim();
+  if (!token) { err.textContent = 'Enter your admin token'; return; }
+  TOKEN = token;
+  try {
+    await api('admin_users');
+    sessionStorage.setItem('aevum_calc_token', token);
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    loadData();
+  } catch (e) {
+    err.textContent = 'Invalid token or not admin';
+    TOKEN = '';
+  }
+}
+
+(function() {
+  const saved = sessionStorage.getItem('aevum_calc_token');
+  if (saved) {
+    TOKEN = saved;
+    api('admin_users').then(() => {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      loadData();
+    }).catch(() => { TOKEN = ''; sessionStorage.removeItem('aevum_calc_token'); });
+  }
+  document.getElementById('tokenInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+})();
+
+// ─── Load data ───────────────────────────────────────────────
+async function loadData() {
+  try {
+    const [usersRes, ingRes] = await Promise.all([
+      api('admin_users'),
+      api('admin_list', { table: 'ingredients' })
+    ]);
+    allUsers = usersRes.users || [];
+    ingredients = (ingRes.rows || []).sort((a, b) => a.name.localeCompare(b.name));
+
+    const sel = document.getElementById('clientSelect');
+    sel.innerHTML = '<option value="">Select client...</option>';
+    allUsers.filter(u => u.program).forEach(u => {
+      sel.innerHTML += `<option value="${u.id}">${u.name || u.email || u.id}</option>`;
+    });
+    // Also add non-program users in a separate group
+    const nonProg = allUsers.filter(u => !u.program);
+    if (nonProg.length) {
+      sel.innerHTML += '<option disabled>───────────</option>';
+      nonProg.forEach(u => {
+        sel.innerHTML += `<option value="${u.id}">${u.name || u.email || u.id} (inactive)</option>`;
+      });
+    }
+
+    renderPickers();
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+// ─── Client change ───────────────────────────────────────────
+async function onClientChange() {
+  const id = document.getElementById('clientSelect').value;
+  if (!id) { selectedProfile = null; return; }
+  try {
+    const res = await api('admin_export', { id });
+    selectedProfile = res.profile || {};
+    // Pre-fill weight
+    const w = selectedProfile.start_weight || selectedProfile.weight;
+    if (w) document.getElementById('inputWeight').value = w;
+    // Pre-fill kcal target if set
+    if (selectedProfile.current_target_kcal) {
+      document.getElementById('inputKcal').value = selectedProfile.current_target_kcal;
+    }
+    recalc();
+  } catch (e) {
+    console.error('Profile load error:', e);
+  }
+}
+
+// ─── Render ingredient pickers ───────────────────────────────
+function renderPickers() {
+  renderPicker('meal1Picker', 1);
+  renderPicker('meal2Picker', 2);
+}
+
+function renderPicker(containerId, mealNum) {
+  const el = document.getElementById(containerId);
+  const cats = { protein: [], vegetable: [], fruit: [] };
+  ingredients.forEach(ing => {
+    const cat = (ing.category || '').toLowerCase();
+    if (cats[cat]) cats[cat].push(ing);
+    else {
+      if (!cats.other) cats.other = [];
+      cats.other.push(ing);
+    }
+  });
+
+  let html = '';
+  const order = ['protein', 'vegetable', 'fruit', 'other'];
+  order.forEach(cat => {
+    const items = cats[cat];
+    if (!items || !items.length) return;
+    html += `<div class="cat-section"><div class="cat-label">${cat}s</div><div class="ing-grid">`;
+    items.forEach(ing => {
+      const sel = meals[mealNum][ing.id] ? 'selected' : '';
+      html += `<div class="ing-chip ${sel}" data-id="${ing.id}" data-meal="${mealNum}" onclick="toggleIngredient('${ing.id}',${mealNum})">${ing.name}</div>`;
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+// ─── Toggle ingredient ───────────────────────────────────────
+function toggleIngredient(id, mealNum) {
+  if (meals[mealNum][id]) {
+    delete meals[mealNum][id];
+  } else {
+    const food = ingredients.find(i => i.id === id);
+    if (!food) return;
+    meals[mealNum][id] = { food, grams: 0 }; // auto-calculated
+  }
+  recalc();
+  renderPicker(`meal${mealNum}Picker`, mealNum);
+}
+
+// ─── Get targets ─────────────────────────────────────────────
+function getTargets() {
+  const weight = parseFloat(document.getElementById('inputWeight').value) || 0;
+  const kcal = parseFloat(document.getElementById('inputKcal').value) || 700;
+  const protPerKg = parseFloat(document.getElementById('inputProteinPerKg').value) || 1.3;
+  const fat = parseFloat(document.getElementById('inputFat').value) || 15;
+  const carbs = parseFloat(document.getElementById('inputCarbs').value) || 30;
+
+  const suppKcal = (parseFloat(document.getElementById('suppKcal').value) || 0) * 2;
+  const suppP = (parseFloat(document.getElementById('suppP').value) || 0) * 2;
+  const suppF = (parseFloat(document.getElementById('suppF').value) || 0) * 2;
+  const suppC = (parseFloat(document.getElementById('suppC').value) || 0) * 2;
+
+  const totalP = weight * protPerKg;
+
+  return {
+    daily: { kcal, protein: totalP, fat, carbs },
+    supp: { kcal: suppKcal, protein: suppP, fat: suppF, carbs: suppC },
+    net: {
+      kcal: kcal - suppKcal,
+      protein: totalP - suppP,
+      fat: fat - suppF,
+      carbs: carbs - suppC
+    },
+    weight
+  };
+}
+
+// ─── Auto-compute grams ─────────────────────────────────────
+function autoCompute(mealBasket, budget) {
+  const items = Object.values(mealBasket);
+  if (!items.length) return;
+
+  // Separate by category
+  const proteins = items.filter(i => (i.food.category || '').toLowerCase() === 'protein');
+  const vegs = items.filter(i => (i.food.category || '').toLowerCase() === 'vegetable');
+  const fruits = items.filter(i => (i.food.category || '').toLowerCase() === 'fruit');
+  const others = items.filter(i => !['protein','vegetable','fruit'].includes((i.food.category||'').toLowerCase()));
+
+  // Step 1: Size proteins to hit protein target
+  if (proteins.length) {
+    const proteinShare = budget.protein / proteins.length;
+    proteins.forEach(item => {
+      const p100 = item.food.per_100g_p || 0;
+      item.grams = p100 > 0 ? Math.round((proteinShare / p100) * 100) : 0;
+    });
+  }
+
+  // Calculate remaining carb budget after protein's carb contribution
+  let usedCarbs = 0;
+  proteins.forEach(item => { usedCarbs += (item.food.per_100g_c || 0) * item.grams / 100; });
+
+  let remainingCarbs = budget.carbs - usedCarbs;
+
+  // Step 2: Size vegetables to fill carb sub-budget
+  if (vegs.length && remainingCarbs > 0) {
+    const vegCarbShare = Math.min(remainingCarbs * 0.7, remainingCarbs) / vegs.length; // 70% of remaining for veg
+    vegs.forEach(item => {
+      const c100 = item.food.per_100g_c || 0;
+      if (c100 > 0) {
+        item.grams = Math.round((vegCarbShare / c100) * 100);
+      } else {
+        // Very low carb veg (e.g. lettuce): give a reasonable portion
+        item.grams = 100;
+      }
+    });
+    vegs.forEach(item => { usedCarbs += (item.food.per_100g_c || 0) * item.grams / 100; });
+    remainingCarbs = budget.carbs - usedCarbs;
+  }
+
+  // Step 3: Size fruits from remaining carb headroom
+  if (fruits.length && remainingCarbs > 0) {
+    const fruitShare = remainingCarbs / fruits.length;
+    fruits.forEach(item => {
+      const c100 = item.food.per_100g_c || 0;
+      item.grams = c100 > 0 ? Math.round((fruitShare / c100) * 100) : 50;
+    });
+  }
+
+  // Others: give a small default
+  others.forEach(item => { if (!item.grams) item.grams = 50; });
+
+  // Ensure no negative grams
+  items.forEach(item => { if (item.grams < 0) item.grams = 0; });
+}
+
+// ─── Compute meal totals ─────────────────────────────────────
+function mealTotals(mealBasket) {
+  let kcal = 0, protein = 0, fat = 0, carbs = 0;
+  Object.values(mealBasket).forEach(item => {
+    const g = item.grams || 0;
+    kcal += (item.food.per_100g_kcal || 0) * g / 100;
+    protein += (item.food.per_100g_p || 0) * g / 100;
+    fat += (item.food.per_100g_f || 0) * g / 100;
+    carbs += (item.food.per_100g_c || 0) * g / 100;
+  });
+  return { kcal: Math.round(kcal), protein: +protein.toFixed(1), fat: +fat.toFixed(1), carbs: +carbs.toFixed(1) };
+}
+
+// ─── Main recalculation ──────────────────────────────────────
+function recalc() {
+  const t = getTargets();
+  if (!t.weight) return;
+
+  // Meal 1 budget
+  const m1budget = {
+    kcal: t.net.kcal * mealSplit,
+    protein: t.net.protein * mealSplit,
+    fat: t.net.fat * mealSplit,
+    carbs: t.net.carbs * mealSplit
+  };
+
+  // Auto-compute meal 1 quantities
+  autoCompute(meals[1], m1budget);
+  const m1totals = mealTotals(meals[1]);
+
+  // Meal 2 budget = remaining
+  const m2budget = {
+    kcal: t.net.kcal - m1totals.kcal,
+    protein: t.net.protein - m1totals.protein,
+    fat: t.net.fat - m1totals.fat,
+    carbs: t.net.carbs - m1totals.carbs
+  };
+
+  // Auto-compute meal 2 quantities
+  autoCompute(meals[2], m2budget);
+  const m2totals = mealTotals(meals[2]);
+
+  // Render everything
+  renderNetBudget(t);
+  renderBudgetBars('meal1Budget', m1totals, m1budget);
+  renderBudgetBars('meal2Budget', m2totals, m2budget);
+  renderBasket('meal1Basket', meals[1], 1);
+  renderBasket('meal2Basket', meals[2], 2);
+  renderWarnings('meal1Warnings', m1totals, m1budget);
+  renderWarnings('meal2Warnings', m2totals, m2budget);
+  renderSummary(t, m1totals, m2totals);
+}
+
+// ─── Render net budget ───────────────────────────────────────
+function renderNetBudget(t) {
+  const el = document.getElementById('netBudget');
+  el.innerHTML = budgetItem('Kcal', 0, t.net.kcal, '') +
+    budgetItem('Protein', 0, t.net.protein, 'g') +
+    budgetItem('Fat', 0, t.net.fat, 'g') +
+    budgetItem('Carbs', 0, t.net.carbs, 'g');
+}
+
+// ─── Budget bars ─────────────────────────────────────────────
+function budgetItem(label, used, total, unit) {
+  const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+  const cls = pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok';
+  return `<div class="budget-item">
+    <div class="budget-label"><span>${label}</span><span>${Math.round(used)}/${Math.round(total)}${unit}</span></div>
+    <div class="budget-bar"><div class="budget-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
+  </div>`;
+}
+
+function renderBudgetBars(containerId, totals, budget) {
+  document.getElementById(containerId).innerHTML =
+    budgetItem('Kcal', totals.kcal, budget.kcal, '') +
+    budgetItem('Protein', totals.protein, budget.protein, 'g') +
+    budgetItem('Fat', totals.fat, budget.fat, 'g') +
+    budgetItem('Carbs', totals.carbs, budget.carbs, 'g');
+}
+
+// ─── Render basket table ─────────────────────────────────────
+function renderBasket(containerId, basket, mealNum) {
+  const el = document.getElementById(containerId);
+  const items = Object.entries(basket);
+  if (!items.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;margin-top:8px;">Pick ingredients above</p>'; return; }
+
+  let html = `<table class="basket-table">
+    <thead><tr><th>Ingredient</th><th class="num">Grams</th><th class="num">Kcal</th><th class="num">P</th><th class="num">F</th><th class="num">C</th><th></th></tr></thead><tbody>`;
+
+  let tKcal = 0, tP = 0, tF = 0, tC = 0;
+
+  items.forEach(([id, item]) => {
+    const g = item.grams || 0;
+    const kcal = Math.round((item.food.per_100g_kcal || 0) * g / 100);
+    const p = +((item.food.per_100g_p || 0) * g / 100).toFixed(1);
+    const f = +((item.food.per_100g_f || 0) * g / 100).toFixed(1);
+    const c = +((item.food.per_100g_c || 0) * g / 100).toFixed(1);
+    tKcal += kcal; tP += p; tF += f; tC += c;
+
+    html += `<tr>
+      <td>${item.food.name}</td>
+      <td class="num"><input type="number" value="${g}" min="0" step="5" onchange="updateGrams('${id}',${mealNum},this.value)"></td>
+      <td class="num">${kcal}</td>
+      <td class="num">${p}g</td>
+      <td class="num">${f}g</td>
+      <td class="num">${c}g</td>
+      <td><span class="remove-btn" onclick="removeIngredient('${id}',${mealNum})">&#215;</span></td>
+    </tr>`;
+  });
+
+  html += `<tr class="total-row">
+    <td>Total</td><td></td>
+    <td class="num">${tKcal}</td>
+    <td class="num">${tP.toFixed(1)}g</td>
+    <td class="num">${tF.toFixed(1)}g</td>
+    <td class="num">${tC.toFixed(1)}g</td>
+    <td></td>
+  </tr></tbody></table>`;
+
+  el.innerHTML = html;
+}
+
+// ─── Manual grams override ───────────────────────────────────
+function updateGrams(id, mealNum, val) {
+  if (meals[mealNum][id]) {
+    meals[mealNum][id].grams = parseFloat(val) || 0;
+  }
+  // Don't re-autocompute, just recalc totals
+  const t = getTargets();
+  const m1totals = mealTotals(meals[1]);
+  const m2totals = mealTotals(meals[2]);
+  const m1budget = { kcal: t.net.kcal * mealSplit, protein: t.net.protein * mealSplit, fat: t.net.fat * mealSplit, carbs: t.net.carbs * mealSplit };
+  const m2budget = { kcal: t.net.kcal - m1totals.kcal, protein: t.net.protein - m1totals.protein, fat: t.net.fat - m1totals.fat, carbs: t.net.carbs - m1totals.carbs };
+
+  renderBudgetBars('meal1Budget', m1totals, m1budget);
+  renderBudgetBars('meal2Budget', m2totals, m2budget);
+  renderBasket('meal1Basket', meals[1], 1);
+  renderBasket('meal2Basket', meals[2], 2);
+  renderWarnings('meal1Warnings', m1totals, m1budget);
+  renderWarnings('meal2Warnings', m2totals, m2budget);
+  renderSummary(t, m1totals, m2totals);
+}
+
+function removeIngredient(id, mealNum) {
+  delete meals[mealNum][id];
+  recalc();
+  renderPicker(`meal${mealNum}Picker`, mealNum);
+}
+
+// ─── Warnings ────────────────────────────────────────────────
+function renderWarnings(containerId, totals, budget) {
+  const el = document.getElementById(containerId);
+  const warns = [];
+  if (totals.fat > budget.fat * 1.1) warns.push('Fat exceeds budget. Consider swapping to a leaner protein.');
+  if (totals.carbs > budget.carbs * 1.1) warns.push('Carbs exceed budget. Reduce vegetable or fruit portion.');
+  if (totals.kcal > budget.kcal * 1.1) warns.push('Calories exceed budget.');
+  el.innerHTML = warns.map(w => `<div class="warning">${w}</div>`).join('');
+}
+
+// ─── Summary ─────────────────────────────────────────────────
+function renderSummary(t, m1, m2) {
+  const el = document.getElementById('summaryContent');
+  const rows = ['kcal', 'protein', 'fat', 'carbs'];
+  const labels = { kcal: 'Kcal', protein: 'Protein (g)', fat: 'Fat (g)', carbs: 'Carbs (g)' };
+
+  let html = `<table class="summary-table">
+    <thead><tr><th></th><th>Target</th><th>Suppl.</th><th>Meal 1</th><th>Meal 2</th><th>Total</th><th>Delta</th></tr></thead><tbody>`;
+
+  rows.forEach(key => {
+    const target = t.daily[key];
+    const supp = t.supp[key];
+    const total = supp + m1[key] + m2[key];
+    const delta = total - target;
+    const absDelta = Math.abs(delta);
+    let cls = 'delta-ok';
+    if (key === 'kcal' && absDelta > 50) cls = absDelta > 100 ? 'delta-over' : 'delta-warn';
+    if (key !== 'kcal' && absDelta > 5) cls = absDelta > 10 ? 'delta-over' : 'delta-warn';
+
+    html += `<tr>
+      <td style="text-align:left;font-weight:500;">${labels[key]}</td>
+      <td>${Math.round(target)}</td>
+      <td>${Math.round(supp)}</td>
+      <td>${Math.round(m1[key])}</td>
+      <td>${Math.round(m2[key])}</td>
+      <td style="font-weight:600;">${Math.round(total)}</td>
+      <td class="${cls}">${delta >= 0 ? '+' : ''}${Math.round(delta)}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ─── Meal tab switching ──────────────────────────────────────
+function switchMeal(m) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-meal="${m}"]`).classList.add('active');
+  document.getElementById('meal1Panel').classList.toggle('hidden', m !== 1);
+  document.getElementById('meal2Panel').classList.toggle('hidden', m !== 2);
+  document.getElementById('summaryPanel').classList.toggle('hidden', m !== 'summary');
+}
+
+// ─── Reset ───────────────────────────────────────────────────
+function resetAll() {
+  meals = { 1: {}, 2: {} };
+  document.getElementById('clientSelect').value = '';
+  document.getElementById('inputWeight').value = '';
+  document.getElementById('inputKcal').value = 700;
+  document.getElementById('inputProteinPerKg').value = 1.3;
+  document.getElementById('inputFat').value = 15;
+  document.getElementById('inputCarbs').value = 30;
+  document.getElementById('suppKcal').value = 0;
+  document.getElementById('suppP').value = 0;
+  document.getElementById('suppF').value = 0;
+  document.getElementById('suppC').value = 0;
+  selectedProfile = null;
+  renderPickers();
+  recalc();
+  switchMeal(1);
+}
+</script>
+</body>
+</html>
