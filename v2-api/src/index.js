@@ -187,6 +187,7 @@ export default {
         case 'getdays':    return json(await getDays(userId, db), cors);
         case 'rules':      return json(await getRules(userId, db), cors);
         case 'config':     return json(await getConfig(db), cors);
+        case 'phases':     return json(await getPhases(db), cors);
         case 'messages':   return json(await getMessages(db), cors);
         case 'recipes':    return json(await getRecipes(db), cors);
         case 'fitness':    return json(await getFitness(db), cors);
@@ -489,6 +490,12 @@ async function getConfig(db) {
   return { config: rows.results };
 }
 
+// ─── Phases ─────────────────────────────────────────────────
+async function getPhases(db) {
+  const rows = await db.prepare('SELECT * FROM phases ORDER BY sort_order').all();
+  return { phases: rows.results };
+}
+
 // ─── Messages ────────────────────────────────────────────────
 async function getMessages(db) {
   const rows = await db.prepare(
@@ -625,13 +632,22 @@ async function getRules(userId, db) {
     });
   }
 
-  // transition inherits activation
-  if (!out.some(x => x.phase === 'transition')) {
-    out.filter(x => x.phase === 'activation').forEach(x => out.push({ ...x, phase: 'transition' }));
-  }
-  // maintenance inherits stabilization
-  if (!out.some(x => x.phase === 'maintenance')) {
-    out.filter(x => x.phase === 'stabilization').forEach(x => out.push({ ...x, phase: 'maintenance' }));
+  // Registry-driven rule inheritance: phases with inherits_rules_from copy from their parent
+  try {
+    const phases = await db.prepare('SELECT key, inherits_rules_from FROM phases WHERE inherits_rules_from IS NOT NULL').all();
+    for (const ph of (phases.results || [])) {
+      if (!out.some(x => x.phase === ph.key)) {
+        out.filter(x => x.phase === ph.inherits_rules_from).forEach(x => out.push({ ...x, phase: ph.key }));
+      }
+    }
+  } catch (e) {
+    // Fallback if phases table doesn't exist yet (pre-migration)
+    if (!out.some(x => x.phase === 'transition')) {
+      out.filter(x => x.phase === 'activation').forEach(x => out.push({ ...x, phase: 'transition' }));
+    }
+    if (!out.some(x => x.phase === 'maintenance')) {
+      out.filter(x => x.phase === 'stabilization').forEach(x => out.push({ ...x, phase: 'maintenance' }));
+    }
   }
 
   return { model, target_weight: targetWeight, rules: out };
