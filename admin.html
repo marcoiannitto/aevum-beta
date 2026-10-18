@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AEVUM Admin Dashboard · v2.0.0 -->
+<!-- AEVUM Admin Dashboard · v2.0.1 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -69,9 +69,9 @@ input,textarea,select{font-family:inherit;font-size:13px;color:var(--ink);}
 .btn-back:hover{color:var(--ink);}
 
 /* TABLE */
-.table-wrap{padding:20px 28px;flex:1;}
-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-thead th{background:#f5f2ec;text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);}
+.table-wrap{padding:20px 28px;flex:1;overflow-y:auto;}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+thead th{background:#f5f2ec;text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:2;}
 tbody td{padding:4px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
 tbody tr:hover{background:#faf8f3;}
 tbody td input,tbody td select{width:100%;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;transition:border-color .15s,background .15s;}
@@ -602,7 +602,7 @@ function renderDataTable(name) {
     for (const col of def.cols) {
       const val = rows[i][col.key] ?? '';
       const inputType = col.type === 'number' ? 'number' : 'text';
-      html += `<td class="${col.w || ''}"><input type="${inputType}" value="${esc(String(val))}" data-row="${i}" data-col="${col.key}" onchange="cellChange(this,'${name}')"></td>`;
+      html += `<td class="${col.w || ''}"><input type="${inputType}" value="${esc(String(val))}" data-row="${i}" data-col="${col.key}" oninput="cellChange(this,'${name}')"></td>`;
     }
     html += `<td class="row-actions"><button class="btn-del" onclick="delRow('${name}',${i})" title="Delete row">&times;</button></td>`;
     html += '</tr>';
