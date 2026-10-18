@@ -1257,7 +1257,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.42.0';
+const APP_VERSION='v1.43.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1417,16 +1417,26 @@ function loadConfig(){
 /* ---- phase length helpers ---- */
 function actDays(){return (profile&&+profile.activation_days>0)?+profile.activation_days:8;}
 function phaseLens(){
-  // Registry-aware: read duration_default and duration_col from PHASES if available
+  // Registry-driven: build lens from all program phases that have a finite duration
   function _dur(key,fallback){
     const ph=_phReg(key);
     if(ph&&ph.duration_col&&profile&&+profile[ph.duration_col]>0) return +profile[ph.duration_col];
     if(ph&&ph.duration_default) return ph.duration_default;
     return fallback;
   }
+  if(PHASES_LIST.length){
+    const L={};
+    for(const ph of PHASES_LIST){
+      if(ph.key==='activation'){L.activation=actDays();continue;}
+      if(ph.duration_default||ph.duration_col) L[ph.key]=_dur(ph.key,ph.duration_default||0);
+      // open-ended phases (duration_default=null, no duration_col) are excluded from the lens
+    }
+    return L;
+  }
+  // Fallback: hardcoded (before registry loads)
   return {loading:_dur('loading',PH_FIXED.loading),activation:actDays(),transition:_dur('transition',PH_FIXED.transition),stabilization:_dur('stabilization',PH_FIXED.stabilization)};
 }
-function totalDays(){const L=phaseLens();return L.loading+L.activation+L.transition+L.stabilization;}
+function totalDays(){const L=phaseLens();let s=0;for(const k in L)s+=L[k];return s;}
 function applyPhaseConfig(){TOTAL_DAYS=totalDays();/* maintenance is open-ended: no clamp */}
 
 const params=new URLSearchParams(location.search);
@@ -1443,9 +1453,8 @@ function phaseFor(d){
     // Registry-driven: walk sorted program phases by accumulated duration
     const L=phaseLens();
     let cum=0;
-    const lens={loading:L.loading,activation:L.activation,transition:L.transition,stabilization:L.stabilization};
     for(const ph of PHASES_LIST){
-      const dur=lens[ph.key]||ph.duration_default||0;
+      const dur=L[ph.key]||ph.duration_default||0;
       if(dur){cum+=dur; if(d<=cum) return {key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color};}
       else{/* open-ended = everything after */ return {key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color};}
     }
@@ -1471,8 +1480,9 @@ function gatesFor(k){
   if(k==='stabilization'||k==='maintenance')return{fat:false,carb:true};
   return{fat:false,carb:false};
 }
-/* AI ruleset key for the current day: loading | activation (covers transition) | stabilization | maintenance */
-function aiPhaseKey(d){const k=phaseFor(d).key;if(k==='transition')return'activation';return k;}
+/* AI ruleset key: if a phase inherits rules, resolve to parent key */
+function _ruleParent(k){const ph=_phReg(k);return (ph&&ph.inherits_rules_from)?ph.inherits_rules_from:k;}
+function aiPhaseKey(d){return _ruleParent(phaseFor(d).key);}
 /* short helper line shown in the Can I Eat sheet, per phase */
 function foodRuleLine(d){
   const k=aiPhaseKey(d);
@@ -1489,7 +1499,7 @@ function recipePhaseMatch(recipe,key){
   if(!key||key==='all')return true;
   const raw=String(recipe.phase||'').toLowerCase();
   if(!raw.trim())return true;
-  const tags=raw.split(/[,|/]/).map(s=>s.trim()).filter(Boolean).map(s=>s==='transition'?'activation':s);
+  const tags=raw.split(/[,|/]/).map(s=>s.trim()).filter(Boolean).map(s=>_ruleParent(s));
   return tags.includes(key);
 }
 /* ---- phase explainer (item 20): one content source, shown auto at phase change + on tap ---- */
@@ -1546,10 +1556,9 @@ function phaseCardHTML(key,p){
 function phaseRanges(){
   if(PHASES_LIST.length){
     const L=phaseLens();
-    const lens={loading:L.loading,activation:L.activation,transition:L.transition,stabilization:L.stabilization};
     const ranges=[];let cum=0;
     for(const ph of PHASES_LIST){
-      const dur=lens[ph.key]||ph.duration_default||0;
+      const dur=L[ph.key]||ph.duration_default||0;
       if(!dur) continue; // open-ended phases added below
       ranges.push({key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color,lo:cum+1,hi:cum+dur});
       cum+=dur;
@@ -1589,7 +1598,7 @@ function closePhaseSheet(){g('phScrim').classList.remove('show');g('phSheet').cl
 /* auto full-screen intro when today crosses into a phase not seen yet */
 function showPhaseIntro(key){
   const ph=phaseFor(currentDay),info=_phaseInfo(key);if(!info||!info.sub)return;
-  g('piBadge').textContent=(key==='loading')?'Welcome':'New phase';
+  g('piBadge').textContent=(PHASES_LIST.length&&PHASES_LIST[0].key===key)?'Welcome':'New phase';
   g('piBody').innerHTML=`<div class="pi-title">${esc(ph.name)}</div><div class="pi-sub">${esc(info.sub)}</div>`+phaseCardHTML(key,'pi-');
   g('phaseIntro').classList.remove('hidden');
 }
@@ -1620,7 +1629,7 @@ function dayTotalsOf(o){
   return {kcal:Math.round(s('kcal')),protein:Math.round(s('protein')),alcohol:items.some(it=>it&&it.type==='alcohol'),weight:parseFloat(o.weight)||null};
 }
 function phaseMatchList(field,phKey){
-  const aiKey=(phKey==='transition')?'activation':phKey;
+  const aiKey=_ruleParent(phKey);
   const tags=String(field).toLowerCase().split(/[,/|]/).map(s=>s.trim()).filter(Boolean);
   return tags.includes(phKey)||tags.includes(aiKey)||tags.includes('all');
 }
@@ -1689,7 +1698,16 @@ function checkRollover(){
   }
 }
 /* ---- stabilization helpers ---- */
-function consolStartDay(){const L=phaseLens();return L.loading+L.activation+L.transition+1;}
+function consolStartDay(){
+  // Sum all fixed-duration phases before stabilization
+  const L=phaseLens();
+  if(PHASES_LIST.length){
+    let cum=0;
+    for(const ph of PHASES_LIST){if(ph.key==='stabilization')break;cum+=(L[ph.key]||0);}
+    return cum+1;
+  }
+  return L.loading+L.activation+L.transition+1;
+}
 /* calorie ramp: front-loaded over 4 days from 600 to TDEE*0.9, then hold.
    Day1 +35% of gap, D2 +60%, D3 +80%, D4+ 100% (front-loaded, fats make day 1 easy).
    TAPER_PCT is declared once in the SETTINGS block at the top. */
@@ -1904,7 +1922,7 @@ function totals(){
    and the band colours. If the backend is unreachable, RULES stays default (buckets) and
    the app behaves exactly as before. */
 let RULES={model:'buckets',rules:[]};
-function ruleMapPhase(k){return k==='transition'?'activation':k;}
+function ruleMapPhase(k){return _ruleParent(k);}
 function ruleFor(phaseKey,metric,model){
   const p=ruleMapPhase(phaseKey);
   if(model) return (RULES.rules||[]).find(r=>r.phase===p&&r.model===model&&r.metric===metric)||null;
@@ -1943,11 +1961,12 @@ function render(){
   g('prevDay').disabled=currentDay<=1;g('nextDay').disabled=false; /* maintenance: no upper bound */
   {const td=todayDayNum();g('todayBtn').classList.toggle('hidden',!td||currentDay===td);}
   const t=totals();
-  const macroAct=(ph.key==='activation'||ph.key==='transition')&&actMacros();
+  const phReg=_phReg(ph.key);
+  const macroAct=(phReg?phReg.use_buckets:(ph.key==='activation'||ph.key==='transition'))&&actMacros();
   renderCalories(ph,t,macroAct);renderGates(ph,t,macroAct);renderBuckets(ph,macroAct);renderTimeline();renderPhaseBar();
   // calorie bank card removed; adjusted target is now inline in renderCalories
-  // serum block: only in Loading + Activation
-  g('serumBlock').classList.toggle('hidden',!(ph.key==='loading'||ph.key==='activation'));
+  // serum block: show when phase requires serum
+  g('serumBlock').classList.toggle('hidden',!(phReg?phReg.requires_serum:(ph.key==='loading'||ph.key==='activation')));
   // strip
   g('serumAM').classList.toggle('on',day.serumAM);
   g('serumPM').classList.toggle('on',day.serumPM);
@@ -2143,7 +2162,8 @@ function renderBuckets(ph,macroAct){
 function gateState(v,target,red){if(v>red)return'over';if(v>target)return'warn';return'ok';}
 function renderGates(ph,t,macroAct){
   const wrap=g('gates');wrap.innerHTML='';
-  const isAct=(ph.key==='activation'||ph.key==='transition');
+  const gReg=_phReg(ph.key);
+  const isAct=gReg?gReg.use_buckets:(ph.key==='activation'||ph.key==='transition');
   if(isAct && !macroAct)return; // buckets model: macros hidden (buckets screen instead)
   const plainGate=(name,val)=>{const el=document.createElement('div');el.className='gate protein-target';el.innerHTML=`<div class="g-top"><span class="g-name">${name}</span><span class="g-val num">${val}<em>g</em></span></div>`;return el;};
   // Resolve pct_of_kcal basis: convert percentage → grams using calorie target
@@ -2251,7 +2271,7 @@ function renderTimeline(){
   const tl=g('timeline');
   if(!day.meals.length){tl.innerHTML='<div class="tl-empty">No meals logged yet.</div>';return;}
   let html='<div class="tl-head">Today\u2019s meals</div>';
-  const noMacros=(k=>k==='activation'||k==='transition')(phaseFor(currentDay).key);
+  const noMacros=(k=>{const r=_phReg(k);return r?r.use_buckets:(k==='activation'||k==='transition');})(phaseFor(currentDay).key);
   [...day.meals].reverse().forEach(m=>{
     const i=day.meals.indexOf(m);
     let inner;
@@ -2613,9 +2633,10 @@ function renderTrends(){
     g('waistChart').innerHTML=lineChart(wst,'cm',null,'waistReadout',range,null);
   }else{g('waistChartCard').classList.add('hidden');}
   wireChartTaps();
-  // middle chart: portions adherence in Activation/Transition, calories otherwise
+  // middle chart: portions adherence in bucket phases, calories otherwise
   const pk=phaseFor(currentDay).key;
-  if(pk==='activation'||pk==='transition'){
+  const _pkReg=_phReg(pk);
+  if(_pkReg?_pkReg.use_buckets:(pk==='activation'||pk==='transition')){
     g('macroTitle').textContent='Meal portions vs target';
     g('macroChart').innerHTML=portionBars(range);
     wirePortionBars();
@@ -2654,15 +2675,17 @@ function trendsPhaseStrip(d0,dN){
     segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?phCol:'#E2D8C0'}"/>`;
     labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?name:name[0]}</span>`;
   });
-  /* maintenance segment: open-ended beyond program */
+  /* open-ended tail segment: last phase (maintenance or whatever is open-ended) */
   if(dN>s){
     const a=s+1,lo=Math.max(a,d0);
     if(dN>=lo){
+      const tail=PHASES_LIST.length?PHASES_LIST.find(p=>!p.duration_default)||PHASES_LIST[PHASES_LIST.length-1]:null;
+      const tailKey=tail?tail.key:'maintenance', tailName=tail?tail.name:'Maintenance', tailColor=tail?tail.color:MAINT_COLOR;
       const x1=(a<=d0)?padL:xs(a-0.5);
       const x2=W-padR;
-      const isCur=cur==='maintenance',wpx=x2-x1;
-      segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?MAINT_COLOR:'#C5DDD6'}"/>`;
-      labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?'Maintenance':'M'}</span>`;
+      const isCur=cur===tailKey,wpx=x2-x1;
+      segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?tailColor:'#C5DDD6'}"/>`;
+      labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?tailName:tailName[0]}</span>`;
     }
   }
   return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6">${segs}</svg><div class="trphase-labels">${labels}</div>`;
@@ -2670,9 +2693,10 @@ function trendsPhaseStrip(d0,dN){
 function phaseTargetLabel(dayNum){
   const ph=phaseFor(dayNum);
   const reg=_phReg(ph.key);
-  if(ph.key==='loading')return ph.name+', eat high';
-  if(reg&&reg.calorie_mode==='protocol')return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
-  if(ph.key==='activation'||ph.key==='transition')return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
+  const cm=reg?reg.calorie_mode:null;
+  if(cm==='hidden')return ph.name+', eat high';
+  if(cm==='protocol'||(ph.key==='activation'||ph.key==='transition'))return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
+  if(reg&&reg.calorie_bank)return ph.name+', target ~'+maintTarget()+' kcal';
   if(ph.key==='maintenance'||ph.key==='tracker')return ph.name+', target ~'+maintTarget()+' kcal';
   return ph.name+', target ~'+effectiveStabTarget(dayNum)+' kcal';
 }
@@ -2695,39 +2719,41 @@ function collectMacroDays(){
 }
 function phaseTargetKcal(dayNum){
   const ph=phaseFor(dayNum).key;
-  const bmr=(profile&&profile.need)?profile.need:2000; // need = BMR*activity
-  const basal=bmr/1.55*1; // rough BMR without activity for loading ref
-  if(ph==='loading')return Math.round((profile&&profile.need?profile.need:2000)*1.5);
-  if(ph==='activation'||ph==='transition')return 600; // mid of 500-700 for the bar reference
+  const reg=_phReg(ph);
+  const cm=reg?reg.calorie_mode:null;
+  if(cm==='hidden')return Math.round((profile&&profile.need?profile.need:2000)*1.5);
+  if(cm==='protocol'||(ph==='activation'||ph==='transition'))return 600; // mid of 500-700 for the bar reference
+  if(reg&&reg.calorie_bank)return maintTarget();
   if(ph==='maintenance')return maintTarget();
   return effectiveStabTarget(dayNum); // stabilization (adaptive on hold days)
 }
 function dayCalState(dayNum,k){
   const ph=phaseFor(dayNum).key;
-  if(ph==='activation'||ph==='transition')return calState(k);
+  const reg=_phReg(ph);
+  const cm=reg?reg.calorie_mode:null;
+  if(cm==='protocol'||(ph==='activation'||ph==='transition'))return calState(k);
   const tgt=phaseTargetKcal(dayNum);if(!tgt)return'ok';
   const pct=k/tgt*100;
-  if(ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'over'); // want high
-  // stabilization/maintenance: bands from Rules tab
-  const rPhase=(ph==='maintenance')?'maintenance':'stabilization';
-  const kr=ruleFor(rPhase,'kcal');
+  if(cm==='hidden'||ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'over'); // want high
+  // bar calories: bands from Rules tab
+  const kr=ruleFor(_ruleParent(ph),'kcal');
   if(!kr)return'ok';
-  // rules use % basis (adaptive_kcal): compare pct-of-target, not raw kcal
   return bandClass(pct,kr)||'ok';
 }
 /* directional calorie state: 'under'|'ok'|'warn'|'over'|null */
 function dayCalDir(dayNum,k){
   const ph=phaseFor(dayNum).key;
+  const reg=_phReg(ph);
+  const cm=reg?reg.calorie_mode:null;
   const tgt=phaseTargetKcal(dayNum);if(!tgt)return'ok';
   const pct=k/tgt*100;
-  if(ph==='activation'||ph==='transition'){
+  if(cm==='protocol'||(ph==='activation'||ph==='transition')){
     if(k<CAL_LOW_RED)return'under'; if(k>CAL_HIGH_RED)return'over';
     if(k<CAL_LOW_AMBER)return'under'; if(k>CAL_HIGH_AMBER)return'over';
     return'ok';
   }
-  if(ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'under');
-  const rPhase=(ph==='maintenance')?'maintenance':'stabilization';
-  const kr=ruleFor(rPhase,'kcal');
+  if(cm==='hidden'||ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'under');
+  const kr=ruleFor(_ruleParent(ph),'kcal');
   if(!kr)return'ok';
   if(kr.amber_lo!=null&&pct<kr.amber_lo)return'under';
   if(kr.amber_hi!=null&&pct>kr.amber_hi)return'over';
@@ -3013,9 +3039,9 @@ let sheetMode='log';
 function openSheet(mode){
   sheetMode=(mode==='plan')?'plan':'log';
   clearSheet();mealItems=[];
-  const ph=phaseFor(currentDay),flag=(ph.key==='activation'||ph.key==='transition');
+  const ph=phaseFor(currentDay),shReg=_phReg(ph.key),flag=shReg?shReg.use_buckets:(ph.key==='activation'||ph.key==='transition');
   g('maxKcal').textContent=flag?MEAL_KCAL:'';g('maxFat').textContent=flag?MEAL_FAT:'';g('maxCarbs').textContent=flag?MEAL_CARB:'';
-  // Activation/Transition: hide macros, show traffic lights (plan mode keeps macros)
+  // Bucket phases: hide macros, show traffic lights (plan mode keeps macros)
   const hideMacros=flag&&sheetMode!=='plan';
   g('meMacroLabel').classList.toggle('hidden',hideMacros);
   g('meGrid').classList.toggle('hidden',hideMacros);
@@ -3045,7 +3071,7 @@ function renderMeFlags(){
 }
 function validateMeal(){
   g('addMeal').disabled=g('mKcal').value==='';
-  const ph=phaseFor(currentDay);const flag=(ph.key==='activation'||ph.key==='transition');
+  const ph=phaseFor(currentDay);const vReg=_phReg(ph.key);const flag=vReg?vReg.use_buckets:(ph.key==='activation'||ph.key==='transition');
   const set=(id,over)=>{const el=g(id);el.classList.toggle('meal-over',flag&&over);el.parentElement.classList.toggle('meal-over',flag&&over);};
   set('mKcal',(+g('mKcal').value||0)>MEAL_KCAL);
   set('mFat',(+g('mFat').value||0)>MEAL_FAT);
@@ -3395,12 +3421,12 @@ function renderPlan(){
   g('mcNext').onclick=()=>{planCalMonth.month++;if(planCalMonth.month>11){planCalMonth.month=0;planCalMonth.year++;}renderPlan();};
 
   // legend
-  {const lg=g('planLegend');if(lg)lg.innerHTML=
-    `<span><i style="background:#8a8a8a"></i>Loading</span>`+
-    `<span><i style="background:#B08D2E"></i>Activ./Trans.</span>`+
-    `<span><i style="background:#4a463f"></i>Stabilization</span>`+
-    `<span><i style="background:${MAINT_COLOR}"></i>Maintenance</span>`+
-    `<span><i style="background:var(--gold-deep)"></i>has plan</span>`;}
+  {const lg=g('planLegend');if(lg){
+    let lh=PHASES_LIST.length
+      ?PHASES_LIST.filter(p=>p.show_in_phase_bar).map(p=>`<span><i style="background:${p.color}"></i>${p.name}</span>`).join('')
+      :`<span><i style="background:#8a8a8a"></i>Loading</span><span><i style="background:#B08D2E"></i>Activ./Trans.</span><span><i style="background:#4a463f"></i>Stabilization</span><span><i style="background:${MAINT_COLOR}"></i>Maintenance</span>`;
+    lg.innerHTML=lh+`<span><i style="background:var(--gold-deep)"></i>has plan</span>`;
+  }}
   // day header
   {const pf=phaseFor(planDay),dt=dayToDate(planDay);const hd=g('planDayHead');
    if(hd)hd.innerHTML=`<span class="pdh-dot" style="background:${pf.color}"></span><b>Day ${planDay}</b> · ${pf.name}${dt?' · '+fmtShort(dt):''}${planDay===todayDay?' · Today':''}`;}
@@ -3411,15 +3437,17 @@ function renderPlan(){
   items.forEach(i=>{tot.kcal+=+i.kcal||0;tot.protein+=+i.protein||0;tot.fat+=+i.fat||0;tot.carbs+=+i.carbs||0;});
   const gs=(v,t,r)=>v>r?'over':v>t?'warn':'ok';
   // phase-aware targets for the planned-day card (mirror the Today page rules)
-  const pk=phaseFor(planDay).key, gates=gatesFor(pk);
+  const pk=phaseFor(planDay).key, gates=gatesFor(pk), pkReg=_phReg(pk);
   let kcalS='', kcalSmall='';
-  if(pk==='stabilization'||pk==='maintenance'){
-    const tgt=effectiveStabTarget(planDay);
+  const pkCm=pkReg?pkReg.calorie_mode:null;
+  if(pkCm==='hidden'||pk==='loading'){ kcalSmall=''; kcalS=''; }
+  else if(pkCm==='protocol'||(pk==='activation'||pk==='transition')){ kcalSmall='/500-700'; kcalS=calState(tot.kcal); }
+  else{
+    const tgt=(pkReg&&pkReg.calorie_bank)?maintTarget():effectiveStabTarget(planDay);
     kcalSmall='/'+Math.round(tgt);
-    const kr=ruleFor('stabilization','kcal');
+    const kr=ruleFor(_ruleParent(pk),'kcal');
     kcalS=kr?(bandClass(tot.kcal,kr)||'ok'):'ok';
-  }else if(pk==='loading'){ kcalSmall=''; kcalS=''; }         // Loading: no calorie cap
-  else { kcalSmall='/500-700'; kcalS=calState(tot.kcal); }    // Activation/Transition
+  }
   let protSmall='';
   if(pk==='stabilization'||pk==='maintenance'){ const w=stabTargetWeight()||(profile&&profile.weight); if(w)protSmall='/'+Math.round(w*PROTEIN_PER_KG)+'–'+Math.round(w*PROTEIN_KG_HI); }
   else { const ptgt=(profile&&profile.weight)?Math.round(profile.weight*PROTEIN_PER_KG):null; if(ptgt)protSmall='/'+ptgt; }
@@ -3967,7 +3995,7 @@ function boot(){
   reviewTarget();
   if(IS_PROGRAM){maybePhaseIntro();maybeDailyBrief();maybeGraduation();}
   fetchProfile();hydrateFromBackend();
-  if(IS_PROGRAM){setInterval(()=>{const ph=phaseFor(currentDay);if(ph.key==='activation'||ph.key==='transition')g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;if(ph.key==='maintenance')g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}<span class="ph-i">i</span>`;},60000);}
+  if(IS_PROGRAM){setInterval(()=>{const ph=phaseFor(currentDay);g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;},60000);}
 }
 function hydrateFromBackend(){
   // Cloud is source of truth: always overwrite local with cloud data
