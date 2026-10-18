@@ -839,7 +839,7 @@ function renderUserDetail(data) {
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Loading:
-      <input type="number" id="udLoadDays" value="${profile.loading_days || ''}" min="1" max="30" placeholder="2"
+      <input type="number" id="udLoadDays" value="${profile.loading_days != null ? profile.loading_days : ''}" min="0" max="30" placeholder="2"
         style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
@@ -849,12 +849,12 @@ function renderUserDetail(data) {
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Transition:
-      <input type="number" id="udTransDays" value="${profile.transition_days || ''}" min="1" max="30" placeholder="3"
+      <input type="number" id="udTransDays" value="${profile.transition_days != null ? profile.transition_days : ''}" min="0" max="30" placeholder="3"
         style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
       Stabilization:
-      <input type="number" id="udStabDays" value="${profile.stabilization_days || ''}" min="1" max="90" placeholder="18"
+      <input type="number" id="udStabDays" value="${profile.stabilization_days != null ? profile.stabilization_days : ''}" min="0" max="90" placeholder="18"
         style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font-size:12px;">
     </label>
     <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;">
