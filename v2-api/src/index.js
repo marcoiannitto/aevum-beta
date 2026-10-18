@@ -1189,7 +1189,7 @@ async function adminSeed(body, db) {
   const rows = body.rows || [];
   if (!table || !rows.length) return { error: 'table and rows required' };
 
-  const allowed = ['recipes', 'messages', 'movements', 'workouts', 'rules', 'foods', 'policy', 'config', 'ingredients', 'catered_menu'];
+  const allowed = ['recipes', 'messages', 'movements', 'workouts', 'rules', 'foods', 'policy', 'config', 'ingredients', 'catered_menu', 'phases'];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
 
   // Clear existing + insert
@@ -1207,7 +1207,7 @@ async function adminSeed(body, db) {
 }
 async function adminList(body, db) {
   const table = String(body.table || '');
-  const allowed = ['recipes','messages','movements','workouts','rules','foods','policy','config','ingredients','catered_menu'];
+  const allowed = ['recipes','messages','movements','workouts','rules','foods','policy','config','ingredients','catered_menu','phases'];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
   const rows = await db.prepare(`SELECT * FROM ${table}`).all();
   return { table, rows: rows.results };

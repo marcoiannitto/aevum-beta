@@ -1293,10 +1293,11 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.46.1';
+const APP_VERSION='v1.47.0';
 let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
+   v1.47.0 — Calorie rules engine: all calorie target logic (target mode, calorie bank, weight drift) now driven by backend phase registry instead of hardcoded phase keys. Admin can control per-phase: target_mode (none/fixed/tdee_mult/ramp_then_hold), fixed band edges, ramp parameters, bank window/clamps, drift thresholds. Frontend dispatches on target_mode from registry with config fallbacks. Migration 0013 seeds all 7 phases.
    v1.46.1 — Fix calorie target bugs: okKcal, renderCalories, phaseTargetKcal, phaseTargetLabel now handle recomposition and tracker correctly (were falling to activation 400-650 range). Calorie bank clamp tightened from [0.60, 1.40] to [0.85, 1.15] to reduce daily target volatility.
    v1.46.0 — Phase history: Today phase bar and Trends strip now show real per-day phase history from backend (was computed durations). Tap any segment to see phase name. Trends charts have low-opacity phase color overlay behind data. Header: date shown first, day number secondary. Backend getDays now returns phase column.
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1394,8 +1395,10 @@ function _applyPhases(arr){
   arr.forEach(p=>{
     const o={...p,gate_fat:!!p.gate_fat,gate_carb:!!p.gate_carb,use_buckets:!!p.use_buckets,
       is_program:!!p.is_program,requires_serum:!!p.requires_serum,has_fasting:!!p.has_fasting,
-      calorie_bank:!!p.calorie_bank,show_in_phase_bar:!!p.show_in_phase_bar,show_in_recipe_chips:!!p.show_in_recipe_chips};
+      calorie_bank:!!p.calorie_bank,show_in_phase_bar:!!p.show_in_phase_bar,show_in_recipe_chips:!!p.show_in_recipe_chips,
+      drift_enabled:!!p.drift_enabled};
     try{o.explainer=JSON.parse(p.explainer_json||'{}');}catch(e){o.explainer={};}
+    try{o._ramp_pct=JSON.parse(p.ramp_pct||'null');}catch(e){o._ramp_pct=null;}
     PHASES[p.key]=o;
   });
   PHASES_LIST=arr.filter(p=>+p.is_program).sort((a,b)=>a.sort_order-b.sort_order).map(p=>PHASES[p.key]);
@@ -1768,13 +1771,18 @@ function stabTDEE(){
   return (profile&&profile.need)?profile.need:2000;
 }
 function stabTargetKcal(dayNum){
-  const start=600, target=Math.round(stabTDEE()*MAINT_CUT), gap=target-start;
-  const dayIn=dayNum-consolStartDay()+1;      // 1-based day within stabilization
-  const f=dayIn<=0?0:dayIn>=4?1:TAPER_PCT[dayIn];
+  const reg=_phReg('stabilization')||{};
+  const start=+(reg.ramp_from)||600;
+  const cut=+(reg.calorie_cut)||MAINT_CUT;
+  const target=Math.round(stabTDEE()*cut), gap=target-start;
+  const rampDays=+(reg.ramp_days)||4;
+  const pctArr=reg._ramp_pct||TAPER_PCT;
+  const dayIn=dayNum-consolStartDay()+1;
+  const f=dayIn<=0?0:dayIn>=rampDays?1:(pctArr[dayIn]||0);
   return Math.round(start+gap*f);
 }
 function stabDayIn(dayNum){return dayNum-consolStartDay()+1;}
-function isHoldDay(dayNum){return stabDayIn(dayNum)>=5;}   // ramp = first 4 days; adaptive hold after
+function isHoldDay(dayNum){const reg=_phReg('stabilization')||{};const rd=+(reg.ramp_days)||4;return stabDayIn(dayNum)>rd;}
 /* the number the client actually sees on a Stabilization day:
    ramp days use the formula ramp; hold days use the adaptive current_target_kcal (seeded from the formula). */
 function effectiveStabTarget(dayNum){
@@ -1782,7 +1790,7 @@ function effectiveStabTarget(dayNum){
   const ct=profile&&+profile.current_target_kcal;
   return (ct>0)?Math.round(ct):stabTargetKcal(dayNum);
 }
-/* ---- adaptive target (item 27): weight-trend driven, weekly review, all params from Config ---- */
+/* ---- adaptive target (item 27): weight-trend driven, weekly review, params from phase registry ---- */
 function saveTargetFields(f){
   profile=Object.assign({},profile,f);
   localStorage.setItem(K('profile'),JSON.stringify(profile));
@@ -1793,11 +1801,13 @@ function reviewTarget(){
   if(!profile||!BACKEND_URL||!_profileFetched)return;
   const td=todayDayNum()||currentDay;
   const ph=phaseFor(td).key;
-  // Run in stabilization hold AND maintenance (both program and free users)
-  const inStabHold=(ph==='stabilization'&&isHoldDay(td));
-  const inMaint=(ph==='maintenance'||ph==='recomposition');
-  if(!inStabHold&&!inMaint)return;
-  // seed once: stabilization uses formula ramp value, maintenance/free uses Mifflin TDEE
+  const reg=_phReg(ph);
+  // Only run if this phase has drift enabled in the registry
+  if(!reg||!reg.drift_enabled)return;
+  const tMode=reg.target_mode||'none';
+  const inRampHold=(tMode==='ramp_then_hold'&&isHoldDay(td));
+  const inAdaptive=(tMode==='tdee_mult');
+  if(!inRampHold&&!inAdaptive)return;
   // collect recent weights for smoothed TDEE
   const _rw=[];
   for(let d=td-1;d>=Math.max(1,td-cfgd('smooth_days'));d--){const o=dayData(d);if(o){const w=parseFloat(o.weight);if(w>0)_rw.push(w);}}
@@ -1805,19 +1815,20 @@ function reviewTarget(){
   // live TDEE from smoothed weight (falls back to profile.need → mifflin with start weight)
   const liveTDEE=_sw?mifflin(Object.assign({},profile,{weight:_sw})):(profile.need||mifflin(profile));
   if(!(+profile.current_target_kcal>0)){
-    const phCut=(()=>{const r=_phReg(ph);return r&&r.calorie_cut?+r.calorie_cut:cfgd('maint_cut');})();
-    const seed=inStabHold?stabTargetKcal(td):Math.round(liveTDEE*phCut);
+    const phCut=+(reg.calorie_cut)||cfgd('maint_cut');
+    const seed=inRampHold?stabTargetKcal(td):Math.round(liveTDEE*phCut);
     const seedFields={current_target_kcal:seed,prev_target_kcal:seed,last_review_date:effTodayISO(),last_change_reason:''};
     // anchor maintenance target weight to 7-day average at entry
-    if(inMaint && !(+profile.maint_target_weight>0) && _sw){
+    if(inAdaptive && !(+profile.maint_target_weight>0) && _sw){
       seedFields.maint_target_weight=_sw;
     }
     saveTargetFields(seedFields);
     return;
   }
-  // weekly cadence
+  // review cadence from registry, fallback to config
+  const reviewInterval=+(reg.drift_review_days)||cfgd('review_interval_days');
   const lastR=profile.last_review_date?new Date(profile.last_review_date+'T00:00:00'):null;
-  if(lastR && (effNow()-lastR.getTime())/86400000 < cfgd('review_interval_days'))return;
+  if(lastR && (effNow()-lastR.getTime())/86400000 < reviewInterval)return;
   // gather the weight window (newest first)
   const win=cfgd('smooth_days'), minW=cfgd('min_weighins'), ws=[], intakes=[];
   for(let d=td-1; d>=Math.max(1,td-win); d--){
@@ -1829,12 +1840,13 @@ function reviewTarget(){
   const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
   const smoothed=avg(ws), half=Math.max(1,Math.floor(ws.length/2));
   const slope=avg(ws.slice(0,half))-avg(ws.slice(-half));   // >0 rising, <0 falling
-  // target weight: stabilization uses stab target, maintenance uses 7-day avg anchor (or fallback)
-  const tw=inStabHold?stabTargetWeight():(+profile.maint_target_weight>0?+profile.maint_target_weight:(+profile.target_kg>0?+profile.target_kg:(+profile.start_weight||+profile.weight||null)));
-  const band=cfgd('hold_band_kg');
-  const step=cfgd('review_step_kcal'), floor=cfgd('target_floor_kcal');
-  // ceiling: stabilization uses stabTDEE, maintenance uses full Mifflin TDEE
-  const ceil=inStabHold?stabTDEE():liveTDEE;
+  // target weight: ramp_then_hold uses stab target, tdee_mult uses 7-day avg anchor (or fallback)
+  const tw=inRampHold?stabTargetWeight():(+profile.maint_target_weight>0?+profile.maint_target_weight:(+profile.target_kg>0?+profile.target_kg:(+profile.start_weight||+profile.weight||null)));
+  const band=+(reg.drift_band_kg)||cfgd('hold_band_kg');
+  const step=+(reg.drift_step_kcal)||cfgd('review_step_kcal');
+  const floor=+(reg.drift_floor_kcal)||cfgd('target_floor_kcal');
+  // ceiling: ramp_then_hold uses stabTDEE, tdee_mult uses full Mifflin TDEE
+  const ceil=inRampHold?stabTDEE():liveTDEE;
   let cur=+profile.current_target_kcal, next=cur, reason='';
   if(tw!=null){
     if(smoothed>tw+band && slope>0.05){ next=Math.max(floor,cur-step); reason='down'; }   // too high + rising → eat less
@@ -2148,16 +2160,17 @@ function renderCalories(ph,t,macroAct){
   g('calNum').textContent=t.kcal.toLocaleString();
   const wrap=g('calBarWrap'),bar=g('calBar'),prot=g('protocol');
   wrap.classList.add('hidden');prot.classList.add('hidden');g('calUnit').textContent='kcal today';
-  const _calMode=(_phReg(ph.key)||{}).calorie_mode;
-  const _hasCB=(_phReg(ph.key)||{}).calorie_bank;
-  if(_calMode==='bar'||(!_calMode&&(ph.key==='stabilization'||ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition'))){
+  const reg=_phReg(ph.key)||{};
+  const _calMode=reg.calorie_mode;
+  const tMode=reg.target_mode||'none';
+  const hasBank=!!(+(reg.bank_window));
+  if(_calMode==='bar'||tMode==='tdee_mult'||tMode==='ramp_then_hold'){
     wrap.classList.remove('hidden');
     const rKey=_ruleParent(ph.key);
     const kr=ruleFor(rKey,'kcal');
-    let target=(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')?maintTarget():effectiveStabTarget(currentDay);
-    // In maintenance/tracker/recomposition, use adjusted target from calorie bank (rolling window)
+    let target=(tMode==='tdee_mult')?maintTarget():effectiveStabTarget(currentDay);
     const infoBtn=g('cbInfoInline'), expl=g('cbExplainer');
-    if(_hasCB||(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')){
+    if(hasBank){
       const adj=calcAdjustedTarget();
       if(adj!==null){target=adj;}
       if(infoBtn){infoBtn.classList.remove('hidden');infoBtn.onclick=()=>expl.classList.toggle('hidden');}
@@ -2172,7 +2185,6 @@ function renderCalories(ph,t,macroAct){
     g('calBarLeft').textContent=`${t.kcal.toLocaleString()} / ${target.toLocaleString()} kcal`;
     g('calBarRight').textContent=t.exKcal>0?`${t.exKcal} kcal exercise`:'';
   } else if(macroAct){
-    // new Activation model: kcal bar vs the Rules target/band (two-sided window)
     wrap.classList.remove('hidden');
     const kr=ruleFor('activation','kcal'), target=(kr&&kr.target)?kr.target:650;
     const cls=bandClass(t.kcal,kr);
@@ -2181,7 +2193,6 @@ function renderCalories(ph,t,macroAct){
     g('calBarLeft').textContent=`${t.kcal.toLocaleString()} / ${target.toLocaleString()} kcal`;
     g('calBarRight').textContent=t.exKcal>0?`${t.exKcal} kcal exercise`:'';
   }
-  // Activation/Transition (buckets model): buckets replace the protocol line (see renderBuckets)
 }
 /* daily food buckets: how much of each food type the day's allowance is used.
    yes/limited items fill their type's bucket; no items sit outside as violations.
@@ -2357,8 +2368,10 @@ function waterGoalL(){
   return 2.5; // fallback
 }
 function calcAdjustedTarget(){
-  if(!inMaintenance(currentDay))return null;
-  const win=CALBANK_WINDOW;
+  const ph=phaseFor(currentDay);
+  const reg=_phReg(ph.key);
+  const win=reg&&+(reg.bank_window)?+(reg.bank_window):0;
+  if(!win)return null; // no calorie bank for this phase
   const daily=maintTarget();
   const windowTarget=daily*win;
   let prevKcal=0, daysWithData=0;
@@ -2371,7 +2384,9 @@ function calcAdjustedTarget(){
   }
   if(!daysWithData) return daily;
   const remaining=windowTarget-prevKcal;
-  return Math.max(Math.round(daily*0.85), Math.min(Math.round(daily*1.15), Math.round(remaining)));
+  const lo=+(reg.bank_clamp_lo)||0.85;
+  const hi=+(reg.bank_clamp_hi)||1.15;
+  return Math.max(Math.round(daily*lo), Math.min(Math.round(daily*hi), Math.round(remaining)));
 }
 function renderRate(kind){
   const el=g('r'+kind[0].toUpperCase()+kind.slice(1));el.innerHTML='';
@@ -2726,12 +2741,12 @@ function chartPhaseOverlay(d0,dN,W,padL,padR,padT,padB){
 function phaseTargetLabel(dayNum){
   const ph=phaseFor(dayNum);
   const reg=_phReg(ph.key);
-  const cm=reg?reg.calorie_mode:null;
-  if(cm==='hidden')return ph.name+', eat high';
-  if(cm==='protocol'||(ph.key==='activation'||ph.key==='transition'))return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
-  if(reg&&reg.calorie_bank)return ph.name+', target ~'+maintTarget()+' kcal';
-  if(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')return ph.name+', target ~'+maintTarget()+' kcal';
-  return ph.name+', target ~'+effectiveStabTarget(dayNum)+' kcal';
+  const tMode=reg?reg.target_mode:'none';
+  if(tMode==='none')return ph.name+', eat high';
+  if(tMode==='fixed')return ph.name+', target '+(+(reg.target_fixed_lo)||400)+'-'+(+(reg.target_fixed_hi)||650);
+  if(tMode==='tdee_mult')return ph.name+', target ~'+maintTarget()+' kcal';
+  if(tMode==='ramp_then_hold')return ph.name+', target ~'+effectiveStabTarget(dayNum)+' kcal';
+  return ph.name;
 }
 function collectMacroDays(){
   const out=[];
@@ -2753,21 +2768,21 @@ function collectMacroDays(){
 function phaseTargetKcal(dayNum){
   const ph=phaseFor(dayNum).key;
   const reg=_phReg(ph);
-  const cm=reg?reg.calorie_mode:null;
-  if(cm==='hidden')return Math.round((profile&&profile.need?profile.need:2000)*1.5);
-  if(cm==='protocol'||(ph==='activation'||ph==='transition'))return 600; // mid of 500-700 for the bar reference
-  if(reg&&reg.calorie_bank)return maintTarget();
-  if(ph==='maintenance'||ph==='tracker'||ph==='recomposition')return maintTarget();
-  return effectiveStabTarget(dayNum); // stabilization (adaptive on hold days)
+  const tMode=reg?reg.target_mode:'none';
+  if(tMode==='none')return Math.round((profile&&profile.need?profile.need:2000)*1.5);
+  if(tMode==='fixed')return Math.round(((+(reg.target_fixed_lo)||400)+(+(reg.target_fixed_hi)||650))/2);
+  if(tMode==='tdee_mult')return maintTarget();
+  if(tMode==='ramp_then_hold')return effectiveStabTarget(dayNum);
+  return effectiveStabTarget(dayNum); // fallback
 }
 function dayCalState(dayNum,k){
   const ph=phaseFor(dayNum).key;
   const reg=_phReg(ph);
-  const cm=reg?reg.calorie_mode:null;
-  if(cm==='protocol'||(ph==='activation'||ph==='transition'))return calState(k);
+  const tMode=reg?reg.target_mode:'none';
+  if(tMode==='fixed')return calState(k);
   const tgt=phaseTargetKcal(dayNum);if(!tgt)return'ok';
   const pct=k/tgt*100;
-  if(cm==='hidden'||ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'over'); // want high
+  if(tMode==='none')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'over'); // want high
   // bar calories: bands from Rules tab
   const kr=ruleFor(_ruleParent(ph),'kcal');
   if(!kr)return'ok';
@@ -2777,15 +2792,16 @@ function dayCalState(dayNum,k){
 function dayCalDir(dayNum,k){
   const ph=phaseFor(dayNum).key;
   const reg=_phReg(ph);
-  const cm=reg?reg.calorie_mode:null;
+  const tMode=reg?reg.target_mode:'none';
   const tgt=phaseTargetKcal(dayNum);if(!tgt)return'ok';
   const pct=k/tgt*100;
-  if(cm==='protocol'||(ph==='activation'||ph==='transition')){
+  if(tMode==='fixed'){
     if(k<CAL_LOW_RED)return'under'; if(k>CAL_HIGH_RED)return'over';
-    if(k<CAL_LOW_AMBER)return'under'; if(k>CAL_HIGH_AMBER)return'over';
+    const lo=+(reg.target_fixed_lo)||CAL_LOW_AMBER, hi=+(reg.target_fixed_hi)||CAL_HIGH_AMBER;
+    if(k<lo)return'under'; if(k>hi)return'over';
     return'ok';
   }
-  if(cm==='hidden'||ph==='loading')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'under');
+  if(tMode==='none')return k>=tgt*0.9?'ok':(k>=tgt*0.6?'warn':'under');
   const kr=ruleFor(_ruleParent(ph),'kcal');
   if(!kr)return'ok';
   if(kr.amber_lo!=null&&pct<kr.amber_lo)return'under';
@@ -2924,10 +2940,13 @@ function macroBars(range){
   const bw=Math.max(6,Math.min(22,(W-padL-padR)/Math.max(1,dayCount)*0.55));
   const Y_LO=0.50, Y_HI=0.64;
   const okKcal=dayNum=>{
-    const k=phaseFor(dayNum).key;
-    if(k==='loading'){const t=phaseTargetKcal(dayNum)||1;return [t*0.9,t];}
-    if(k==='maintenance'||k==='tracker'||k==='recomposition'){const mt=maintTarget()||1;return [mt*0.95, mt*1.05];}
-    if(k==='stabilization'){return [effectiveStabTarget(dayNum), stabTDEE()];}
+    const ph=phaseFor(dayNum);
+    const reg=_phReg(ph.key);
+    const tMode=reg?reg.target_mode:'none';
+    if(tMode==='none'){const t=phaseTargetKcal(dayNum)||1;return [t*0.9,t];}
+    if(tMode==='fixed')return [+(reg.target_fixed_lo)||CAL_LOW_AMBER,+(reg.target_fixed_hi)||CAL_HIGH_AMBER];
+    if(tMode==='tdee_mult'){const mt=maintTarget()||1;return [mt*0.95, mt*1.05];}
+    if(tMode==='ramp_then_hold')return [effectiveStabTarget(dayNum), stabTDEE()];
     return [CAL_LOW_AMBER,CAL_HIGH_AMBER];
   };
   const fracFor=(dayNum,v)=>{
