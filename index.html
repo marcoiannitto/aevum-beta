@@ -1292,7 +1292,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.44.0';
+const APP_VERSION='v1.44.1';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1791,7 +1791,7 @@ function reviewTarget(){
   const ph=phaseFor(td).key;
   // Run in stabilization hold AND maintenance (both program and free users)
   const inStabHold=(ph==='stabilization'&&isHoldDay(td));
-  const inMaint=(ph==='maintenance');
+  const inMaint=(ph==='maintenance'||ph==='recomposition');
   if(!inStabHold&&!inMaint)return;
   // seed once: stabilization uses formula ramp value, maintenance/free uses Mifflin TDEE
   // collect recent weights for smoothed TDEE
@@ -3898,7 +3898,7 @@ async function setPhaseMode(mode){
     if(res.profile){profile=res.profile;localStorage.setItem(K('profile'),JSON.stringify(profile));}
     showToast('Switched to '+(mode==='recomposition'?'Recomposition':'Maintenance'));
     closePhaseGate();
-    applyPhaseConfig();render();
+    applyPhaseConfig();reviewTarget();render();
     if(g('profPanel').classList.contains('show')){renderProgramsSection(todayDayNum()||currentDay);}
   }catch(e){showToast('Failed to switch');}
 }
