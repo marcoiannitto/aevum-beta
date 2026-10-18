@@ -1,0 +1,34 @@
+name: Daily D1 Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 10am SGT daily
+  workflow_dispatch:        # manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install wrangler
+        run: npm install -g wrangler
+
+      - name: Export D1 database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          mkdir -p backups
+          DATE=$(date -u +%Y-%m-%d)
+          wrangler d1 export aevum-db --remote --output=backups/aevum-db-${DATE}.sql
+          # Keep only last 30 backups
+          ls -t backups/aevum-db-*.sql | tail -n +31 | xargs -r rm
+
+      - name: Commit backup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          git diff --cached --quiet || git commit -m "backup: D1 snapshot $(date -u +%Y-%m-%d)"
+          git push
