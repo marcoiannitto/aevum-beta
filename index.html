@@ -2375,16 +2375,19 @@ function calcAdjustedTarget(){
   const win=reg&&+(reg.bank_window)?+(reg.bank_window):0;
   if(!win)return null; // no calorie bank for this phase
   const daily=maintTarget();
-  const windowTarget=daily*win;
-  let prevKcal=0, daysWithData=0;
+  let prevKcal=0, daysWithData=0, samePhaseDays=0;
   for(let i=1;i<win;i++){
-    const d=currentDay-i;if(d<1)continue;
+    const d=currentDay-i;if(d<1)break;
+    if(phaseFor(d).key!==ph.key)break; // stop at phase boundary
+    samePhaseDays++;
     const o=dayData(d);
     if(!o)continue;
     const k=(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);
     if(k>0){prevKcal+=k;daysWithData++;}
   }
   if(!daysWithData) return daily;
+  const effectiveWin=samePhaseDays+1; // same-phase days + today
+  const windowTarget=daily*effectiveWin;
   const remaining=windowTarget-prevKcal;
   const lo=+(reg.bank_clamp_lo)||0.85;
   const hi=+(reg.bank_clamp_hi)||1.15;
