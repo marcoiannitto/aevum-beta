@@ -1292,7 +1292,8 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.44.1';
+const APP_VERSION='v1.44.2';
+let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1786,7 +1787,7 @@ function saveTargetFields(f){
   postJSON(BACKEND_URL,p,'text/plain;charset=utf-8').catch(()=>{});
 }
 function reviewTarget(){
-  if(!profile||!BACKEND_URL)return;
+  if(!profile||!BACKEND_URL||!_profileFetched)return;
   const td=todayDayNum()||currentDay;
   const ph=phaseFor(td).key;
   // Run in stabilization hold AND maintenance (both program and free users)
@@ -4111,7 +4112,7 @@ function boot(){
   currentDay=td||+(localStorage.getItem(K('lastDay'))||1);
   loadDay();
   loadConfig();loadPhases();loadMessages();loadRules();
-  reviewTarget();
+  // reviewTarget() removed from boot — runs inside fetchProfile() after fresh data arrives
   if(IS_PROGRAM){maybePhaseIntro();maybeDailyBrief();maybeGraduation();}
   fetchProfile();hydrateFromBackend();
   if(IS_PROGRAM){setInterval(()=>{const ph=phaseFor(currentDay);g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;},60000);}
@@ -4151,6 +4152,7 @@ function fetchProfile(){
         else if(P.program===true){keep.program=true;IS_PROGRAM=true;}
         profile=Object.assign({},profile,keep);
         localStorage.setItem(K('profile'),JSON.stringify(profile));
+        _profileFetched=true; // server data received — reviewTarget() can now run safely
         applyPhaseConfig();
         // first-ever open defaulted before start_date was known: jump to today now
         const td=todayDayNum();
