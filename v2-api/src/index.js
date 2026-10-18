@@ -393,15 +393,19 @@ async function updateProfile(userId, body, db) {
   if (!sets.length) return { error: 'nothing to update' };
   vals.push(userId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
-  // Recompute TDEE if relevant fields changed
-  const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
-  if (row && row.sex && row.height && (row.dob || row.age) && row.start_weight) {
-    const age = row.dob ? dobToAge(row.dob) : row.age;
-    const act = parseFloat(row.activity) || 1.55;
-    const s = row.sex === 'm' ? 5 : -161;
-    const tw = parseFloat(row.target_kg) || parseFloat(row.start_weight);
-    const tdee = Math.round((10 * tw + 6.25 * row.height - 5 * age + s) * act);
-    await db.prepare('UPDATE users SET current_target_kcal = ? WHERE id = ?').bind(tdee, userId).run();
+  // Recompute TDEE only when body-comp fields changed (not phase_mode or name alone)
+  const tdeeFields = ['sex', 'dob', 'height', 'target_kg', 'activity'];
+  const bodyChanged = sets.some(s => tdeeFields.some(f => s.startsWith(f + ' ')));
+  if (bodyChanged) {
+    const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+    if (row && row.sex && row.height && (row.dob || row.age) && row.start_weight) {
+      const age = row.dob ? dobToAge(row.dob) : row.age;
+      const act = parseFloat(row.activity) || 1.55;
+      const s = row.sex === 'm' ? 5 : -161;
+      const tw = parseFloat(row.target_kg) || parseFloat(row.start_weight);
+      const tdee = Math.round((10 * tw + 6.25 * row.height - 5 * age + s) * act);
+      await db.prepare('UPDATE users SET current_target_kcal = ? WHERE id = ?').bind(tdee, userId).run();
+    }
   }
   return await getProfile(userId, db);
 }
