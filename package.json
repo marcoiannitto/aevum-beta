@@ -1,5 +1,6 @@
 {
-  "name": "aevum",
+  "name": "aevum-v3",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "build": "turbo build",
