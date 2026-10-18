@@ -1293,10 +1293,11 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.46.0';
+const APP_VERSION='v1.46.1';
 let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
+   v1.46.1 — Fix calorie target bugs: okKcal, renderCalories, phaseTargetKcal, phaseTargetLabel now handle recomposition and tracker correctly (were falling to activation 400-650 range). Calorie bank clamp tightened from [0.60, 1.40] to [0.85, 1.15] to reduce daily target volatility.
    v1.46.0 — Phase history: Today phase bar and Trends strip now show real per-day phase history from backend (was computed durations). Tap any segment to see phase name. Trends charts have low-opacity phase color overlay behind data. Header: date shown first, day number secondary. Backend getDays now returns phase column.
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
    v1.33.0 — Rename: 'consolidation' key removed from codebase, now 'stabilization' everywhere. Weekly calorie verdict: "Week avg: on track / under by ~X kcal / over by ~X kcal" using Rules tab bands. Compliance strip: directional colors (blue=under, green=on target, red=over), continuous bar with day initials, tap for detail.
@@ -2149,14 +2150,14 @@ function renderCalories(ph,t,macroAct){
   wrap.classList.add('hidden');prot.classList.add('hidden');g('calUnit').textContent='kcal today';
   const _calMode=(_phReg(ph.key)||{}).calorie_mode;
   const _hasCB=(_phReg(ph.key)||{}).calorie_bank;
-  if(_calMode==='bar'||(!_calMode&&(ph.key==='stabilization'||ph.key==='maintenance'||ph.key==='tracker'))){
+  if(_calMode==='bar'||(!_calMode&&(ph.key==='stabilization'||ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition'))){
     wrap.classList.remove('hidden');
     const rKey=_ruleParent(ph.key);
     const kr=ruleFor(rKey,'kcal');
-    let target=(ph.key==='maintenance'||ph.key==='tracker')?maintTarget():effectiveStabTarget(currentDay);
-    // In maintenance/tracker, use adjusted target from calorie bank (rolling window)
+    let target=(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')?maintTarget():effectiveStabTarget(currentDay);
+    // In maintenance/tracker/recomposition, use adjusted target from calorie bank (rolling window)
     const infoBtn=g('cbInfoInline'), expl=g('cbExplainer');
-    if(_hasCB||(ph.key==='maintenance'||ph.key==='tracker')){
+    if(_hasCB||(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')){
       const adj=calcAdjustedTarget();
       if(adj!==null){target=adj;}
       if(infoBtn){infoBtn.classList.remove('hidden');infoBtn.onclick=()=>expl.classList.toggle('hidden');}
@@ -2370,7 +2371,7 @@ function calcAdjustedTarget(){
   }
   if(!daysWithData) return daily;
   const remaining=windowTarget-prevKcal;
-  return Math.max(Math.round(daily*0.6), Math.min(Math.round(daily*1.4), Math.round(remaining)));
+  return Math.max(Math.round(daily*0.85), Math.min(Math.round(daily*1.15), Math.round(remaining)));
 }
 function renderRate(kind){
   const el=g('r'+kind[0].toUpperCase()+kind.slice(1));el.innerHTML='';
@@ -2729,7 +2730,7 @@ function phaseTargetLabel(dayNum){
   if(cm==='hidden')return ph.name+', eat high';
   if(cm==='protocol'||(ph.key==='activation'||ph.key==='transition'))return ph.name+', target '+CAL_LOW_AMBER+'-'+CAL_HIGH_AMBER;
   if(reg&&reg.calorie_bank)return ph.name+', target ~'+maintTarget()+' kcal';
-  if(ph.key==='maintenance'||ph.key==='tracker')return ph.name+', target ~'+maintTarget()+' kcal';
+  if(ph.key==='maintenance'||ph.key==='tracker'||ph.key==='recomposition')return ph.name+', target ~'+maintTarget()+' kcal';
   return ph.name+', target ~'+effectiveStabTarget(dayNum)+' kcal';
 }
 function collectMacroDays(){
@@ -2756,7 +2757,7 @@ function phaseTargetKcal(dayNum){
   if(cm==='hidden')return Math.round((profile&&profile.need?profile.need:2000)*1.5);
   if(cm==='protocol'||(ph==='activation'||ph==='transition'))return 600; // mid of 500-700 for the bar reference
   if(reg&&reg.calorie_bank)return maintTarget();
-  if(ph==='maintenance')return maintTarget();
+  if(ph==='maintenance'||ph==='tracker'||ph==='recomposition')return maintTarget();
   return effectiveStabTarget(dayNum); // stabilization (adaptive on hold days)
 }
 function dayCalState(dayNum,k){
@@ -2925,7 +2926,7 @@ function macroBars(range){
   const okKcal=dayNum=>{
     const k=phaseFor(dayNum).key;
     if(k==='loading'){const t=phaseTargetKcal(dayNum)||1;return [t*0.9,t];}
-    if(k==='maintenance'){const mt=maintTarget()||1;return [mt*0.95, mt*1.05];}
+    if(k==='maintenance'||k==='tracker'||k==='recomposition'){const mt=maintTarget()||1;return [mt*0.95, mt*1.05];}
     if(k==='stabilization'){return [effectiveStabTarget(dayNum), stabTDEE()];}
     return [CAL_LOW_AMBER,CAL_HIGH_AMBER];
   };
