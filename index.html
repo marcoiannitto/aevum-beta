@@ -1293,10 +1293,11 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.47.0';
+const APP_VERSION='v1.47.1';
 let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
+   v1.47.1 — Allow phase durations of 0 days (loading, transition can be skipped per user).
    v1.47.0 — Calorie rules engine: all calorie target logic (target mode, calorie bank, weight drift) now driven by backend phase registry instead of hardcoded phase keys. Admin can control per-phase: target_mode (none/fixed/tdee_mult/ramp_then_hold), fixed band edges, ramp parameters, bank window/clamps, drift thresholds. Frontend dispatches on target_mode from registry with config fallbacks. Migration 0013 seeds all 7 phases.
    v1.46.1 — Fix calorie target bugs: okKcal, renderCalories, phaseTargetKcal, phaseTargetLabel now handle recomposition and tracker correctly (were falling to activation 400-650 range). Calorie bank clamp tightened from [0.60, 1.40] to [0.85, 1.15] to reduce daily target volatility.
    v1.46.0 — Phase history: Today phase bar and Trends strip now show real per-day phase history from backend (was computed durations). Tap any segment to see phase name. Trends charts have low-opacity phase color overlay behind data. Header: date shown first, day number secondary. Backend getDays now returns phase column.
@@ -1462,7 +1463,7 @@ function phaseLens(){
   // Registry-driven: build lens from all program phases that have a finite duration
   function _dur(key,fallback){
     const ph=_phReg(key);
-    if(ph&&ph.duration_col&&profile&&+profile[ph.duration_col]>0) return +profile[ph.duration_col];
+    if(ph&&ph.duration_col&&profile&&profile[ph.duration_col]!=null&&profile[ph.duration_col]!=='') return +profile[ph.duration_col];
     if(ph&&ph.duration_default) return ph.duration_default;
     return fallback;
   }
