@@ -1293,10 +1293,11 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.47.1';
+const APP_VERSION='v1.47.2';
 let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
+   v1.47.2 — Fix: fetchProfile now includes loading_days, transition_days, stabilization_days (were dropped on refresh).
    v1.47.1 — Allow phase durations of 0 days (loading, transition can be skipped per user).
    v1.47.0 — Calorie rules engine: all calorie target logic (target mode, calorie bank, weight drift) now driven by backend phase registry instead of hardcoded phase keys. Admin can control per-phase: target_mode (none/fixed/tdee_mult/ramp_then_hold), fixed band edges, ramp parameters, bank window/clamps, drift thresholds. Frontend dispatches on target_mode from registry with config fallbacks. Migration 0013 seeds all 7 phases.
    v1.46.1 — Fix calorie target bugs: okKcal, renderCalories, phaseTargetKcal, phaseTargetLabel now handle recomposition and tracker correctly (were falling to activation 400-650 range). Calorie bank clamp tightened from [0.60, 1.40] to [0.85, 1.15] to reduce daily target volatility.
@@ -4144,7 +4145,7 @@ function fetchProfile(){
   postJSON(BACKEND_URL,{action:'profile'},'text/plain;charset=utf-8')
     .then(d=>{
       if(d&&d.profile){
-        const P=d.profile, keep={target_kg:P.target_kg,start_weight:P.start_weight,start_date:P.start_date,activation_days:P.activation_days,stab_target_weight:P.stab_target_weight,maint_target_weight:P.maint_target_weight};
+        const P=d.profile, keep={target_kg:P.target_kg,start_weight:P.start_weight,start_date:P.start_date,activation_days:P.activation_days,loading_days:P.loading_days,transition_days:P.transition_days,stabilization_days:P.stabilization_days,stab_target_weight:P.stab_target_weight,maint_target_weight:P.maint_target_weight};
         // adaptive-target fields: only overwrite local if the Sheet actually has a value (local may be newer)
         if(+P.current_target_kcal>0)keep.current_target_kcal=P.current_target_kcal;
         if(+P.prev_target_kcal>0)keep.prev_target_kcal=P.prev_target_kcal;
