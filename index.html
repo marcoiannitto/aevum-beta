@@ -1257,7 +1257,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.43.1';
+const APP_VERSION='v1.43.2';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1751,14 +1751,18 @@ function reviewTarget(){
   const inMaint=(ph==='maintenance');
   if(!inStabHold&&!inMaint)return;
   // seed once: stabilization uses formula ramp value, maintenance/free uses Mifflin TDEE
+  // collect recent weights for smoothed TDEE
+  const _rw=[];
+  for(let d=td-1;d>=Math.max(1,td-cfgd('smooth_days'));d--){const o=dayData(d);if(o){const w=parseFloat(o.weight);if(w>0)_rw.push(w);}}
+  const _sw=_rw.length>=2?Math.round(_rw.reduce((a,b)=>a+b,0)/_rw.length*10)/10:null;
+  // live TDEE from smoothed weight (falls back to profile.need → mifflin with start weight)
+  const liveTDEE=_sw?mifflin(Object.assign({},profile,{weight:_sw})):(profile.need||mifflin(profile));
   if(!(+profile.current_target_kcal>0)){
-    const seed=inStabHold?stabTargetKcal(td):Math.round((profile.need||mifflin(profile))*cfgd('maint_cut'));
+    const seed=inStabHold?stabTargetKcal(td):Math.round(liveTDEE*cfgd('maint_cut'));
     const seedFields={current_target_kcal:seed,prev_target_kcal:seed,last_review_date:effTodayISO(),last_change_reason:''};
     // anchor maintenance target weight to 7-day average at entry
-    if(inMaint && !(+profile.maint_target_weight>0)){
-      const wSeed=[];
-      for(let d=td-1;d>=Math.max(1,td-cfgd('smooth_days'));d--){const o=dayData(d);if(o){const w=parseFloat(o.weight);if(w>0)wSeed.push(w);}}
-      if(wSeed.length>=2){const mtw=Math.round(wSeed.reduce((a,b)=>a+b,0)/wSeed.length*10)/10;seedFields.maint_target_weight=mtw;}
+    if(inMaint && !(+profile.maint_target_weight>0) && _sw){
+      seedFields.maint_target_weight=_sw;
     }
     saveTargetFields(seedFields);
     return;
@@ -1782,7 +1786,7 @@ function reviewTarget(){
   const band=cfgd('hold_band_kg');
   const step=cfgd('review_step_kcal'), floor=cfgd('target_floor_kcal');
   // ceiling: stabilization uses stabTDEE, maintenance uses full Mifflin TDEE
-  const ceil=inStabHold?stabTDEE():(profile.need||mifflin(profile));
+  const ceil=inStabHold?stabTDEE():liveTDEE;
   let cur=+profile.current_target_kcal, next=cur, reason='';
   if(tw!=null){
     if(smoothed>tw+band && slope>0.05){ next=Math.max(floor,cur-step); reason='down'; }   // too high + rising → eat less
