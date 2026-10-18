@@ -1257,7 +1257,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.43.0';
+const APP_VERSION='v1.43.1';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -2343,10 +2343,10 @@ function calcAdjustedTarget(){
   let prevKcal=0, daysWithData=0;
   for(let i=1;i<win;i++){
     const d=currentDay-i;if(d<1)continue;
-    const raw=localStorage.getItem(K('day_'+d));
-    let k=0;
-    if(raw){const o=JSON.parse(raw);k=Math.round(o.kcal||0)||(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);daysWithData++;}
-    prevKcal+=k;
+    const o=dayData(d);
+    if(!o)continue;
+    const k=(o.meals||[]).reduce((a,m)=>a+(+m.kcal||0),0);
+    if(k>0){prevKcal+=k;daysWithData++;}
   }
   if(!daysWithData) return daily;
   const remaining=windowTarget-prevKcal;
