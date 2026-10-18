@@ -1579,7 +1579,7 @@ function phaseOverviewHTML(curKey){
   return `<div class="ph-ov-h">The full journey</div>${rows}`;
 }
 function openPhaseSheet(){
-  const ph=phaseFor(currentDay), key=ph.key, info=PHASE_INFO[key];if(!info)return;
+  const ph=phaseFor(currentDay), key=ph.key, info=_phaseInfo(key);if(!info||!info.sub)return;
   g('phTitle').textContent=ph.name;
   g('phBody').innerHTML=`<div class="ph-sub">${esc(info.sub)}</div>`+phaseCardHTML(key,'ph-');
   g('phOverview').innerHTML=phaseOverviewHTML(key);
@@ -1588,7 +1588,7 @@ function openPhaseSheet(){
 function closePhaseSheet(){g('phScrim').classList.remove('show');g('phSheet').classList.remove('show');}
 /* auto full-screen intro when today crosses into a phase not seen yet */
 function showPhaseIntro(key){
-  const ph=phaseFor(currentDay),info=PHASE_INFO[key];if(!info)return;
+  const ph=phaseFor(currentDay),info=_phaseInfo(key);if(!info||!info.sub)return;
   g('piBadge').textContent=(key==='loading')?'Welcome':'New phase';
   g('piBody').innerHTML=`<div class="pi-title">${esc(ph.name)}</div><div class="pi-sub">${esc(info.sub)}</div>`+phaseCardHTML(key,'pi-');
   g('phaseIntro').classList.remove('hidden');
