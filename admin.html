@@ -69,10 +69,13 @@ input,textarea,select{font-family:inherit;font-size:13px;color:var(--ink);}
 .btn-back:hover{color:var(--ink);}
 
 /* TABLE */
-.table-wrap{padding:20px 28px;flex:1;overflow-y:auto;}
+.table-wrap{padding:20px 28px;flex:1;overflow:auto;}
 table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-thead th{background:#f5f2ec;text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:2;}
+thead th{background:#f5f2ec;text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:2;overflow:hidden;text-overflow:ellipsis;}
+thead th.sticky-col{position:sticky;left:0;z-index:3;background:#f5f2ec;}
 tbody td{padding:4px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+tbody td.sticky-col{position:sticky;left:0;z-index:1;background:var(--card);}
+tbody tr:hover td.sticky-col{background:#faf8f3;}
 tbody tr:hover{background:#faf8f3;}
 tbody td input,tbody td select{width:100%;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;transition:border-color .15s,background .15s;}
 tbody td input:focus,tbody td select:focus{border-color:var(--gold);background:var(--card);outline:none;}
@@ -81,9 +84,12 @@ tbody td textarea:focus{border-color:var(--gold);background:var(--card);outline:
 .row-actions{white-space:nowrap;}
 .btn-del{color:var(--red);font-size:18px;padding:4px 8px;opacity:.5;transition:opacity .15s;}
 .btn-del:hover{opacity:1;}
-.col-narrow{width:70px;}
-.col-mid{width:110px;}
+.col-narrow{width:70px;min-width:70px;}
+.col-mid{width:110px;min-width:110px;}
 .col-wide{min-width:200px;}
+/* Resizable column handle */
+th .col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;user-select:none;}
+th{position:relative;}
 
 /* POLICY EDITOR */
 .policy-cards{display:flex;flex-direction:column;gap:16px;padding:20px 28px;}
@@ -421,6 +427,7 @@ const TABLES = {
     ]
   },
   phases: {
+    stickyCol: true,
     cols: [
       { key:'key', label:'Key', w:'col-mid' },
       { key:'name', label:'Name', w:'col-mid' },
@@ -624,20 +631,23 @@ function renderDataTable(name) {
   const def = TABLES[name];
   const rows = store[name].current;
   const wrap = document.getElementById('tableContent');
+  const stickyFirst = def.stickyCol === true;
 
   let html = '<div class="table-wrap"><table><thead><tr>';
-  for (const col of def.cols) {
-    html += `<th class="${col.w || ''}">${col.label}</th>`;
-  }
+  def.cols.forEach((col, ci) => {
+    const cls = [(col.w || ''), (stickyFirst && ci === 0 ? 'sticky-col' : '')].filter(Boolean).join(' ');
+    html += `<th class="${cls}">${col.label}<span class="col-resize"></span></th>`;
+  });
   html += '<th></th></tr></thead><tbody>';
 
   for (let i = 0; i < rows.length; i++) {
     html += '<tr>';
-    for (const col of def.cols) {
+    def.cols.forEach((col, ci) => {
       const val = rows[i][col.key] ?? '';
       const inputType = col.type === 'number' ? 'number' : 'text';
-      html += `<td class="${col.w || ''}"><input type="${inputType}" value="${esc(String(val))}" data-row="${i}" data-col="${col.key}" oninput="cellChange(this,'${name}')"></td>`;
-    }
+      const cls = [(col.w || ''), (stickyFirst && ci === 0 ? 'sticky-col' : '')].filter(Boolean).join(' ');
+      html += `<td class="${cls}"><input type="${inputType}" value="${esc(String(val))}" data-row="${i}" data-col="${col.key}" oninput="cellChange(this,'${name}')"></td>`;
+    });
     html += `<td class="row-actions"><button class="btn-del" onclick="delRow('${name}',${i})" title="Delete row">&times;</button></td>`;
     html += '</tr>';
   }
@@ -648,6 +658,30 @@ function renderDataTable(name) {
 
   html += '</tbody></table></div>';
   wrap.innerHTML = html;
+  initColResize(wrap);
+}
+
+function initColResize(container) {
+  const handles = container.querySelectorAll('.col-resize');
+  handles.forEach(handle => {
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const th = handle.parentElement;
+      const startX = e.pageX;
+      const startW = th.offsetWidth;
+      function onMove(ev) {
+        const w = Math.max(50, startW + ev.pageX - startX);
+        th.style.width = w + 'px';
+        th.style.minWidth = w + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
 }
 
 function renderPolicyCards(name) {
