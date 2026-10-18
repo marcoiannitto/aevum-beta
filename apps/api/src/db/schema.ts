@@ -109,8 +109,8 @@ export const rules = sqliteTable('rules', {
 // ─── Phases ──────────────────────────────────────────────────
 
 export const phases = sqliteTable('phases', {
-  name: text('name').primaryKey(),
-  label: text('label'),
+  key: text('key').primaryKey(),
+  name: text('name'),
   sort_order: integer('sort_order'),
   calorie_mode: text('calorie_mode'),
   calorie_cut: real('calorie_cut'),

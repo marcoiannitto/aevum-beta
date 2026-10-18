@@ -34,9 +34,9 @@ import {
 import {
   adminUsers, adminExport, adminSeed, adminList,
   adminImport, adminUpdateUser, adminUserCreate,
-  adminUserDelete, adminScanSave, adminScanList,
-  adminScanDelete,
+  adminUserDelete,
 } from './routes/admin.js';
+import { adminScanSave, adminScanList, adminScanDelete } from './routes/scans.js';
 
 // ─── Helpers ────────────────────────────────────────────────
 
