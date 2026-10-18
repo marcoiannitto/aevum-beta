@@ -1,0 +1,7 @@
+-- Recomposition phase: post-stabilization alternative to maintenance
+-- Body recomposition with higher protein, structured fat/carb split
+INSERT INTO phases (key, name, color, sort_order, duration_default, duration_col, is_program, requires_serum, has_fasting, gate_fat, gate_carb, use_buckets, calorie_mode, calorie_bank, inherits_rules_from, food_rule_line, explainer_json, fitness_intro, show_in_phase_bar, show_in_recipe_chips) VALUES
+('recomposition', 'Recomposition', '#5B738A', 55, NULL, NULL, 1, 0, 0, 1, 0, 0, 'bar', 1, NULL,
+ 'Recomposition: high protein, moderate fat, carbs fill the rest. Train hard, recover well.',
+ '{"sub":"Building lean mass","change":"Same calorie target as maintenance but with a higher protein floor and structured fat minimum. The goal shifts from weight loss to body composition: less fat, more muscle.","eat":"High-protein meals: lean meat, fish, eggs, dairy. Healthy fats at every meal. Carbs from whole foods around training.","avoid":"Empty calories, excess sugar, ultra-processed food. Do not cut fat below 0.8 g per kg.","targets":["Calories: TDEE x 0.90 (10% deficit)","Protein: 2 g per kg bodyweight","Fat: 0.8 to 1 g per kg (never below 0.8)","Carbs: remaining calories after protein and fat","Water: 0.04 L per kg + 0.5 L per training hour","Creatine: 5 g per day, every day"],"expect":"Weight may stay flat or rise slightly as muscle builds. Track measurements and how clothes fit, not just the scale. Strength should climb steadily."}',
+ 'Train with intent. Progressive overload is the driver.', 1, 1);
