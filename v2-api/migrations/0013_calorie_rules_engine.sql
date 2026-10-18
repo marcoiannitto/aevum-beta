@@ -83,18 +83,12 @@ UPDATE phases SET
   drift_band_kg = 0.5
 WHERE key = 'maintenance';
 
--- Tracker: same as maintenance
+-- Tracker (free tier): full TDEE, no bank, no drift
 UPDATE phases SET
   target_mode = 'tdee_mult',
-  calorie_cut = 0.90,
-  bank_window = 4,
-  bank_clamp_lo = 0.85,
-  bank_clamp_hi = 1.15,
-  drift_enabled = 1,
-  drift_review_days = 7,
-  drift_step_kcal = 150,
-  drift_floor_kcal = 1200,
-  drift_band_kg = 0.5
+  calorie_cut = 1.00,
+  bank_window = 0,
+  drift_enabled = 0
 WHERE key = 'tracker';
 
 -- Recomposition: same as maintenance
