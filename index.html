@@ -605,6 +605,28 @@ textarea.notes::placeholder{color:var(--muted);}
 .rpt-card .rpt-info{flex:1;}
 .rpt-card .rpt-title{font-size:14px;font-weight:500;}
 .rpt-card .rpt-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+/* Program cards in profile */
+.prog-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--card);margin-bottom:8px;cursor:pointer;border:2px solid transparent;transition:border-color .2s;}
+.prog-card.active{border-color:var(--gold);}
+.prog-card.locked{opacity:.5;cursor:default;}
+.prog-card .prog-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.prog-card .prog-info{flex:1;}
+.prog-card .prog-name{font-size:14px;font-weight:500;}
+.prog-card .prog-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.prog-card .prog-lock{font-size:14px;color:var(--muted);flex-shrink:0;}
+.prog-card .prog-check{font-size:14px;color:var(--gold);flex-shrink:0;}
+/* Phase gate modal */
+.modal-scrim{position:fixed;inset:0;background:rgba(26,26,26,.55);z-index:70;}
+.phase-gate-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(340px,90vw);background:var(--paper);border-radius:20px;padding:28px 24px;z-index:71;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.phase-gate-title{font-family:var(--serif);font-size:22px;font-weight:500;text-align:center;margin-bottom:4px;}
+.phase-gate-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;}
+.gate-card{padding:16px;border-radius:14px;background:var(--card);margin-bottom:10px;cursor:pointer;border:2px solid var(--line);transition:border-color .2s;}
+.gate-card:hover,.gate-card:active{border-color:var(--gold);}
+.gate-card.locked{opacity:.5;cursor:default;}
+.gate-card.locked:hover{border-color:var(--line);}
+.gate-card-name{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.gate-card-sub{font-size:13px;color:var(--muted);line-height:1.4;}
+.gate-card .prog-lock{font-size:13px;color:var(--muted);}
 .prof-acc{border-bottom:1px solid var(--line);}
 .prof-acc:last-child{border-bottom:none;}
 .prof-acc summary{padding:10px 0;font-size:14px;color:var(--ink-soft);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
@@ -1051,6 +1073,10 @@ textarea.notes::placeholder{color:var(--muted);}
     <div id="profStats"></div>
     <div id="profEditActions" class="hidden"></div>
   </div>
+  <div class="prof-section" id="profProgramsSection">
+    <div class="prof-section-title">Programs</div>
+    <div id="profPrograms"></div>
+  </div>
   <div class="prof-section" id="profReportsSection">
     <div class="prof-section-title">Reports</div>
     <div id="profReports"></div>
@@ -1071,6 +1097,15 @@ textarea.notes::placeholder{color:var(--muted);}
   </div>
   <div class="prof-ver" id="profVer"></div>
   <button id="btnLogout" style="margin-top:20px;width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;color:var(--over);font-size:14px;font-weight:500;background:var(--card);">Log out</button>
+</div>
+
+<!-- Phase choice gate modal -->
+<div id="phaseGateScrim" class="modal-scrim" style="display:none;">
+  <div class="phase-gate-modal">
+    <div class="phase-gate-title">What's next?</div>
+    <div class="phase-gate-sub">You've completed AEVUM. Choose your path forward.</div>
+    <div id="phaseGateCards"></div>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -1257,7 +1292,7 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.43.2';
+const APP_VERSION='v1.44.0';
 
 /* CHANGELOG (full history in aevum-improvements.md)
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
@@ -1456,11 +1491,18 @@ function phaseFor(d){
     for(const ph of PHASES_LIST){
       const dur=L[ph.key]||ph.duration_default||0;
       if(dur){cum+=dur; if(d<=cum) return {key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color};}
-      else{/* open-ended = everything after */ return {key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color};}
+      else{
+        // Open-ended phase: route by phase_mode (default: maintenance)
+        const mode=(profile&&profile.phase_mode)||'maintenance';
+        if(ph.key===mode) return {key:ph.key,name:ph.name,color:ph.key==='maintenance'?MAINT_COLOR:ph.color};
+        // Skip this open-ended phase if it doesn't match the user's mode
+        continue;
+      }
     }
-    // past all phases — last phase (maintenance)
-    const last=PHASES_LIST[PHASES_LIST.length-1];
-    return {key:last.key,name:last.name,color:last.key==='maintenance'?MAINT_COLOR:last.color};
+    // past all phases: fall back to user's chosen mode, or maintenance
+    const mode=(profile&&profile.phase_mode)||'maintenance';
+    const chosen=PHASES_LIST.find(p=>p.key===mode)||PHASES_LIST[PHASES_LIST.length-1];
+    return {key:chosen.key,name:chosen.name,color:chosen.key==='maintenance'?MAINT_COLOR:chosen.color};
   }
   // Fallback: hardcoded (before registry loads)
   const L=phaseLens();
@@ -1471,7 +1513,8 @@ function phaseFor(d){
   if(d<=l4) return {key:'stabilization',name:'Stabilization',color:'#4a463f'};
   return {key:'maintenance',name:'Maintenance',color:MAINT_COLOR};
 }
-function inMaintenance(d){const k=phaseFor(d||currentDay).key;return k==='maintenance'||k==='tracker';}
+function inPostProgram(d){const k=phaseFor(d||currentDay).key;return k==='maintenance'||k==='recomposition'||k==='tracker';}
+function inMaintenance(d){return inPostProgram(d);}
 function gatesFor(k){
   const ph=_phReg(k);
   if(ph) return {fat:ph.gate_fat,carb:ph.gate_carb};
@@ -1998,11 +2041,12 @@ function renderPhaseBar(){
     html+=`<div class="pbseg${curKey===k?' cur':''}" style="flex:${len}"><span style="width:${(frac*100).toFixed(1)}%"></span></div>`;
     start+=len;
   });
-  /* maintenance: add a segment that grows with days beyond the program */
+  /* post-program: add a segment that grows with days beyond the program */
   if(currentDay>total){
     const mDays=currentDay-total;
-    const mFrac=1; /* always fully filled - we're on today */
-    html+=`<div class="pbseg${curKey==='maintenance'?' cur':''}" style="flex:${Math.max(3,mDays)};background:${MAINT_COLOR}20"><span style="width:100%;background:${MAINT_COLOR}"></span></div>`;
+    const postPh=phaseFor(currentDay);
+    const postColor=postPh.color||MAINT_COLOR;
+    html+=`<div class="pbseg${curKey===postPh.key?' cur':''}" style="flex:${Math.max(3,mDays)};background:${postColor}20"><span style="width:100%;background:${postColor}"></span></div>`;
   }
   el.innerHTML=html;
 }
@@ -2656,9 +2700,9 @@ function trendsPhaseStrip(d0,dN){
   const pctOf=x=>x/W*100;
   const cur=phaseFor(currentDay).key;
   // maintenance/tracker user: single full-width bar, no prior-phase labels
-  if(cur==='maintenance'||cur==='tracker'){
+  if(cur==='maintenance'||cur==='recomposition'||cur==='tracker'){
     const phCur=phaseFor(currentDay);
-    const segs=`<rect x="${padL}" y="0" width="${(W-padL-padR).toFixed(1)}" height="6" rx="3" fill="${MAINT_COLOR}"/>`;
+    const segs=`<rect x="${padL}" y="0" width="${(W-padL-padR).toFixed(1)}" height="6" rx="3" fill="${phCur.color||MAINT_COLOR}"/>`;
     const labels=`<span class="cur" style="left:50%">${phCur.name}</span>`;
     return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6">${segs}</svg><div class="trphase-labels">${labels}</div>`;
   }
@@ -2683,7 +2727,8 @@ function trendsPhaseStrip(d0,dN){
   if(dN>s){
     const a=s+1,lo=Math.max(a,d0);
     if(dN>=lo){
-      const tail=PHASES_LIST.length?PHASES_LIST.find(p=>!p.duration_default)||PHASES_LIST[PHASES_LIST.length-1]:null;
+      const _pm2=(profile&&profile.phase_mode)||'maintenance';
+      const tail=PHASES_LIST.length?(PHASES_LIST.find(p=>p.key===_pm2&&!p.duration_default)||PHASES_LIST.find(p=>!p.duration_default)||PHASES_LIST[PHASES_LIST.length-1]):null;
       const tailKey=tail?tail.key:'maintenance', tailName=tail?tail.name:'Maintenance', tailColor=tail?tail.color:MAINT_COLOR;
       const x1=(a<=d0)?padL:xs(a-0.5);
       const x2=W-padR;
@@ -3426,8 +3471,9 @@ function renderPlan(){
 
   // legend
   {const lg=g('planLegend');if(lg){
+    const _pm=(profile&&profile.phase_mode)||'maintenance';
     let lh=PHASES_LIST.length
-      ?PHASES_LIST.filter(p=>p.show_in_phase_bar).map(p=>`<span><i style="background:${p.color}"></i>${p.name}</span>`).join('')
+      ?PHASES_LIST.filter(p=>p.show_in_phase_bar&&(p.duration_default||p.key===_pm)).map(p=>`<span><i style="background:${p.color}"></i>${p.name}</span>`).join('')
       :`<span><i style="background:#8a8a8a"></i>Loading</span><span><i style="background:#B08D2E"></i>Activ./Trans.</span><span><i style="background:#4a463f"></i>Stabilization</span><span><i style="background:${MAINT_COLOR}"></i>Maintenance</span>`;
     lg.innerHTML=lh+`<span><i style="background:var(--gold-deep)"></i>has plan</span>`;
   }}
@@ -3754,6 +3800,8 @@ function openProfile(){
   <div class="rpt-info"><div class="rpt-title">Graduation Report</div><div class="rpt-desc">${gradOk?'View your full program report':'Available after Stabilization'}</div></div>
 </a>`;
   if(!IS_PROGRAM)g('profReportsSection').classList.add('hidden');else g('profReportsSection').classList.remove('hidden');
+  // Programs section
+  renderProgramsSection(td);
   // #27: Documentation hub
   g('profDocs').innerHTML=`
 <details class="prof-acc"><summary>Food guide</summary><div class="acc-body">
@@ -3807,6 +3855,73 @@ g('btnLogout').onclick=()=>{
   localStorage.removeItem('aevum_last_id');
   location.reload();
 };
+
+/* ---- Programs section & Phase gate ---- */
+const POST_STAB_MODES=[
+  {key:'maintenance',desc:'Maintain your results with flexible eating and weekly reviews.'},
+  {key:'recomposition',desc:'Build lean mass with higher protein and structured macros.'}
+];
+
+function renderProgramsSection(td){
+  const el=g('profPrograms');if(!el)return;
+  const completedAevum=IS_PROGRAM&&inPostProgram(td);
+  const currentMode=(profile&&profile.phase_mode)||'maintenance';
+  let html='';
+  for(const m of POST_STAB_MODES){
+    const ph=_phReg(m.key);
+    const color=ph?ph.color:(m.key==='maintenance'?MAINT_COLOR:'#5B738A');
+    const isActive=completedAevum&&currentMode===m.key;
+    const isLocked=!completedAevum;
+    const cls='prog-card'+(isActive?' active':'')+(isLocked?' locked':'');
+    const badge=isLocked?'<span class="prog-lock">🔒</span>':(isActive?'<span class="prog-check">✓</span>':'');
+    const sub=ph&&ph.explainer_json?(() => {try{return JSON.parse(ph.explainer_json).sub||m.desc;}catch(e){return m.desc;}})():m.desc;
+    html+=`<div class="${cls}" data-mode="${m.key}" onclick="${isLocked?'':'setPhaseMode(\''+m.key+'\')'}">
+      <div class="prog-dot" style="background:${color}"></div>
+      <div class="prog-info"><div class="prog-name">${ph?ph.name:m.key}</div><div class="prog-desc">${sub}</div></div>
+      ${badge}
+    </div>`;
+  }
+  if(!completedAevum&&IS_PROGRAM){
+    html+='<div style="font-size:12px;color:var(--muted);margin-top:4px;">Complete AEVUM to unlock</div>';
+  }
+  if(!IS_PROGRAM){
+    html+='<div style="font-size:12px;color:var(--muted);margin-top:4px;">Available with AEVUM Program</div>';
+  }
+  el.innerHTML=html;
+}
+
+async function setPhaseMode(mode){
+  if(!profile)return;
+  try{
+    const res=await postJSON(BACKEND_URL,{action:'update_profile',phase_mode:mode});
+    if(res.error){showToast('Error: '+res.error);return;}
+    if(res.profile){profile=res.profile;localStorage.setItem(K('profile'),JSON.stringify(profile));}
+    showToast('Switched to '+(mode==='recomposition'?'Recomposition':'Maintenance'));
+    closePhaseGate();
+    applyPhaseConfig();render();
+    if(g('profPanel').classList.contains('show')){renderProgramsSection(todayDayNum()||currentDay);}
+  }catch(e){showToast('Failed to switch');}
+}
+
+let gateShown=false;
+function showPhaseGate(){
+  if(gateShown)return;
+  gateShown=true;
+  const el=g('phaseGateCards');if(!el)return;
+  let html='';
+  for(const m of POST_STAB_MODES){
+    const ph=_phReg(m.key);
+    const color=ph?ph.color:(m.key==='maintenance'?MAINT_COLOR:'#5B738A');
+    const sub=ph&&ph.explainer_json?(() => {try{return JSON.parse(ph.explainer_json).sub||m.desc;}catch(e){return m.desc;}})():m.desc;
+    html+=`<div class="gate-card" onclick="setPhaseMode('${m.key}')">
+      <div class="gate-card-name"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color}"></span> ${ph?ph.name:m.key}</div>
+      <div class="gate-card-sub">${sub}</div>
+    </div>`;
+  }
+  el.innerHTML=html;
+  g('phaseGateScrim').style.display='block';
+}
+function closePhaseGate(){g('phaseGateScrim').style.display='none';}
 
 function wire(){
   g('prevDay').onclick=()=>{saveDay(true);currentDay=Math.max(1,currentDay-1);loadDay();scrollTo(0,0);};
@@ -4031,6 +4146,7 @@ function fetchProfile(){
         if(P.last_change_reason!=null&&P.last_change_reason!=='')keep.last_change_reason=P.last_change_reason;
         if(P.maintenance_mode)keep.maintenance_mode=P.maintenance_mode;
         if(P.maintenance_diet)keep.maintenance_diet=P.maintenance_diet;
+        if(P.phase_mode)keep.phase_mode=P.phase_mode;
         if(P.program===false){keep.program=false;IS_PROGRAM=false;}
         else if(P.program===true){keep.program=true;IS_PROGRAM=true;}
         profile=Object.assign({},profile,keep);
@@ -4041,6 +4157,9 @@ function fetchProfile(){
         if(!bootUsedToday&&td){bootUsedToday=true;currentDay=td;loadDay();}else{render();}
         reviewTarget();
         if(IS_PROGRAM){maybePhaseIntro();maybeDailyBrief();maybeGraduation();}
+        // Phase gate: show choice if post-stab and no mode chosen yet
+        const _td=todayDayNum()||currentDay;
+        if(IS_PROGRAM&&inPostProgram(_td)&&!profile.phase_mode){showPhaseGate();}
       }
     }).catch(()=>{});
 }

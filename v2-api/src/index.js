@@ -362,7 +362,7 @@ async function completeProfile(userId, body, db) {
 
 // ─── Update profile (user self-service) ─────────────────────
 async function updateProfile(userId, body, db) {
-  const allowed = ['name', 'sex', 'dob', 'height', 'target_kg', 'act'];
+  const allowed = ['name', 'sex', 'dob', 'height', 'target_kg', 'act', 'phase_mode'];
   const sets = [];
   const vals = [];
   for (const key of allowed) {
@@ -382,6 +382,11 @@ async function updateProfile(userId, body, db) {
         sets.push('target_kg = ?'); vals.push(parseFloat(body.target_kg));
       } else if (key === 'name') {
         sets.push('name = ?'); vals.push(String(body.name).trim());
+      } else if (key === 'phase_mode') {
+        const pm = String(body.phase_mode).trim();
+        if (['maintenance', 'recomposition'].includes(pm)) {
+          sets.push('phase_mode = ?'); vals.push(pm);
+        }
       }
     }
   }
@@ -431,6 +436,7 @@ async function getProfile(userId, db) {
       last_change_reason: row.last_change_reason || '',
       maintenance_mode: row.maintenance_mode || '',
       maintenance_diet: row.maintenance_diet || '',
+      phase_mode: row.phase_mode || '',
       program: !!row.program,
       notes: row.notes || ''
     }
