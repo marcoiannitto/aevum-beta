@@ -481,9 +481,9 @@ async function syncRow(userId, body, db) {
 // ─── Get days (restore) ──────────────────────────────────────
 async function getDays(userId, db) {
   const rows = await db.prepare(
-    'SELECT day, day_json, updated_at FROM daily_logs WHERE user_id = ? ORDER BY day'
+    'SELECT day, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY day'
   ).bind(userId).all();
-  return { days: rows.results.map(r => ({ day: r.day, day_json: r.day_json || '', updated_at: r.updated_at || '' })) };
+  return { days: rows.results.map(r => ({ day: r.day, day_json: r.day_json || '', updated_at: r.updated_at || '', phase: r.phase || '' })) };
 }
 
 // ─── Meal plan ───────────────────────────────────────────────

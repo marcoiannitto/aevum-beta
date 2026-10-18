@@ -202,6 +202,7 @@ svg{display:block;}
 .pbseg>span{display:block;height:100%;background:var(--gold);opacity:.45;transition:width .35s ease;}
 .pbseg.cur{background:#efe6cf;}
 .pbseg.cur>span{opacity:1;}
+.pb-tooltip{position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;white-space:nowrap;z-index:10;pointer-events:none;animation:pbFade .2s ease;}
 /* phase progress track */
 .phase-track{display:flex;gap:3px;align-items:center;padding:0 2px 12px;position:relative;}
 .pt-seg{height:4px;border-radius:3px;background:var(--line);opacity:.5;position:relative;overflow:hidden;}
@@ -1292,10 +1293,11 @@ textarea.notes::placeholder{color:var(--muted);}
 
 <script>
 /* ===== SINGLE SOURCE OF TRUTH FOR VERSION ===== */
-const APP_VERSION='v1.45.0';
+const APP_VERSION='v1.46.0';
 let _profileFetched=false; // guard: reviewTarget() must wait for fresh profile from server
 
 /* CHANGELOG (full history in aevum-improvements.md)
+   v1.46.0 — Phase history: Today phase bar and Trends strip now show real per-day phase history from backend (was computed durations). Tap any segment to see phase name. Trends charts have low-opacity phase color overlay behind data. Header: date shown first, day number secondary. Backend getDays now returns phase column.
    v1.33.1 — Calorie bank: info button (i) toggles explainer about weekly balance philosophy. Tap to show/hide.
    v1.33.0 — Rename: 'consolidation' key removed from codebase, now 'stabilization' everywhere. Weekly calorie verdict: "Week avg: on track / under by ~X kcal / over by ~X kcal" using Rules tab bands. Compliance strip: directional colors (blue=under, green=on target, red=over), continuous bar with day initials, tap for detail.
    v1.32.3 — Today calorie bar: color now uses percentage-of-target (matching dayCalState and Rules tab bands), was passing raw kcal against percentage thresholds.
@@ -1971,6 +1973,7 @@ function totals(){
    and the band colours. If the backend is unreachable, RULES stays default (buckets) and
    the app behaves exactly as before. */
 let RULES={model:'buckets',rules:[]};
+let DAY_PHASES={}; // {dayNum: 'Loading'|'Activation'|...} from backend daily_logs.phase
 function ruleMapPhase(k){return _ruleParent(k);}
 function ruleFor(phaseKey,metric,model){
   const p=ruleMapPhase(phaseKey);
@@ -2000,7 +2003,7 @@ function render(){
   maybeWriteStabTarget();
   g('whoName').textContent=profile.name;
   if(IS_PROGRAM){
-    const dt=dayToDate(currentDay);g('dNum').innerHTML='Day '+currentDay+(dt?`<span class="dday-date">${fmtShort(dt)}</span>`:'');
+    const dt=dayToDate(currentDay);g('dNum').innerHTML=(dt?fmtShort(dt):'Day '+currentDay)+`<span class="dday-date">Day ${currentDay}</span>`;
     g('dPhase').innerHTML=`<span class="phase-dot" style="background:${ph.color}"></span>${ph.name}${fastingSuffix(ph)}<span class="ph-i">i</span>`;
     g('dPhase').style.display='';
   }else{
@@ -2028,29 +2031,55 @@ function render(){
   {const hasWaist=collectSeries('waist').length>0;g('waistNudge').classList.toggle('hidden',!!day.waist||hasWaist);}
   renderExercise();['energy','hunger','sleep'].forEach(renderRate);
 }
+/* Build phase runs: consecutive days grouped by phase.
+   Uses DAY_PHASES (from backend) when available, falls back to phaseFor(). */
+function phaseRuns(d0,dN){
+  const runs=[];
+  let prev=null;
+  for(let d=d0;d<=dN;d++){
+    const stored=DAY_PHASES[d];
+    let key,name,color;
+    if(stored){
+      // Match stored name to registry for color/key
+      const reg=PHASES_LIST.length?PHASES_LIST.find(p=>p.name===stored||p.key===stored.toLowerCase()):null;
+      if(reg){key=reg.key;name=reg.name;color=reg.key==='maintenance'?MAINT_COLOR:reg.color;}
+      else{const pf=phaseFor(d);key=pf.key;name=stored;color=pf.color;}
+    }else{
+      const pf=phaseFor(d);key=pf.key;name=pf.name;color=pf.color;
+    }
+    if(prev&&prev.key===key){prev.hi=d;}
+    else{prev={key,name,color,lo:d,hi:d};runs.push(prev);}
+  }
+  return runs;
+}
 function renderPhaseBar(){
   const el=g('phaseBar');if(!el)return;
-  const L=phaseLens(),total=totalDays();
-  const order=PHASES_LIST.length
-    ?PHASES_LIST.filter(p=>p.show_in_phase_bar&&p.duration_default).map(p=>p.key)
-    :['loading','activation','transition','stabilization'];
+  const maxD=Math.max(totalDays(),currentDay);
+  const runs=phaseRuns(1,maxD);
   const curKey=phaseFor(currentDay).key;
-  let start=0,html='';
-  order.forEach(k=>{
-    const len=L[k]||((_phReg(k)||{}).duration_default)||0;if(!len)return;
+  let html='';
+  runs.forEach((r,i)=>{
+    const len=r.hi-r.lo+1;
     let frac=0;
-    if(currentDay>start+len)frac=1;else if(currentDay>start)frac=(currentDay-start)/len;
-    html+=`<div class="pbseg${curKey===k?' cur':''}" style="flex:${len}"><span style="width:${(frac*100).toFixed(1)}%"></span></div>`;
-    start+=len;
+    if(currentDay>r.hi)frac=1;
+    else if(currentDay>=r.lo)frac=(currentDay-r.lo+1)/len;
+    const isCur=r.key===curKey&&currentDay>=r.lo&&currentDay<=r.hi;
+    const bg=r.color||MAINT_COLOR;
+    html+=`<div class="pbseg${isCur?' cur':''}" data-phase="${r.name}" style="flex:${len};background:${bg}20" onclick="showPhaseTooltip(this,event)"><span style="width:${(frac*100).toFixed(1)}%;background:${bg}"></span></div>`;
   });
-  /* post-program: add a segment that grows with days beyond the program */
-  if(currentDay>total){
-    const mDays=currentDay-total;
-    const postPh=phaseFor(currentDay);
-    const postColor=postPh.color||MAINT_COLOR;
-    html+=`<div class="pbseg${curKey===postPh.key?' cur':''}" style="flex:${Math.max(3,mDays)};background:${postColor}20"><span style="width:100%;background:${postColor}"></span></div>`;
-  }
   el.innerHTML=html;
+}
+/* Tap on phase bar segment to show phase name */
+function showPhaseTooltip(el,e){
+  // Remove any existing tooltip
+  document.querySelectorAll('.pb-tooltip').forEach(t=>t.remove());
+  const name=el.dataset.phase;if(!name)return;
+  const tip=document.createElement('div');
+  tip.className='pb-tooltip';
+  tip.textContent=name;
+  el.style.position='relative';
+  el.appendChild(tip);
+  setTimeout(()=>tip.remove(),2000);
 }
 function fastingSuffix(ph){
   const phReg=_phReg(ph.key);
@@ -2528,8 +2557,9 @@ function lineChart(data,unit,target,readoutId,range,band){
 
   // embed data for scrub JS
   const pts=JSON.stringify(data.map(d=>({d:d.day,v:d.v,x:+xs(d.day).toFixed(1)})));
+  const phOverlay=chartPhaseOverlay(d0,dN,W,padL,padR,padT,padB);
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" data-readout="${readoutId||''}" data-pts='${pts}'>
-    ${grid}${tline}
+    ${grid}${phOverlay}${tline}
     <polyline points="${trendPts}" fill="none" stroke="#B08D2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.16"/>
     <polyline points="${linePts}" fill="none" stroke="#B08D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     ${scrub}${dots}${fl}${ll}${xlabels}
@@ -2571,6 +2601,24 @@ function wireChartTaps(){
     svg.addEventListener('mousedown',e=>move(e.clientX));
     svg.addEventListener('mousemove',e=>{if(e.buttons)move(e.clientX);});
     svg.addEventListener('mouseup',end);
+  });
+  // Tap on trends phase strip rects to show phase name tooltip
+  document.querySelectorAll('.tr-phase-svg rect[data-phase]').forEach(rect=>{
+    rect.style.cursor='pointer';
+    rect.addEventListener('click',e=>{
+      document.querySelectorAll('.trph-tip').forEach(t=>t.remove());
+      const svg=rect.closest('svg');
+      const name=rect.getAttribute('data-phase');
+      const x=+rect.getAttribute('x')+(+rect.getAttribute('width'))/2;
+      const tip=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tip.setAttribute('x',x);tip.setAttribute('y','-4');
+      tip.setAttribute('text-anchor','middle');tip.setAttribute('font-size','10');
+      tip.setAttribute('fill','#1A1A1A');tip.setAttribute('font-family','sans-serif');
+      tip.setAttribute('font-weight','600');tip.classList.add('trph-tip');
+      tip.textContent=name;
+      svg.appendChild(tip);
+      setTimeout(()=>tip.remove(),2000);
+    });
   });
 }
 function renderTrends(){
@@ -2639,48 +2687,40 @@ function renderTrends(){
 }
 function trendsPhaseStrip(d0,dN){
   const W=440,padL=16,padR=16,span=(dN-d0)||1;
-  const xs=d=>padL+(d-d0)/span*(W-padL-padR); // same mapping as the charts
+  const xs=d=>padL+(d-d0)/span*(W-padL-padR);
   const pctOf=x=>x/W*100;
   const cur=phaseFor(currentDay).key;
-  // maintenance/tracker user: single full-width bar, no prior-phase labels
-  if(cur==='maintenance'||cur==='recomposition'||cur==='tracker'){
-    const phCur=phaseFor(currentDay);
-    const segs=`<rect x="${padL}" y="0" width="${(W-padL-padR).toFixed(1)}" height="6" rx="3" fill="${phCur.color||MAINT_COLOR}"/>`;
-    const labels=`<span class="cur" style="left:50%">${phCur.name}</span>`;
-    return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6">${segs}</svg><div class="trphase-labels">${labels}</div>`;
-  }
-  const L=phaseLens();
-  const order=PHASES_LIST.length
-    ?PHASES_LIST.filter(p=>p.duration_default).map(p=>[p.key,p.name])
-    :[['loading','Loading'],['activation','Activation'],['transition','Transition'],['stabilization','Stabilization']];
-  let s=0,segs='',labels='';
-  order.forEach(([k,name])=>{
-    const len=L[k]||((_phReg(k)||{}).duration_default)||0;if(!len)return;
-    const a=s+1,b=s+len;s+=len;
-    const lo=Math.max(a,d0),hi=Math.min(b,dN);
-    if(hi<lo)return; // phase not in view
-    const x1=(a<=d0)?padL:xs(a-0.5);
-    const x2=(b>=dN)?(W-padR):xs(b+0.5);
-    const isCur=k===cur,wpx=x2-x1;
-    const phCol=(_phReg(k)||{}).color||'#B08D2E';
-    segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?phCol:'#E2D8C0'}"/>`;
-    labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?name:name[0]}</span>`;
+  const runs=phaseRuns(d0,dN);
+  let segs='',labels='';
+  runs.forEach(r=>{
+    const lo=Math.max(r.lo,d0),hi=Math.min(r.hi,dN);
+    if(hi<lo)return;
+    const x1=(r.lo<=d0)?padL:xs(r.lo-0.5);
+    const x2=(r.hi>=dN)?(W-padR):xs(r.hi+0.5);
+    const isCur=r.key===cur&&currentDay>=r.lo&&currentDay<=r.hi;
+    const wpx=x2-x1;
+    const col=r.color||MAINT_COLOR;
+    segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?col:'#E2D8C0'}" data-phase="${r.name}"/>`;
+    labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?r.name:r.name[0]}</span>`;
   });
-  /* open-ended tail segment: last phase (maintenance or whatever is open-ended) */
-  if(dN>s){
-    const a=s+1,lo=Math.max(a,d0);
-    if(dN>=lo){
-      const _pm2=(profile&&profile.phase_mode)||'maintenance';
-      const tail=PHASES_LIST.length?(PHASES_LIST.find(p=>p.key===_pm2&&!p.duration_default)||PHASES_LIST.find(p=>!p.duration_default)||PHASES_LIST[PHASES_LIST.length-1]):null;
-      const tailKey=tail?tail.key:'maintenance', tailName=tail?tail.name:'Maintenance', tailColor=tail?tail.color:MAINT_COLOR;
-      const x1=(a<=d0)?padL:xs(a-0.5);
-      const x2=W-padR;
-      const isCur=cur===tailKey,wpx=x2-x1;
-      segs+=`<rect x="${x1.toFixed(1)}" y="0" width="${Math.max(2,wpx).toFixed(1)}" height="6" rx="3" fill="${isCur?tailColor:'#C5DDD6'}"/>`;
-      labels+=`<span class="${isCur?'cur':''}" style="left:${pctOf((x1+x2)/2).toFixed(1)}%">${wpx>60?tailName:tailName[0]}</span>`;
-    }
-  }
-  return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6">${segs}</svg><div class="trphase-labels">${labels}</div>`;
+  return `<svg viewBox="0 0 ${W} 6" width="100%" preserveAspectRatio="none" height="6" class="tr-phase-svg">${segs}</svg><div class="trphase-labels">${labels}</div>`;
+}
+/* Build phase overlay rects for inside a chart SVG. Returns SVG rect string. */
+function chartPhaseOverlay(d0,dN,W,padL,padR,padT,padB){
+  const span=(dN-d0)||1;
+  const xs=d=>padL+(d-d0)/span*(W-padL-padR);
+  const runs=phaseRuns(d0,dN);
+  const H=padB; // chart height area
+  let rects='';
+  runs.forEach((r,i)=>{
+    const lo=Math.max(r.lo,d0),hi=Math.min(r.hi,dN);
+    if(hi<lo)return;
+    const x1=(r.lo<=d0)?padL:xs(r.lo-0.5);
+    const x2=(r.hi>=dN)?(W-padR):xs(r.hi+0.5);
+    const col=r.color||MAINT_COLOR;
+    rects+=`<rect x="${x1.toFixed(1)}" y="${padT}" width="${Math.max(1,x2-x1).toFixed(1)}" height="${190-padT-30}" fill="${col}" opacity="0.06" data-phase="${r.name}"/>`;
+  });
+  return rects;
 }
 function phaseTargetLabel(dayNum){
   const ph=phaseFor(dayNum);
@@ -4066,11 +4106,13 @@ function hydrateFromBackend(){
     .then(d=>{
       if(!d||!Array.isArray(d.days)){showToast('Hydration: no days returned');return;}
       let updated=0;
+      DAY_PHASES={};
       d.days.forEach(row=>{
         if(!row.day||!row.day_json)return;
         try{JSON.parse(row.day_json);}catch(e){return;} // validate JSON
         const key=K('day_'+row.day);
         localStorage.setItem(key,row.day_json);
+        if(row.phase)DAY_PHASES[row.day]=row.phase;
         updated++;
       });
       if(updated){loadDay();showToast('Synced '+updated+' days from cloud');}
