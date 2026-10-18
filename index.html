@@ -1393,46 +1393,16 @@ function _applyPhases(arr){
       is_program:!!p.is_program,requires_serum:!!p.requires_serum,has_fasting:!!p.has_fasting,
       calorie_bank:!!p.calorie_bank,show_in_phase_bar:!!p.show_in_phase_bar,show_in_recipe_chips:!!p.show_in_recipe_chips};
     try{o.explainer=JSON.parse(p.explainer_json||'{}');}catch(e){o.explainer={};}
-    try{o.macro_rules_parsed=JSON.parse(p.macro_rules||'{}');}catch(e){o.macro_rules_parsed={};}
     PHASES[p.key]=o;
   });
   PHASES_LIST=arr.filter(p=>+p.is_program).sort((a,b)=>a.sort_order-b.sort_order).map(p=>PHASES[p.key]);
 }
 const DAY_START_HOUR=5;                             // a new "day" rolls over at 5am local
 const GLASS_ML=250;                                // water glass size (ml)
-const PROTEIN_PER_KG=1.2, PROTEIN_KG_HI=1.5;       // protein target range (g per kg of target weight)
-const FAT_TARGET=20, FAT_RED=25;                   // fat (g): green<=20, amber 20-25, red>25
-const CARB_TARGET=40, CARB_RED=50;                 // carbs (g): green<=40, amber 40-50, red>50
-const FAT_LIMIT=FAT_TARGET, CARB_LIMIT=CARB_TARGET;// bars fill against target
-/* ── Generic macro targets from phase registry macro_rules ── */
-function _macroTargets(phKey){
-  const ph=PHASES[phKey]; if(!ph||!ph.macro_rules_parsed)return null;
-  const rules=ph.macro_rules_parsed; if(!Object.keys(rules).length)return null;
-  const wRef=stabTargetWeight()||(profile&&+profile.weight)||0;
-  const out={};
-  for(const [macro,r] of Object.entries(rules)){
-    if(r.unit==='free'){out[macro]={mode:'free'};continue;}
-    if(r.unit==='gated'){out[macro]={mode:'gated'};continue;} // handled by existing rules table
-    const entry={mode:'range'};
-    if(r.unit==='g_per_kg'&&wRef){
-      entry.lo=Math.round(wRef*r.min); entry.hi=Math.round(wRef*r.max);
-      if(r.amber_low!=null) entry.amber_lo=Math.round(wRef*r.amber_low);
-      if(r.red_low!=null)   entry.red_lo=Math.round(wRef*r.red_low);
-      if(r.amber_high!=null)entry.amber_hi=Math.round(wRef*r.amber_high);
-      if(r.red_high!=null)  entry.red_hi=Math.round(wRef*r.red_high);
-    } else if(r.unit==='l_per_kg'&&wRef){
-      entry.target=+(wRef*r.target).toFixed(1); entry.unitLabel='L';
-    } else if(r.unit==='g'){
-      entry.lo=r.min; entry.hi=r.max;
-      if(r.amber_low!=null)entry.amber_lo=r.amber_low;
-      if(r.red_low!=null)entry.red_lo=r.red_low;
-      if(r.amber_high!=null)entry.amber_hi=r.amber_high;
-      if(r.red_high!=null)entry.red_hi=r.red_high;
-    }
-    out[macro]=entry;
-  }
-  return out;
-}
+/* Legacy macro constants used by meal planner fallback */
+const PROTEIN_PER_KG=1.2, PROTEIN_KG_HI=1.5;
+const FAT_TARGET=20, FAT_RED=25;
+const CARB_TARGET=40, CARB_RED=50;
 const CAL_LOW_RED=300, CAL_HIGH_RED=750;           // Activation/Transition hard red calorie edges
 const CAL_TARGET=500, CAL_RED=700;                 // legacy refs (target midpoint, red ceiling)
 const MEAL_KCAL=250, MEAL_FAT=10, MEAL_CARB=15;    // per-meal red flags
@@ -2152,7 +2122,8 @@ function renderCalories(ph,t,macroAct){
   const _hasCB=(_phReg(ph.key)||{}).calorie_bank;
   if(_calMode==='bar'||(!_calMode&&(ph.key==='stabilization'||ph.key==='maintenance'||ph.key==='tracker'))){
     wrap.classList.remove('hidden');
-    const kr=ruleFor('stabilization','kcal');
+    const rKey=_ruleParent(ph.key);
+    const kr=ruleFor(rKey,'kcal');
     let target=(ph.key==='maintenance'||ph.key==='tracker')?maintTarget():effectiveStabTarget(currentDay);
     // In maintenance/tracker, use adjusted target from calorie bank (rolling window)
     const infoBtn=g('cbInfoInline'), expl=g('cbExplainer');
@@ -2239,7 +2210,6 @@ function renderBuckets(ph,macroAct){
   box.innerHTML=`<div class="bkt-strip">${strip}</div>${violLine}${detail}`;
   box.onclick=()=>{box.classList.toggle('open');renderBuckets(ph);};
 }
-function gateState(v,target,red){if(v>red)return'over';if(v>target)return'warn';return'ok';}
 function renderGates(ph,t,macroAct){
   const wrap=g('gates');wrap.innerHTML='';
   const gReg=_phReg(ph.key);
@@ -2281,83 +2251,12 @@ function renderGates(ph,t,macroAct){
     return;
   }
 
-  /* ── Generic macro renderer (reads macro_rules from phase registry) ── */
-  const rKey=_ruleParent(ph.key); // resolve inherits_rules_from
-  const mt=_macroTargets(rKey);
-  if(mt){
-    // — Protein —
-    const pm=mt.protein;
-    if(pm&&pm.mode==='range'&&pm.lo){
-      const v=t.protein, pct=Math.min(100,pm.hi?v/pm.hi*100:0);
-      let cls='prot-ok';
-      if(pm.red_lo!=null&&v<pm.red_lo) cls='over';
-      else if(pm.amber_lo!=null&&v<pm.amber_lo) cls='warn';
-      else if(pm.red_hi!=null&&v>pm.red_hi) cls='over';
-      else if(pm.amber_hi!=null&&v>pm.amber_hi) cls='warn';
-      else if(v<pm.lo||v>pm.hi) cls='warn';
-      const el=document.createElement('div');el.className='gate '+cls;
-      el.innerHTML=`<div class="g-top"><span class="g-name">Protein</span><span class="g-val num">${v}<em> /${pm.lo}–${pm.hi}g</em></span></div><div class="g-bar"><span style="width:${pct}%"></span></div>`;
-      wrap.appendChild(el);
-    } else if(pm&&pm.mode==='gated'){
-      const rule=ruleFor(rKey,'protein');
-      wrap.appendChild(rule?ruleGate('Protein',t.protein,rule):plainGate('Protein',t.protein));
-    } else {
-      wrap.appendChild(plainGate('Protein',t.protein));
-    }
-
-    // — Fat —
-    const fm=mt.fat;
-    if(fm&&fm.mode==='range'&&fm.lo){
-      const v=t.fat, pct=Math.min(100,fm.hi?v/fm.hi*100:0);
-      let cls='prot-ok';
-      if(fm.red_lo!=null&&v<fm.red_lo) cls='over';
-      else if(fm.amber_lo!=null&&v<fm.amber_lo) cls='warn';
-      else if(fm.red_hi!=null&&v>fm.red_hi) cls='over';
-      else if(fm.amber_hi!=null&&v>fm.amber_hi) cls='warn';
-      else if(v<fm.lo||v>fm.hi) cls='warn';
-      const el=document.createElement('div');el.className='gate '+cls;
-      el.innerHTML=`<div class="g-top"><span class="g-name">Fat</span><span class="g-val num">${v}<em> /${fm.lo}–${fm.hi}g</em></span></div><div class="g-bar"><span style="width:${pct}%"></span></div>`;
-      wrap.appendChild(el);
-    } else if(fm&&fm.mode==='gated'){
-      const rule=ruleFor(rKey,'fat');
-      wrap.appendChild(rule?ruleGate('Fat',t.fat,rule):plainGate('Fat',t.fat));
-    } else {
-      wrap.appendChild(plainGate('Fat',t.fat));
-    }
-
-    // — Carbs —
-    const cm=mt.carbs;
-    if(cm&&cm.mode==='range'&&cm.lo){
-      const v=t.carbs, pct=Math.min(100,cm.hi?v/cm.hi*100:0);
-      let cls='prot-ok';
-      if(cm.red_lo!=null&&v<cm.red_lo) cls='over';
-      else if(cm.amber_lo!=null&&v<cm.amber_lo) cls='warn';
-      else if(cm.red_hi!=null&&v>cm.red_hi) cls='over';
-      else if(cm.amber_hi!=null&&v>cm.amber_hi) cls='warn';
-      else if(v<cm.lo||v>cm.hi) cls='warn';
-      const el=document.createElement('div');el.className='gate '+cls;
-      el.innerHTML=`<div class="g-top"><span class="g-name">Carbs</span><span class="g-val num">${v}<em> /${cm.lo}–${cm.hi}g</em></span></div><div class="g-bar"><span style="width:${pct}%"></span></div>`;
-      wrap.appendChild(el);
-    } else if(cm&&cm.mode==='gated'){
-      const rule=ruleFor(rKey,'carbs');
-      wrap.appendChild(rule?ruleGate('Carbs',t.carbs,rule):plainGate('Carbs',t.carbs));
-    } else {
-      wrap.appendChild(plainGate('Carbs',t.carbs));
-    }
-    return;
-  }
-
-  // Fallback for phases without macro_rules (loading)
-  const cfg=gatesFor(ph.key);
-  const makeGate=(name,val,target,red,gated)=>{
-    const st=gated?gateState(val,target,red):'', pct=gated?Math.min(100,val/target*100):0;
-    const el=document.createElement('div');el.className='gate '+st;
-    el.innerHTML=`<div class="g-top"><span class="g-name">${name}</span><span class="g-val num">${val}${gated?`<em> /${target}g</em>`:'<em>g</em>'}</span></div>${gated?`<div class="g-bar"><span style="width:${pct}%"></span></div>`:''}`;
-    return el;
-  };
-  wrap.appendChild(plainGate('Protein',t.protein));
-  wrap.appendChild(makeGate('Fat',t.fat,FAT_TARGET,FAT_RED,cfg.fat));
-  wrap.appendChild(makeGate('Carbs',t.carbs,CARB_TARGET,CARB_RED,cfg.carb));
+  /* ── All phases: look up each macro from the rules table via ruleFor() ── */
+  const rKey=_ruleParent(ph.key);
+  const pr=ruleFor(rKey,'protein'), fr=ruleFor(rKey,'fat'), cr=ruleFor(rKey,'carbs');
+  wrap.appendChild(pr?ruleGate('Protein',t.protein,pr):plainGate('Protein',t.protein));
+  wrap.appendChild(fr?ruleGate('Fat',t.fat,fr):plainGate('Fat',t.fat));
+  wrap.appendChild(cr?ruleGate('Carbs',t.carbs,cr):plainGate('Carbs',t.carbs));
 }
 function renderTimeline(){
   const tl=g('timeline');
