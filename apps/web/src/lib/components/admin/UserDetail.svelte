@@ -83,6 +83,37 @@
 		}
 	}
 
+	function chartOpts(unit: string) {
+		return {
+			responsive: true,
+			maintainAspectRatio: false,
+			plugins: {
+				legend: { display: false },
+				tooltip: {
+					backgroundColor: '#1A1A1A',
+					titleFont: { size: 12 },
+					bodyFont: { size: 12 },
+					padding: 10,
+					cornerRadius: 8,
+					callbacks: {
+						label: (ctx: { dataset: { label: string }; parsed: { y: number } }) =>
+							ctx.dataset.label + ': ' + ctx.parsed.y + (unit === 'kg' ? ' kg' : ' kcal')
+					}
+				}
+			},
+			scales: {
+				x: {
+					ticks: { font: { size: 10 }, color: '#938c7d', maxTicksLimit: 15 },
+					grid: { display: false }
+				},
+				y: {
+					ticks: { font: { size: 10 }, color: '#938c7d' },
+					grid: { color: 'rgba(235,229,216,0.5)' }
+				}
+			}
+		};
+	}
+
 	function renderCharts() {
 		if (!ChartLib || !detail) return;
 		const logs = (detail.logs || []) as Record<string, unknown>[];
@@ -91,35 +122,75 @@
 
 		destroyCharts();
 
-		const days = logs.map(l => 'D' + l.day);
-		const weights = logs.map(l => l.weight as number).filter(Boolean);
-		const kcals = logs.map(l => l.kcal as number);
 		const profile = (detail.profile || {}) as Record<string, unknown>;
-		const tgt = profile.target_kcal as number || 0;
+		const tgtKcal = profile.current_target_kcal as number || 0;
+		const tgtKg = profile.target_kg as number || 0;
 
-		if (weightCanvas && weights.length) {
+		// Weight chart: filter out zero/null weights so line doesn't break
+		const wPts = logs.filter(l => (l.weight as number) > 0);
+		if (weightCanvas && wPts.length) {
+			const pr = wPts.length > 20 ? 1 : 3;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const wDatasets: any[] = [{
+				label: 'Weight (kg)',
+				data: wPts.map(l => l.weight as number),
+				borderColor: '#B08D2E',
+				backgroundColor: 'rgba(176,141,46,0.08)',
+				fill: true,
+				tension: 0.3,
+				pointRadius: pr,
+				pointHoverRadius: 5,
+				borderWidth: 2
+			}];
+			if (tgtKg) {
+				wDatasets.push({
+					label: 'Target',
+					data: wPts.map(() => tgtKg),
+					borderColor: 'rgba(161,48,36,0.4)',
+					borderDash: [6, 4],
+					pointRadius: 0,
+					borderWidth: 1.5,
+					fill: false
+				});
+			}
 			weightChart = new C(weightCanvas, {
 				type: 'line',
-				data: {
-					labels: days,
-					datasets: [{ data: logs.map(l => l.weight as number), borderColor: '#B08D2E', tension: 0.3, fill: false, pointRadius: 0, borderWidth: 2 }]
-				},
-				options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+				data: { labels: wPts.map(l => 'D' + l.day), datasets: wDatasets as never },
+				options: chartOpts('kg')
 			});
 		}
 
-		if (kcalCanvas && kcals.length) {
+		// Calories chart: filter out zero/null kcals
+		const kPts = logs.filter(l => (l.kcal as number) > 0);
+		if (kcalCanvas && kPts.length) {
+			const pr = kPts.length > 20 ? 1 : 3;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const datasets: any[] = [
-				{ data: kcals, borderColor: '#4a6fa5', tension: 0.3, fill: false, pointRadius: 0, borderWidth: 2 }
-			];
-			if (tgt) {
-				datasets.push({ data: Array(kcals.length).fill(tgt), borderColor: '#ccc', borderDash: [5, 5], pointRadius: 0, borderWidth: 1 });
+			const kDatasets: any[] = [{
+				label: 'Calories',
+				data: kPts.map(l => l.kcal as number),
+				borderColor: '#4a6fa5',
+				backgroundColor: 'rgba(74,111,165,0.08)',
+				fill: true,
+				tension: 0.3,
+				pointRadius: pr,
+				pointHoverRadius: 5,
+				borderWidth: 2
+			}];
+			if (tgtKcal) {
+				kDatasets.push({
+					label: 'Target',
+					data: kPts.map(() => tgtKcal),
+					borderColor: 'rgba(161,48,36,0.4)',
+					borderDash: [6, 4],
+					pointRadius: 0,
+					borderWidth: 1.5,
+					fill: false
+				});
 			}
 			kcalChart = new C(kcalCanvas, {
 				type: 'line',
-				data: { labels: days, datasets: datasets as never },
-				options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+				data: { labels: kPts.map(l => 'D' + l.day), datasets: kDatasets as never },
+				options: chartOpts('kcal')
 			});
 		}
 	}
