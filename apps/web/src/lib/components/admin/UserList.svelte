@@ -131,7 +131,7 @@
 					<td>{user.start_weight ?? '–'}</td>
 					<td>{user.log_count ?? '–'}</td>
 					<td>{user.last_day ?? '–'}</td>
-					<td>{user.created ? String(user.created).slice(0, 10) : '–'}</td>
+					<td>{user.created_at ? String(user.created_at).slice(0, 10) : '–'}</td>
 				</tr>
 			{/each}
 		</tbody>

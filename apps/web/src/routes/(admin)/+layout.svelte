@@ -13,11 +13,10 @@
 	onMount(async () => {
 		const stored = sessionStorage.getItem('aevum_admin_token');
 		if (stored) {
-			adminLogin(stored);
-			try {
-				await adminApi('admin_users');
+			const ok = await adminLogin(stored);
+			if (ok) {
 				ready = true;
-			} catch {
+			} else {
 				adminLogout();
 				showLogin = true;
 			}
@@ -30,13 +29,11 @@
 	async function handleLogin() {
 		loginError = '';
 		if (!loginToken.trim()) { loginError = 'Token required'; return; }
-		adminLogin(loginToken.trim());
-		try {
-			await adminApi('admin_users');
-			sessionStorage.setItem('aevum_admin_token', loginToken.trim());
+		const ok = await adminLogin(loginToken.trim());
+		if (ok) {
 			ready = true;
 			showLogin = false;
-		} catch {
+		} else {
 			adminLogout();
 			loginError = 'Invalid token';
 		}

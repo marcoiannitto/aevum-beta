@@ -21,8 +21,8 @@
 	export async function refresh() {
 		loading = true;
 		try {
-			const res = await adminApi<{ rows: Record<string, unknown>[] }>('admin_intakes_list');
-			intakes = res.rows || [];
+			const res = await adminApi<{ intakes: Record<string, unknown>[] }>('admin_intakes_list');
+			intakes = res.intakes || [];
 		} catch (e: unknown) {
 			toast('Error loading intakes: ' + (e instanceof Error ? e.message : ''), true);
 		} finally {
@@ -58,24 +58,22 @@
 			<thead>
 				<tr>
 					<th>Name</th>
-					<th>Email</th>
 					<th>Status</th>
+					<th>Step</th>
 					<th>Created</th>
-					<th>Updated</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each intakes as intake}
-					<tr class="intake-row" onclick={() => onSelectIntake(intake.id as number)}>
-						<td>{intake.full_name ?? '–'}</td>
-						<td>{intake.email ?? '–'}</td>
+					<tr class="intake-row" onclick={() => onSelectIntake(intake.token as number)}>
+						<td>{intake.client_name ?? '–'}</td>
 						<td>
 							<span class="status-badge" style={statusStyle(String(intake.status ?? 'draft'))}>
 								{String(intake.status ?? 'draft').replace('_', ' ')}
 							</span>
 						</td>
-						<td>{formatDate(intake.created)}</td>
-						<td>{formatDate(intake.updated)}</td>
+						<td>{intake.current_step ?? 0}/5</td>
+						<td>{formatDate(intake.created_at)}</td>
 					</tr>
 				{/each}
 			</tbody>
