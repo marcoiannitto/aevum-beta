@@ -40,16 +40,20 @@
 		activeTable = key;
 
 		const tableDef = TABLES[key];
+
+		// Special views by key or mode
+		if (key === 'users' || tableDef?.mode === 'users') {
+			view = 'users';
+			await loadUsers();
+			return;
+		}
+		if (key === 'intakes' || tableDef?.mode === 'intakes') {
+			view = 'intakes';
+			return;
+		}
+
 		if (!tableDef) {
-			// Special views
-			if (key === 'users') {
-				view = 'users';
-				await loadUsers();
-			} else if (key === 'intakes') {
-				view = 'intakes';
-			} else {
-				view = 'table';
-			}
+			view = 'table';
 			return;
 		}
 
@@ -61,8 +65,8 @@
 
 	async function loadUsers() {
 		try {
-			const res = await adminApi<{ rows: Record<string, unknown>[] }>('admin_users');
-			users = res.rows || [];
+			const res = await adminApi<{ users: Record<string, unknown>[] }>('admin_users');
+			users = res.users || [];
 		} catch (e: unknown) {
 			toast('Error loading users: ' + (e instanceof Error ? e.message : ''), true);
 		}
