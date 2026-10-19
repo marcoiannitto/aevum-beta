@@ -182,6 +182,13 @@ export interface ConfigRow {
   value: string;
 }
 
+export interface UserConfigRow {
+  user_id: string;
+  key: string;
+  value: string | null;
+  updated_at: string;
+}
+
 export interface MessageRow {
   id: number;
   trigger: string;
@@ -258,9 +265,38 @@ export interface DayJsonItem {
   protein?: number;
   fat?: number;
   carbs?: number;
+  source?: 'manual' | 'ai' | 'order';
+  order_id?: string;
 }
 
 export interface DayJsonMeal {
   label?: string;
   items?: DayJsonItem[];
+}
+
+// ─── Orders ─────────────────────────────────────────────────
+
+export interface Order {
+  id: string;
+  user_id: string;
+  status: 'draft' | 'placed' | 'confirmed' | 'delivered' | 'cancelled';
+  delivery_date: string | null;
+  total_kcal: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  menu_item_id: string | null;
+  name: string;
+  quantity: number;
+  kcal: number | null;
+  protein: number | null;
+  fat: number | null;
+  carbs: number | null;
+  customizations: string | null;
+  created_at: string;
 }

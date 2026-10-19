@@ -8,13 +8,20 @@ import type { Env } from '../env.js';
 export const corsMiddleware = createMiddleware<{ Bindings: Env }>(async (c, next) => {
   const origin = c.req.header('Origin') || '';
   const allowed = c.env.ALLOWED_ORIGIN || 'https://app.niramaya.sg';
+  const isDev = c.env.ENVIRONMENT === 'development';
 
-  const ok =
+  let ok =
     origin === allowed ||
     origin.endsWith('.aevum-web-d75.pages.dev') ||
-    origin === 'https://aevum-web-d75.pages.dev' ||
-    origin === 'http://localhost:8080' ||
-    origin === 'http://127.0.0.1:8080';
+    origin === 'https://aevum-web-d75.pages.dev';
+
+  // Allow localhost only in development
+  if (isDev) {
+    ok = ok ||
+      origin === 'http://localhost:8080' ||
+      origin === 'http://127.0.0.1:8080' ||
+      origin.startsWith('http://localhost:');
+  }
 
   if (!ok && c.req.method !== 'GET') {
     return c.text('Forbidden', 403);

@@ -26,8 +26,11 @@ export async function adminExport(body: any, db: D1Database) {
 
 export async function adminSeed(body: any, db: D1Database) {
   const table = String(body.table || '');
-  const rows = body.rows || [];
-  if (!table || !rows.length) return { error: 'table and rows required' };
+  const rows: any[] = body.rows || [];
+  const deletedIds: (string | number)[] = body.deleted_ids || [];
+  if (!table || (!rows.length && !deletedIds.length)) {
+    return { error: 'table and (rows or deleted_ids) required' };
+  }
 
   const allowed = [
     'recipes', 'messages', 'movements', 'workouts', 'rules', 'foods',
@@ -35,18 +38,43 @@ export async function adminSeed(body: any, db: D1Database) {
   ];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
 
-  // Clear existing + insert
-  const stmts: D1PreparedStatement[] = [db.prepare(`DELETE FROM ${table}`)];
-  for (const row of rows) {
-    const keys = Object.keys(row);
-    const placeholders = keys.map(() => '?').join(', ');
-    stmts.push(
-      db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`)
-        .bind(...keys.map(k => row[k] ?? null))
-    );
+  const stmts: D1PreparedStatement[] = [];
+  let upserted = 0;
+  let deleted = 0;
+
+  // Delete specific rows by id
+  if (deletedIds.length) {
+    for (const id of deletedIds) {
+      stmts.push(db.prepare(`DELETE FROM ${table} WHERE id = ?`).bind(id));
+    }
+    deleted = deletedIds.length;
   }
-  await db.batch(stmts);
-  return { ok: true, inserted: rows.length };
+
+  // Upsert rows: rows with an id are updated, rows without are inserted
+  for (const row of rows) {
+    const keys = Object.keys(row).filter(k => k !== 'id');
+    if (!keys.length) continue;
+
+    if (row.id != null) {
+      // Update existing row
+      const sets = keys.map(k => `${k} = ?`).join(', ');
+      stmts.push(
+        db.prepare(`UPDATE ${table} SET ${sets} WHERE id = ?`)
+          .bind(...keys.map(k => row[k] ?? null), row.id)
+      );
+    } else {
+      // Insert new row
+      const placeholders = keys.map(() => '?').join(', ');
+      stmts.push(
+        db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`)
+          .bind(...keys.map(k => row[k] ?? null))
+      );
+    }
+    upserted++;
+  }
+
+  if (stmts.length) await db.batch(stmts);
+  return { ok: true, upserted, deleted };
 }
 
 export async function adminList(body: any, db: D1Database) {
@@ -116,7 +144,7 @@ export async function adminUserCreate(body: any, db: D1Database) {
   const name = String(body.name || '').trim();
   if (!name) return { error: 'name required' };
   const base = name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 8) || 'user';
-  const rnd = Math.random().toString(36).slice(2, 6);
+  const rnd = crypto.randomUUID().slice(0, 8);
   const userId = base + '_' + rnd;
 
   const sex = String(body.sex || 'm').toLowerCase();

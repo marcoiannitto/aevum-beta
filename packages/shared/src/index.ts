@@ -29,6 +29,7 @@ export type {
   MealPlanRow,
   AuthToken,
   ConfigRow,
+  UserConfigRow,
   MessageRow,
   IntakeToken,
   FoodRow,
@@ -36,6 +37,8 @@ export type {
   BodyScan,
   DayJsonItem,
   DayJsonMeal,
+  Order,
+  OrderItem,
 } from './types.js';
 
 // Phase logic

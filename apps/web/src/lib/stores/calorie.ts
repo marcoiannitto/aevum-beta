@@ -1,6 +1,6 @@
 /**
  * Calorie / TDEE helpers
- * Mirrors mifflin(), stabTDEE(), stabTargetKcal(), reviewTarget(), calorie bank from index.html
+ * Uses @aevum/shared for core TDEE calculation (single source of truth).
  */
 import { get } from 'svelte/store';
 import { profile, type UserProfile } from './auth';
@@ -8,29 +8,27 @@ import { phReg, phaseFor, type PhaseConfig } from './phases';
 import { cfg } from './config';
 import { dayData, totals, type DayData } from './day';
 import { K, pid } from './auth';
+import { mifflinTDEE, dobToAge } from '@aevum/shared';
+import { actFactors, actLabels } from './config';
 
-/** Mifflin-St Jeor TDEE: (10*kg + 6.25*cm - 5*age + sex_offset) * activity */
-export function mifflin(p: UserProfile): number {
-	const sexOffset = p.sex === 'F' ? -161 : 5;
-	const age = p.age ?? calcAge(p.dob);
-	const bmr = 10 * p.weight + 6.25 * p.height - 5 * age + sexOffset;
-
-	const factors = [1.2, 1.375, 1.55, 1.725, 1.9];
-	const labels = ['sedentary', 'light', 'moderate', 'active', 'extra'];
-	const idx = labels.indexOf((p.act || 'moderate').toLowerCase());
-	const factor = factors[idx >= 0 ? idx : 2];
-
-	return Math.round(bmr * factor);
+/** Resolve activity factor from profile: accepts numeric factor or string label */
+function resolveActivityFactor(act: string | number | undefined): number {
+	if (act == null) return 1.55; // default: moderate
+	const n = Number(act);
+	if (!isNaN(n) && n > 0 && n < 10) return n; // already numeric factor
+	// String label lookup
+	const labels = actLabels();
+	const factors = actFactors();
+	const idx = labels.findIndex(l => l.toLowerCase() === String(act).toLowerCase());
+	return factors[idx >= 0 ? idx : 2] ?? 1.55;
 }
 
-function calcAge(dob?: string): number {
-	if (!dob) return 30;
-	const d = new Date(dob);
-	const now = new Date();
-	let age = now.getFullYear() - d.getFullYear();
-	const m = now.getMonth() - d.getMonth();
-	if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-	return age;
+/** Mifflin-St Jeor TDEE — delegates to @aevum/shared */
+export function mifflin(p: UserProfile): number {
+	const age = p.age ?? (p.dob ? dobToAge(p.dob) : 30);
+	const sex: 'm' | 'f' = (p.sex || 'm').toLowerCase() as 'm' | 'f';
+	const factor = resolveActivityFactor(p.act);
+	return mifflinTDEE(p.weight, p.height, age, sex, factor);
 }
 
 /** Stabilization TDEE (maintenance weight-based) */

@@ -9,6 +9,9 @@
 import { Hono } from 'hono';
 import type { Env } from './env.js';
 import type { AuthUser } from './middleware/auth.js';
+// authMiddleware / adminMiddleware — mount on future REST routes.
+// The legacy POST / dispatcher does inline auth to avoid splitting the action switch.
+import { authMiddleware, adminMiddleware } from './middleware/auth.js';
 import { corsMiddleware } from './middleware/cors.js';
 import { rateLimitMiddleware } from './middleware/rate-limit.js';
 
@@ -115,19 +118,27 @@ app.post('/', async (c) => {
       return c.json(await doLogin(body, db));
   }
 
-  // ── Auth required from here ───────────────────────────────
+  // ── Auth required from here — use shared auth logic ────────
   const authHeader = c.req.header('Authorization') || '';
-  const token = authHeader.replace('Bearer ', '').trim();
-  if (!token) return c.json({ error: 'Unauthorized' }, 401);
+  const authToken = authHeader.replace('Bearer ', '').trim();
+  if (!authToken) return c.json({ error: 'Unauthorized' }, 401);
 
   const authRow = await db.prepare(
     'SELECT user_id, role FROM auth_tokens WHERE token = ? AND (expires_at IS NULL OR expires_at > datetime("now"))'
-  ).bind(token).first<{ user_id: string; role: string }>();
+  ).bind(authToken).first<{ user_id: string; role: string }>();
 
   if (!authRow) return c.json({ error: 'Unauthorized' }, 401);
 
-  const userId = authRow.user_id;
-  const isAdmin = authRow.role === 'admin';
+  // Populate the user context variable (same shape as authMiddleware)
+  const user: AuthUser = {
+    userId: authRow.user_id,
+    role: authRow.role,
+    isAdmin: authRow.role === 'admin',
+  };
+  c.set('user', user);
+
+  const userId = user.userId;
+  const isAdmin = user.isAdmin;
 
   try {
   // ── Admin actions ─────────────────────────────────────────

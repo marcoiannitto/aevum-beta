@@ -1,10 +1,16 @@
 /**
  * Phase Registry store — data-driven phase config from API
- * Mirrors the PHASES/PHASES_LIST/loadPhases/phaseFor logic from index.html
+ * Uses @aevum/shared phaseFor() as single source of truth for phase calculation.
  */
 import { writable, get } from 'svelte/store';
 import { api } from '$lib/api/client';
 import { profile, isProgram } from './auth';
+import {
+	phaseFor as sharedPhaseFor,
+	activationDays as sharedActivationDays,
+	PH_FIXED,
+} from '@aevum/shared';
+import type { PhaseTransition } from '@aevum/shared';
 
 export interface PhaseConfig {
 	key: string;
@@ -46,6 +52,7 @@ export interface PhaseConfig {
 
 export const phases = writable<Record<string, PhaseConfig>>({});
 export const phasesList = writable<PhaseConfig[]>([]);
+export const phaseTransitions = writable<PhaseTransition[]>([]);
 
 const CACHE_KEY = 'aevum_phases_cache';
 
@@ -125,6 +132,7 @@ export function phaseFor(dayNum: number, prof?: Record<string, unknown> | null):
 	const $phases = get(phases);
 	const $list = get(phasesList);
 	const p = prof ?? get(profile);
+	const $transitions = get(phaseTransitions);
 
 	if (!$isProgram) {
 		const trk = $phases['tracker'];
@@ -142,29 +150,66 @@ export function phaseFor(dayNum: number, prof?: Record<string, unknown> | null):
 					return { key: ph.key, name: ph.name, color: ph.key === 'maintenance' ? MAINT_COLOR : ph.color };
 				}
 			} else {
-				const mode = (p as Record<string, unknown>)?.phase_mode as string || 'maintenance';
-				if (ph.key === mode) {
-					return { key: ph.key, name: ph.name, color: ph.key === 'maintenance' ? MAINT_COLOR : ph.color };
+				// Post-program: use shared phaseFor with transitions support
+				const key = sharedPhaseFor(dayNum, {
+					activation_days: (p as Record<string, unknown>)?.activation_days as number,
+					phase_mode: (p as Record<string, unknown>)?.phase_mode as string,
+					loading_days: (p as Record<string, unknown>)?.loading_days as number,
+					transition_days: (p as Record<string, unknown>)?.transition_days as number,
+					stabilization_days: (p as Record<string, unknown>)?.stabilization_days as number,
+				}, $transitions.length > 0 ? $transitions : undefined);
+				const reg = $phases[key];
+				if (reg) {
+					return { key, name: reg.name, color: key === 'maintenance' ? MAINT_COLOR : reg.color };
 				}
-				continue;
+				return { key, name: key.charAt(0).toUpperCase() + key.slice(1), color: MAINT_COLOR };
 			}
 		}
-		const mode = (p as Record<string, unknown>)?.phase_mode as string || 'maintenance';
-		const chosen = $list.find((x) => x.key === mode) ?? $list[$list.length - 1];
-		return { key: chosen.key, name: chosen.name, color: chosen.key === 'maintenance' ? MAINT_COLOR : chosen.color };
+		// Past all program phases — use shared phaseFor with transitions
+		const key = sharedPhaseFor(dayNum, {
+			activation_days: (p as Record<string, unknown>)?.activation_days as number,
+			phase_mode: (p as Record<string, unknown>)?.phase_mode as string,
+			loading_days: (p as Record<string, unknown>)?.loading_days as number,
+			transition_days: (p as Record<string, unknown>)?.transition_days as number,
+			stabilization_days: (p as Record<string, unknown>)?.stabilization_days as number,
+		}, $transitions.length > 0 ? $transitions : undefined);
+		const chosen = $phases[key] ?? $list[$list.length - 1];
+		return { key: chosen?.key ?? key, name: chosen?.name ?? key, color: key === 'maintenance' ? MAINT_COLOR : (chosen?.color ?? MAINT_COLOR) };
 	}
 
-	// Fallback: hardcoded
-	const lens = phaseLens(p);
-	const l1 = lens.loading ?? 2;
-	const l2 = l1 + (lens.activation ?? 8);
-	const l3 = l2 + (lens.transition ?? 3);
-	const l4 = l3 + (lens.stabilization ?? 18);
-	if (dayNum <= l1) return { key: 'loading', name: 'Loading', color: '#8a8a8a' };
-	if (dayNum <= l2) return { key: 'activation', name: 'Activation', color: '#B08D2E' };
-	if (dayNum <= l3) return { key: 'transition', name: 'Transition', color: '#B08D2E' };
-	if (dayNum <= l4) return { key: 'stabilization', name: 'Stabilization', color: '#4a463f' };
-	return { key: 'maintenance', name: 'Maintenance', color: MAINT_COLOR };
+	// Fallback: use shared phaseFor (correct phase logic with transitions support)
+	const key = sharedPhaseFor(dayNum, {
+		activation_days: (p as Record<string, unknown>)?.activation_days as number,
+		phase_mode: (p as Record<string, unknown>)?.phase_mode as string,
+		loading_days: (p as Record<string, unknown>)?.loading_days as number,
+		transition_days: (p as Record<string, unknown>)?.transition_days as number,
+		stabilization_days: (p as Record<string, unknown>)?.stabilization_days as number,
+	}, $transitions.length > 0 ? $transitions : undefined);
+
+	const FALLBACK_COLORS: Record<string, string> = {
+		loading: '#8a8a8a',
+		activation: '#B08D2E',
+		transition: '#B08D2E',
+		stabilization: '#4a463f',
+		maintenance: MAINT_COLOR,
+		recomposition: '#6B4E8B',
+		tracker: MAINT_COLOR,
+	};
+	const FALLBACK_NAMES: Record<string, string> = {
+		loading: 'Loading',
+		activation: 'Activation',
+		transition: 'Transition',
+		stabilization: 'Stabilization',
+		maintenance: 'Maintenance',
+		recomposition: 'Recomposition',
+		tracker: 'Tracking',
+	};
+
+	return {
+		key,
+		name: FALLBACK_NAMES[key] ?? key.charAt(0).toUpperCase() + key.slice(1),
+		color: FALLBACK_COLORS[key] ?? MAINT_COLOR,
+	};
 }
 
 /** Calculate phase durations from profile + registry */
@@ -181,7 +226,9 @@ export function phaseLens(prof?: Record<string, unknown> | null): Record<string,
 		return fallback;
 	}
 
-	const actDays = p && +(p.activation_days as number) > 0 ? +(p.activation_days as number) : 8;
+	const actDays = p && +(p.activation_days as number) > 0
+		? +(p.activation_days as number)
+		: sharedActivationDays({});
 
 	if ($list.length) {
 		const L: Record<string, number> = {};
@@ -195,10 +242,10 @@ export function phaseLens(prof?: Record<string, unknown> | null): Record<string,
 	}
 
 	return {
-		loading: dur('loading', 2),
+		loading: dur('loading', PH_FIXED.loading),
 		activation: actDays,
-		transition: dur('transition', 3),
-		stabilization: dur('stabilization', 18)
+		transition: dur('transition', PH_FIXED.transition),
+		stabilization: dur('stabilization', PH_FIXED.stabilization)
 	};
 }
 
@@ -207,7 +254,9 @@ export function totalDays(prof?: Record<string, unknown> | null): number {
 	return Object.values(L).reduce((s, v) => s + v, 0);
 }
 
+const POST_PROGRAM_PHASES = new Set(['maintenance', 'recomposition', 'tracker']);
+
 export function inPostProgram(dayNum: number, prof?: Record<string, unknown> | null): boolean {
 	const k = phaseFor(dayNum, prof).key;
-	return k === 'maintenance' || k === 'recomposition' || k === 'tracker';
+	return POST_PROGRAM_PHASES.has(k);
 }

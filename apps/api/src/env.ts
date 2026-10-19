@@ -9,4 +9,6 @@ export interface Env {
   AI_WORKER_URL?: string;
   ANTHROPIC_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
+  /** Set to 'development' in wrangler.toml [dev] to enable localhost CORS */
+  ENVIRONMENT?: string;
 }

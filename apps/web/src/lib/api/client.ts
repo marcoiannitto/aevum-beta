@@ -9,10 +9,11 @@
  */
 import { get } from 'svelte/store';
 import { token } from '$lib/stores/auth';
+import { env } from '$env/dynamic/public';
 
-export const BACKEND_URL = 'https://aevum-api-v2.marco-iannitto.workers.dev';
-export const AI_URL = 'https://sweet-fire-a436.marco-iannitto.workers.dev';
-export const GOOGLE_CLIENT_ID = '1030416202284-fab2qo7gorekbbjhln8dj5sfethha2ea.apps.googleusercontent.com';
+export const BACKEND_URL = env.PUBLIC_BACKEND_URL || 'https://aevum-api-v2.marco-iannitto.workers.dev';
+export const AI_URL = env.PUBLIC_AI_URL || 'https://sweet-fire-a436.marco-iannitto.workers.dev';
+export const GOOGLE_CLIENT_ID = env.PUBLIC_GOOGLE_CLIENT_ID || '1030416202284-fab2qo7gorekbbjhln8dj5sfethha2ea.apps.googleusercontent.com';
 
 export class ApiError extends Error {
 	constructor(
@@ -95,10 +96,14 @@ export async function aiPost<T = unknown>(
 	const ctl = new AbortController();
 	const t = setTimeout(() => ctl.abort(), timeout);
 
+	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+	const tok = get(token);
+	if (tok) headers['Authorization'] = `Bearer ${tok}`;
+
 	try {
 		const res = await fetch(url, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers,
 			body: JSON.stringify(payload),
 			signal: ctl.signal
 		});

@@ -5,7 +5,8 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
-	import { profile, pid, isProgram, saveProfile, logout, type UserProfile } from '$lib/stores/auth';
+	import { profile, pid, isProgram, saveProfile, type UserProfile } from '$lib/stores/auth';
+	import { logoutAndReset } from '$lib/stores/reset';
 	import { api } from '$lib/api/client';
 
 	let {
@@ -74,7 +75,7 @@
 	}
 
 	function doLogout() {
-		logout();
+		logoutAndReset();
 		onClose();
 		goto('/login');
 	}

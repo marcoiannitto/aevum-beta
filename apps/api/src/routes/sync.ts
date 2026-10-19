@@ -19,7 +19,8 @@ export async function syncRow(userId: string, body: any, db: D1Database) {
       exercise=excluded.exercise, exercise_kcal=excluded.exercise_kcal,
       energy=excluded.energy, hunger=excluded.hunger, sleep=excluded.sleep,
       notes=excluded.notes, day_json=excluded.day_json,
-      updated_at=excluded.updated_at`
+      updated_at=excluded.updated_at
+    WHERE daily_logs.updated_at IS NULL OR daily_logs.updated_at < excluded.updated_at`
   ).bind(
     userId, body.day || 0, body.phase || '', body.date || '',
     body.weight || null, body.waist || null,

@@ -19,12 +19,14 @@ export const PHASE_KEYS = [
   'maintenance',
   'tracker',
   'recomposition',
+  'keto',
+  'weight_loss',
 ] as const;
 
 export type PhaseKey = (typeof PHASE_KEYS)[number];
 
 /** Phase mode — drives post-stabilization routing */
-export type PhaseMode = 'maintenance' | 'recomposition' | 'tracker';
+export type PhaseMode = 'maintenance' | 'recomposition' | 'tracker' | 'keto' | 'weight_loss';
 
 /** Default activation duration when profile doesn't specify */
 export const DEFAULT_ACTIVATION_DAYS = 8;

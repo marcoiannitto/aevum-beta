@@ -99,6 +99,9 @@ export function saveProfile(p: UserProfile) {
 export const isLoggedIn = derived(token, ($t) => !!$t);
 
 export function logout() {
+	// resetAllStores is in reset.ts to avoid circular deps.
+	// Callers should import { resetAllStores } from './reset' and call it before logout(),
+	// or use the combined logoutAndReset() from reset.ts.
 	token.set(null);
 	profile.set(null);
 	pid.set('');

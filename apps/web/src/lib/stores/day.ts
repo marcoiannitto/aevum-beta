@@ -7,6 +7,72 @@ import { K, pid, profile } from './auth';
 import { api } from '$lib/api/client';
 import { phaseFor } from './phases';
 
+// --- Date helper ---
+
+/** Compute calendar date (YYYY-MM-DD) for a given day number from profile.start_date */
+export function dateForDay(dayNum: number): string {
+	const p = get(profile);
+	const sd = p?.start_date;
+	if (!sd) return '';
+	const d = new Date(sd);
+	d.setDate(d.getDate() + dayNum - 1); // day 1 = start_date
+	const y = d.getFullYear();
+	const m = String(d.getMonth() + 1).padStart(2, '0');
+	const dd = String(d.getDate()).padStart(2, '0');
+	return `${y}-${m}-${dd}`;
+}
+
+// --- Retry queue ---
+
+interface PendingSync {
+	payload: Record<string, unknown>;
+	retries: number;
+	nextRetryAt: number;
+}
+
+const SYNC_QUEUE_KEY = 'aevum_pending_syncs';
+const MAX_RETRIES = 3;
+
+function loadSyncQueue(): PendingSync[] {
+	try {
+		const raw = localStorage.getItem(SYNC_QUEUE_KEY);
+		return raw ? JSON.parse(raw) : [];
+	} catch { return []; }
+}
+
+function saveSyncQueue(queue: PendingSync[]): void {
+	try { localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue)); } catch { /* noop */ }
+}
+
+async function flushSyncQueue(): Promise<void> {
+	const queue = loadSyncQueue();
+	if (!queue.length) return;
+	const now = Date.now();
+	const remaining: PendingSync[] = [];
+	for (const entry of queue) {
+		if (entry.nextRetryAt > now) { remaining.push(entry); continue; }
+		try {
+			await api('sync', entry.payload);
+		} catch {
+			entry.retries++;
+			if (entry.retries < MAX_RETRIES) {
+				entry.nextRetryAt = Date.now() + 1000 * Math.pow(2, entry.retries); // 2s, 4s, 8s
+				remaining.push(entry);
+			} else {
+				// Keep for next session (reset retry counter, set nextRetryAt to 0)
+				remaining.push({ ...entry, retries: 0, nextRetryAt: 0 });
+			}
+		}
+	}
+	saveSyncQueue(remaining);
+}
+
+function enqueueSyncRetry(payload: Record<string, unknown>): void {
+	const queue = loadSyncQueue();
+	queue.push({ payload, retries: 0, nextRetryAt: Date.now() + 1000 });
+	saveSyncQueue(queue);
+}
+
 // --- Types ---
 
 export interface MealEntry {
@@ -51,7 +117,7 @@ export const dayPhases = writable<Record<number, string>>({});
 
 // --- Helpers ---
 
-export function blankDay(): DayData {
+export function blankDay(dayNum?: number): DayData {
 	return {
 		meals: [],
 		water: 0,
@@ -64,26 +130,28 @@ export function blankDay(): DayData {
 		hunger: 0,
 		sleep: 0,
 		notes: '',
-		date: '',
+		date: dayNum != null ? dateForDay(dayNum) : '',
 	};
 }
 
 export function loadDay(dayNum: number): void {
 	const id = get(pid);
 	currentDay.set(dayNum);
-	if (!id) { dayData.set(blankDay()); return; }
+	if (!id) { dayData.set(blankDay(dayNum)); return; }
 
 	const key = K(id, `day_${dayNum}`);
 	try {
 		const raw = localStorage.getItem(key);
 		if (raw) {
 			const parsed = JSON.parse(raw) as DayData;
+			// Backfill date if missing from older cached data
+			if (!parsed.date) parsed.date = dateForDay(dayNum);
 			dayData.set(parsed);
 		} else {
-			dayData.set(blankDay());
+			dayData.set(blankDay(dayNum));
 		}
 	} catch {
-		dayData.set(blankDay());
+		dayData.set(blankDay(dayNum));
 	}
 
 	// Remember last viewed day
@@ -96,9 +164,14 @@ export function saveDay(silent = false): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
+	// Ensure date is computed if missing
+	if (!day.date) day.date = dateForDay(num);
+
 	const key = K(id, `day_${num}`);
+	const tsKey = K(id, `day_${num}_ts`);
 	try {
 		localStorage.setItem(key, JSON.stringify(day));
+		localStorage.setItem(tsKey, String(Date.now()));
 	} catch { /* noop */ }
 }
 
@@ -131,11 +204,14 @@ export function syncDay(): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
+	// Ensure date is computed if missing
+	if (!day.date) day.date = dateForDay(num);
+
 	const t = totals(day);
-	api('sync', {
+	const payload: Record<string, unknown> = {
 		day: num,
 		phase: phaseFor(num, get(profile)).key,
-		date: day.date || '',
+		date: day.date,
 		weight: day.weight || null,
 		waist: day.waist || null,
 		serumAM: day.serumAM,
@@ -153,10 +229,17 @@ export function syncDay(): void {
 		notes: day.notes || '',
 		day_json: JSON.stringify(day),
 		updated_at: Date.now(),
-	}).catch((err) => { console.error('[AEVUM] syncDay failed:', err.message || err); });
+	};
+
+	api('sync', payload)
+		.then(() => { flushSyncQueue(); })
+		.catch((err) => {
+			console.error('[AEVUM] syncDay failed:', err.message || err);
+			enqueueSyncRetry(payload);
+		});
 }
 
-/** Load all days from backend into localStorage */
+/** Load all days from backend into localStorage (only if server data is newer) */
 export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 	const id = get(pid);
 	if (!id) return;
@@ -167,13 +250,25 @@ export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 			for (const row of data.days) {
 				if (!row.day_json) continue;
 				try {
-					const parsed = JSON.parse(row.day_json) as DayData;
 					const key = K(id, `day_${row.day}`);
+					const tsKey = K(id, `day_${row.day}_ts`);
+					const serverTs = Number(row.updated_at) || 0;
+
+					// Compare timestamps: only overwrite if server is newer
+					const localTs = Number(localStorage.getItem(tsKey)) || 0;
+					if (localTs > 0 && localTs >= serverTs) continue;
+
+					const parsed = JSON.parse(row.day_json) as DayData;
+					// Backfill date if missing
+					if (!parsed.date) parsed.date = dateForDay(row.day);
 					localStorage.setItem(key, JSON.stringify(parsed));
+					localStorage.setItem(tsKey, String(serverTs));
 				} catch { /* skip malformed rows */ }
 			}
 			// Reload current day from refreshed localStorage
 			loadDay(get(currentDay));
 		}
+		// After successful hydrate, flush any pending syncs
+		flushSyncQueue();
 	} catch (err) { console.error('[AEVUM] hydrateFromBackend failed:', (err as Error).message || err); }
 }
