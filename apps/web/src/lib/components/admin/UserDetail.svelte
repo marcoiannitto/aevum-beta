@@ -58,7 +58,7 @@
 	async function loadUser() {
 		loading = true;
 		try {
-			const res = await adminApi<Record<string, unknown>>('admin_export', { user_id: userId });
+			const res = await adminApi<Record<string, unknown>>('admin_export', { id: userId });
 			detail = res;
 			const p = (res.profile || {}) as Record<string, unknown>;
 			name = String(p.name ?? '');
@@ -127,7 +127,7 @@
 	async function saveProfile() {
 		saving = true;
 		try {
-			const payload: Record<string, unknown> = { user_id: userId, name, email, start_date: startDate, sex, dob };
+			const payload: Record<string, unknown> = { id: userId, name, email, start_date: startDate, sex, dob };
 			if (loadingDays) payload.loading_days = +loadingDays;
 			if (activationDays) payload.activation_days = +activationDays;
 			if (transitionDays) payload.transition_days = +transitionDays;
@@ -149,7 +149,7 @@
 		const p = (detail.profile || {}) as Record<string, unknown>;
 		const newVal = !p.program;
 		try {
-			await adminApi('admin_update_user', { user_id: userId, program: newVal });
+			await adminApi('admin_update_user', { id: userId, program: newVal });
 			p.program = newVal;
 			detail = { ...detail };
 			toast(newVal ? 'Program enabled' : 'Program disabled');
@@ -161,7 +161,7 @@
 	async function deleteUser() {
 		if (!confirm('Delete this user? This cannot be undone.')) return;
 		try {
-			await adminApi('admin_user_delete', { user_id: userId });
+			await adminApi('admin_user_delete', { id: userId });
 			toast('User deleted');
 			onBack();
 		} catch (e: unknown) {
