@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { auth } from '$lib/stores/auth';
+	import { token } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
 	let ready = $state(false);
 
 	onMount(() => {
-		// TODO: check admin role from profile
-		const unsub = auth.token.subscribe((t) => {
-			ready = !!t;
-		});
-		return unsub;
+		// Admin uses sessionStorage token, separate from app auth
+		const adminToken = sessionStorage.getItem('aevum_admin_token');
+		if (adminToken) {
+			ready = true;
+		}
 	});
 </script>
 

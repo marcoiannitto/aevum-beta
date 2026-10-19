@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { auth, isLoggedIn } from '$lib/stores/auth';
+	import { isLoggedIn } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -7,11 +7,9 @@
 	let ready = $state(false);
 
 	onMount(() => {
-		// Redirect to login if not authenticated
 		const unsub = isLoggedIn.subscribe((loggedIn) => {
 			if (!loggedIn) {
-				// TODO: Replace with login route once built
-				ready = false;
+				goto('/login');
 			} else {
 				ready = true;
 			}
@@ -23,7 +21,6 @@
 {#if ready}
 	{@render children()}
 {:else}
-	<!-- Login screen will be rendered here -->
 	<div class="loading">
 		<p>Loading...</p>
 	</div>

@@ -3,7 +3,7 @@
 declare namespace App {
 	interface Platform {
 		env: {
-			// Cloudflare bindings if needed
+			DB?: D1Database;
 		};
 		context: {
 			waitUntil(promise: Promise<unknown>): void;
@@ -11,3 +11,18 @@ declare namespace App {
 		caches: CacheStorage & { default: Cache };
 	}
 }
+
+// Google Identity Services
+declare interface Window {
+	google?: typeof google;
+}
+
+declare const google: {
+	accounts: {
+		id: {
+			initialize(config: Record<string, unknown>): void;
+			renderButton(element: HTMLElement, config: Record<string, unknown>): void;
+			prompt(): void;
+		};
+	};
+};
