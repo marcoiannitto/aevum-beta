@@ -130,21 +130,49 @@ export function syncDay(): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
-	api('save_day', { id, day: num, data: day }).catch(() => {});
+	const t = totals(day);
+	api('sync', {
+		day: num,
+		phase: '',
+		date: day.date || '',
+		weight: day.weight || null,
+		waist: day.waist || null,
+		serumAM: day.serumAM,
+		serumPM: day.serumPM,
+		kcal: t.kcal,
+		protein: t.protein,
+		fat: t.fat,
+		carbs: t.carbs,
+		water_ml: day.water || 0,
+		exercise: JSON.stringify(day.exercise || []),
+		exercise_kcal: t.exKcal,
+		energy: day.energy || '',
+		hunger: day.hunger || '',
+		sleep: day.sleep || '',
+		notes: day.notes || '',
+		day_json: JSON.stringify(day),
+		updated_at: Date.now(),
+	}).catch(() => {});
 }
 
-/** Load a range of days from backend into localStorage */
-export async function hydrateFromBackend(totalDays: number): Promise<void> {
+/** Load all days from backend into localStorage */
+export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 	const id = get(pid);
 	if (!id) return;
 
 	try {
-		const data = await api<{ days: Record<string, DayData> }>('load_days', { id, from: 1, to: totalDays });
+		const data = await api<{ days: { day: number; day_json: string; updated_at: string; phase: string }[] }>('getdays');
 		if (data?.days) {
-			for (const [n, d] of Object.entries(data.days)) {
-				const key = K(id, `day_${n}`);
-				try { localStorage.setItem(key, JSON.stringify(d)); } catch { /* noop */ }
+			for (const row of data.days) {
+				if (!row.day_json) continue;
+				try {
+					const parsed = JSON.parse(row.day_json) as DayData;
+					const key = K(id, `day_${row.day}`);
+					localStorage.setItem(key, JSON.stringify(parsed));
+				} catch { /* skip malformed rows */ }
 			}
+			// Reload current day from refreshed localStorage
+			loadDay(get(currentDay));
 		}
 	} catch { /* noop */ }
 }

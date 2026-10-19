@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { profile, pid, isProgram, loadStoredProfile, saveProfile, type UserProfile } from '$lib/stores/auth';
+	import { hydrateFromBackend } from '$lib/stores/day';
 	import { currentDay, dayData, loadDay, saveDay, syncDay } from '$lib/stores/day';
 	import { phaseFor, loadPhases, totalDays } from '$lib/stores/phases';
 	import { loadConfig, cfg } from '$lib/stores/config';
@@ -116,6 +117,9 @@
 				todayNum = todayDayNum();
 			}
 		} catch { /* noop — local profile is good enough */ }
+
+		// 5. Hydrate day data from backend into localStorage
+		await hydrateFromBackend(todayNum);
 
 		booted = true;
 	}
