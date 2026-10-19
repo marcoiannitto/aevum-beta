@@ -26,6 +26,7 @@
 	import SerumBlock from '$lib/components/today/SerumBlock.svelte';
 	import CheckinTab from '$lib/components/checkin/CheckinTab.svelte';
 	import TrendsTab from '$lib/components/trends/TrendsTab.svelte';
+	import PlanTab from '$lib/components/plan/PlanTab.svelte';
 
 	type Tab = 'today' | 'daily' | 'trends' | 'nutrition';
 	let activeTab = $state<Tab>('today');
@@ -149,8 +150,7 @@
 				</div>
 			{:else if activeTab === 'nutrition'}
 				<div class="tabpage">
-					<!-- TODO: Plan tab with sub-tabs (Meals, Recipes, Move) -->
-					<div class="placeholder">Plan — meals, recipes, move</div>
+					<PlanTab />
 				</div>
 			{/if}
 		</div>
@@ -174,15 +174,6 @@
 	}
 	.tabpage {
 		padding: 16px 18px 24px;
-	}
-	.placeholder {
-		text-align: center;
-		color: var(--muted);
-		font-size: 14px;
-		padding: 60px 20px;
-		border: 1px dashed var(--line);
-		border-radius: 16px;
-		margin-top: 12px;
 	}
 	.loading {
 		display: flex;
