@@ -25,6 +25,7 @@
 	import Ratings from '$lib/components/today/Ratings.svelte';
 	import Notes from '$lib/components/today/Notes.svelte';
 	import MacroGates from '$lib/components/today/MacroGates.svelte';
+	import CheckinTab from '$lib/components/checkin/CheckinTab.svelte';
 
 	type Tab = 'today' | 'daily' | 'trends' | 'nutrition';
 	let activeTab = $state<Tab>('today');
@@ -141,8 +142,7 @@
 				</div>
 			{:else if activeTab === 'daily'}
 				<div class="tabpage">
-					<!-- TODO: Check-in tab (weight, waist, exercise, mood, notes) -->
-					<div class="placeholder">Check-in — weight, exercise, mood</div>
+					<CheckinTab />
 				</div>
 			{:else if activeTab === 'trends'}
 				<div class="tabpage">
