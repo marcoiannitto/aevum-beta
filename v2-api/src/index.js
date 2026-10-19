@@ -54,10 +54,15 @@ function rateCheck(ip) {
 }
 
 // ─── CORS ────────────────────────────────────────────────────
+const EXTRA_ORIGINS = [
+  'https://aevum-web-d75.pages.dev',
+  'https://beta.niramaya.sg',
+  'http://localhost:5173',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080'
+];
 function corsHeaders(origin, allowed) {
-  const ok = origin === allowed
-    || origin === 'http://localhost:8080'
-    || origin === 'http://127.0.0.1:8080';
+  const ok = origin === allowed || EXTRA_ORIGINS.includes(origin);
   if (!ok) return null;
   return {
     'Access-Control-Allow-Origin': origin,
