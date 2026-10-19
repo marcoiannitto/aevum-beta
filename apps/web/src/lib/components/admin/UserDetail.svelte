@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { adminApi, toast } from '$lib/stores/admin';
+	import { phaseFor } from '$lib/stores/phases';
 
 	let { userId, onBack }: {
 		userId: number;
@@ -266,15 +267,7 @@
 	function phaseForDay(day: number): string {
 		if (!detail) return '';
 		const p = (detail.profile || {}) as Record<string, unknown>;
-		const ld = +(p.loading_days ?? 2);
-		const ad = +(p.activation_days ?? 8);
-		const td = +(p.transition_days ?? 3);
-		const sd = +(p.stabilization_days ?? 18);
-		if (day <= ld) return 'loading';
-		if (day <= ld + ad) return 'activation';
-		if (day <= ld + ad + td) return 'transition';
-		if (day <= ld + ad + td + sd) return 'stabilization';
-		return 'maintenance';
+		return phaseFor(day, p).name;
 	}
 
 	// Stats
