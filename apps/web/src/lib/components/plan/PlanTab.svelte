@@ -6,8 +6,8 @@
 	import { isProgram } from '$lib/stores/auth';
 	import SubTabs from './SubTabs.svelte';
 	import MealPlan from './MealPlan.svelte';
-	import RecipeList from './RecipeList.svelte';
-	import FitnessTab from './FitnessTab.svelte';
+	import RecipesPanel from './RecipesPanel.svelte';
+	import FitnessPanel from './FitnessPanel.svelte';
 
 	type Sub = 'plan' | 'recipes' | 'fitness';
 	let sub = $state<Sub>('plan');
@@ -25,9 +25,9 @@
 	{#if sub === 'plan'}
 		<MealPlan />
 	{:else if sub === 'recipes'}
-		<RecipeList />
+		<RecipesPanel />
 	{:else if sub === 'fitness'}
-		<FitnessTab />
+		<FitnessPanel />
 	{/if}
 {/if}
 
