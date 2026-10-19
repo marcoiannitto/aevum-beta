@@ -68,7 +68,7 @@
 			activationDays = String(p.activation_days ?? '');
 			transitionDays = String(p.transition_days ?? '');
 			stabilizationDays = String(p.stabilization_days ?? '');
-			targetKcal = String(p.target_kcal ?? '');
+			targetKcal = String(p.current_target_kcal ?? '');
 			targetKg = String(p.target_kg ?? '');
 			sex = String(p.sex ?? '');
 			dob = String(p.dob ?? '');
@@ -203,7 +203,7 @@
 			if (activationDays) payload.activation_days = +activationDays;
 			if (transitionDays) payload.transition_days = +transitionDays;
 			if (stabilizationDays) payload.stabilization_days = +stabilizationDays;
-			if (targetKcal) payload.target_kcal = +targetKcal;
+			if (targetKcal) payload.current_target_kcal = +targetKcal;
 			if (targetKg) payload.target_kg = +targetKg;
 			if (height) payload.height = +height;
 			await adminApi('admin_update_user', payload);
@@ -353,7 +353,7 @@
 				<div class="ef-group"><label>Target kcal</label><input type="number" bind:value={targetKcal} /></div>
 				<div class="ef-group"><label>Target kg</label><input type="number" bind:value={targetKg} /></div>
 				<div class="ef-group"><label>Sex</label>
-					<select bind:value={sex}><option value="">—</option><option value="M">M</option><option value="F">F</option></select>
+					<select bind:value={sex}><option value="">—</option><option value="m">M</option><option value="f">F</option></select>
 				</div>
 				<div class="ef-group"><label>DOB</label><input type="date" bind:value={dob} /></div>
 				<div class="ef-group"><label>Height (cm)</label><input type="number" bind:value={height} /></div>
