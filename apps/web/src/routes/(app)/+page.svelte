@@ -120,9 +120,61 @@
 		booted = true;
 	}
 
+	// ── Lifecycle: SW, day rollover, save on hide/unload ──
+
+	function registerSW() {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch(() => {});
+		}
+	}
+
+	function startDayRolloverTimer() {
+		const now = new Date();
+		const hour = cfg('day_start_hour');
+		const next = new Date(now);
+		next.setHours(hour, 0, 0, 0);
+		if (next <= now) next.setDate(next.getDate() + 1);
+		const ms = next.getTime() - now.getTime();
+		setTimeout(() => {
+			todayNum = todayDayNum();
+			loadDay(todayNum);
+			startDayRolloverTimer(); // schedule next
+		}, ms);
+	}
+
+	function handleVisibility() {
+		if (document.visibilityState === 'hidden') {
+			saveDay();
+			syncDay();
+		} else {
+			// Returning — check if day rolled over
+			const newToday = todayDayNum();
+			if (newToday !== todayNum) {
+				todayNum = newToday;
+				loadDay(todayNum);
+			}
+		}
+	}
+
+	function handleBeforeUnload() {
+		saveDay();
+		syncDay();
+	}
+
 	onMount(() => {
 		loadStoredProfile();
-		boot();
+		boot().then(() => {
+			registerSW();
+			startDayRolloverTimer();
+		});
+
+		document.addEventListener('visibilitychange', handleVisibility);
+		window.addEventListener('beforeunload', handleBeforeUnload);
+
+		return () => {
+			document.removeEventListener('visibilitychange', handleVisibility);
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+		};
 	});
 </script>
 
