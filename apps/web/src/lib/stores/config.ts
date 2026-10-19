@@ -20,6 +20,7 @@ export const DEFAULTS: Record<string, number | string> = {
 	drift_step_kcal: 50,
 	drift_band_kg: 0.5,
 	drift_floor_kcal: 800,
+	water_ml_per_kg: 30,
 	stab_buffer_kcal: 200,
 	activity_factors: '1.2,1.375,1.55,1.725,1.9',
 	act_labels: 'Sedentary,Lightly Active,Moderately Active,Very Active,Extra Active'

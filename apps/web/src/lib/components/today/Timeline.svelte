@@ -1,218 +1,182 @@
+<!--
+  Timeline — Meal timeline with bucket model flags, item expansion, meal deletion.
+  Maps to #timeline / renderTimeline() from index.html.
+-->
 <script lang="ts">
-	import { dayData, saveDay } from '$lib/stores/day';
+	import { profile } from '$lib/stores/auth';
+	import { currentDay, dayData, saveDay } from '$lib/stores/day';
+	import { phaseFor, phReg } from '$lib/stores/phases';
+	import { cfg } from '$lib/stores/config';
 	import { fmtTime } from '$lib/helpers/date';
 	import type { MealEntry } from '$lib/stores/day';
 
-	let showAddMeal = $state(false);
-	let newName = $state('');
-	let newKcal = $state('');
-	let newProtein = $state('');
-	let newFat = $state('');
-	let newCarbs = $state('');
+	const MEAL_KCAL = $derived(cfg('meal_kcal'));
+	const MEAL_FAT = $derived(cfg('meal_fat'));
+	const MEAL_CARB = $derived(cfg('meal_carb'));
 
-	const meals = $derived(($dayData?.meals || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0)));
+	let phase = $derived(phaseFor($currentDay, $profile));
+	let reg = $derived(phReg(phase.key));
+	let noMacros = $derived(reg ? !!reg.use_buckets : (phase.key === 'activation' || phase.key === 'transition'));
 
-	function addMeal() {
-		if (!newName.trim() || !newKcal) return;
-		if (!$dayData) return;
+	let meals = $derived(($dayData?.meals || []).slice());
+	let reversed = $derived([...meals].reverse());
 
-		const entry: MealEntry = {
-			name: newName.trim(),
-			kcal: +newKcal || 0,
-			protein: +newProtein || 0,
-			fat: +newFat || 0,
-			carbs: +newCarbs || 0,
-			time: new Date().toTimeString().slice(0, 5),
-			ts: Date.now()
-		};
+	let expandedIdx = $state<number | null>(null);
 
-		$dayData.meals = [...$dayData.meals, entry];
-		saveDay();
-
-		// Reset form
-		newName = '';
-		newKcal = '';
-		newProtein = '';
-		newFat = '';
-		newCarbs = '';
-		showAddMeal = false;
+	interface ItemEntry {
+		name: string;
+		type: string;
+		verdict: string;
+		note?: string;
+		grams?: number;
+		kcal?: number;
+		protein?: number;
+		fat?: number;
+		carbs?: number;
 	}
 
-	function removeMeal(idx: number) {
+	function itemFlag(it: ItemEntry): { cls: string; label: string } {
+		const grams = +(it.grams || 0);
+		const v = it.verdict || 'limited';
+		const ty = it.type || 'other';
+		if (v === 'no') return { cls: 'bad', label: 'Not allowed' };
+		if (v === 'limited') return { cls: 'warn', label: it.note || 'Limited' };
+		if (/egg\s*white/i.test(it.name || '')) {
+			if (grams > 250) return { cls: 'bad', label: 'Over 6' };
+			if (grams > 200) return { cls: 'warn', label: 'Near 6' };
+			return { cls: 'ok', label: 'Allowed' };
+		}
+		const cap = (ty === 'protein' || ty === 'veg') ? { amber: 111, red: 131 } : { amber: 111, red: Infinity };
+		if (grams > cap.red) return { cls: 'bad', label: 'Too much' };
+		if (grams > cap.amber) return { cls: 'warn', label: `Over ${cap.amber}g` };
+		return { cls: 'ok', label: 'Allowed' };
+	}
+
+	function mealStatus(m: MealEntry): string {
+		const items: ItemEntry[] = (m as any).items || [];
+		if (items.some(it => itemFlag(it).cls === 'bad')) return 'bad';
+		if (items.some(it => itemFlag(it).cls === 'warn')) return 'warn';
+		return 'ok';
+	}
+
+	function removeMeal(originalIdx: number) {
 		if (!$dayData) return;
-		$dayData.meals = $dayData.meals.filter((_, i) => i !== idx);
+		$dayData.meals = $dayData.meals.filter((_: any, i: number) => i !== originalIdx);
 		saveDay();
+	}
+
+	function toggleExpand(originalIdx: number) {
+		expandedIdx = expandedIdx === originalIdx ? null : originalIdx;
+	}
+
+	function originalIndex(reversedIdx: number): number {
+		return meals.length - 1 - reversedIdx;
 	}
 </script>
 
-<section class="timeline">
-	<div class="sec-header">
-		<h3>Meals</h3>
-		<button class="add-btn" onclick={() => showAddMeal = !showAddMeal}>
-			{showAddMeal ? '✕' : '+'}
-		</button>
-	</div>
-
-	{#if showAddMeal}
-		<div class="add-form">
-			<input type="text" bind:value={newName} placeholder="What did you eat?" class="meal-input" />
-			<div class="macro-inputs">
-				<input type="number" bind:value={newKcal} placeholder="kcal" />
-				<input type="number" bind:value={newProtein} placeholder="P(g)" />
-				<input type="number" bind:value={newFat} placeholder="F(g)" />
-				<input type="number" bind:value={newCarbs} placeholder="C(g)" />
-			</div>
-			<button class="save-btn" onclick={addMeal}>Add meal</button>
-		</div>
-	{/if}
-
-	{#if meals.length === 0}
-		<p class="empty">No meals logged yet</p>
-	{:else}
-		<div class="meal-list">
-			{#each meals as meal, i}
-				<div class="meal-row">
-					<div class="meal-time">{meal.time || fmtTime(meal.ts)}</div>
-					<div class="meal-body">
-						<span class="meal-name">{meal.name}</span>
-						<span class="meal-macros">
-							{meal.kcal} kcal
-							{#if meal.protein}· {meal.protein}P{/if}
-							{#if meal.fat}· {meal.fat}F{/if}
-							{#if meal.carbs}· {meal.carbs}C{/if}
-						</span>
-					</div>
-					<button class="del-btn" onclick={() => removeMeal(i)}>✕</button>
+{#if meals.length === 0}
+	<div class="tl-empty">No meals logged yet.</div>
+{:else}
+	<div class="timeline">
+		<div class="tl-head">Today's meals</div>
+		{#each reversed as meal, ri}
+			{@const oi = originalIndex(ri)}
+			{@const isOpen = expandedIdx === oi}
+			{@const items = ((meal as any).items || []) as ItemEntry[]}
+			{@const hasItems = items.length > 0}
+			<div class="meal-row">
+				<div class="meal-time">{meal.time || (meal.ts ? fmtTime(meal.ts) : '– –')}</div>
+				<div class="meal-body" class:open={isOpen} role="button" tabindex="0" onclick={() => toggleExpand(oi)} onkeydown={(e) => e.key === 'Enter' && toggleExpand(oi)}>
+					{#if noMacros}
+						{@const st = mealStatus(meal)}
+						{@const kc = Math.round(meal.kcal || 0)}
+						{@const pv = Math.round(meal.protein || 0)}
+						{@const fv = Math.round(meal.fat || 0)}
+						{@const cv = Math.round(meal.carbs || 0)}
+						<div class="meal-head">
+							<span class="meal-name">{meal.name || 'Meal'}</span>
+							<span class="mi-dot {st}"></span>
+						</div>
+						<div class="meal-macros">
+							<b class={kc > MEAL_KCAL ? 'over' : ''}>{kc}</b> kcal
+							<span class="mac">{pv}P</span>
+							<span class="mac" class:over={fv > MEAL_FAT}>{fv}F</span>
+							<span class="mac" class:over={cv > MEAL_CARB}>{cv}C</span>
+						</div>
+						{#if hasItems}
+							<div class="mi-list" class:collapsed={!isOpen}>
+								{#each items as it}
+									{@const f = itemFlag(it)}
+									<div class="mi">
+										<span class="mi-dot {f.cls}"></span>
+										<span class="mi-name">{it.name} {it.grams || 0}g</span>
+										<span class="mi-mac">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
+										<span class="mi-flag {f.cls}">{f.label}</span>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					{:else}
+						<div class="meal-name">
+							{meal.name || 'Meal'}
+							{#if hasItems}<span class="meal-chevron">▶</span>{/if}
+						</div>
+						<div class="meal-macros">
+							<b>{Math.round(meal.kcal || 0)}</b> kcal
+							<span class="sep">·</span>{Math.round(meal.protein || 0)}P
+							<span class="sep">·</span>{Math.round(meal.fat || 0)}F
+							<span class="sep">·</span>{Math.round(meal.carbs || 0)}C
+						</div>
+						{#if hasItems}
+							<div class="mi-list" class:collapsed={!isOpen}>
+								{#each items as it}
+									<div class="mi">
+										<span class="mi-name">{it.name} {it.grams || 0}g</span>
+										<span class="mi-mac">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					{/if}
 				</div>
-			{/each}
-		</div>
-	{/if}
-</section>
+				<button class="meal-del" onclick={(e) => { e.stopPropagation(); removeMeal(oi); }}>×</button>
+			</div>
+		{/each}
+	</div>
+{/if}
 
 <style>
-	.timeline {
-		padding: 0 18px 16px;
-	}
-	.sec-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-bottom: 8px;
-	}
-	h3 {
-		font-size: 14px;
-		font-weight: 600;
-		margin: 0;
-		color: var(--ink);
-	}
-	.add-btn {
-		width: 28px;
-		height: 28px;
-		border: 1px solid var(--line);
-		border-radius: 50%;
-		background: transparent;
-		font-size: 16px;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--ink);
-	}
-	.add-form {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 12px;
-		background: var(--card, #fff);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		margin-bottom: 12px;
-	}
-	.meal-input {
-		padding: 8px 10px;
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		font-size: 14px;
-		font-family: inherit;
-	}
-	.macro-inputs {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 6px;
-	}
-	.macro-inputs input {
-		padding: 6px;
-		border: 1px solid var(--line);
-		border-radius: 6px;
-		font-size: 12px;
-		text-align: center;
-		font-family: inherit;
-	}
-	.save-btn {
-		padding: 8px;
-		background: var(--gold);
-		color: #fff;
-		border: none;
-		border-radius: 8px;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-		font-family: inherit;
-	}
-	.empty {
-		text-align: center;
-		color: var(--muted);
-		font-size: 13px;
-		padding: 20px;
-		border: 1px dashed var(--line);
-		border-radius: 12px;
-	}
-	.meal-list {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-	.meal-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 8px 10px;
-		background: var(--card, #fff);
-		border: 1px solid var(--line);
-		border-radius: 10px;
-	}
-	.meal-time {
-		font-size: 12px;
-		color: var(--muted);
-		min-width: 40px;
-		font-variant-numeric: tabular-nums;
-	}
-	.meal-body {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.meal-name {
-		font-size: 14px;
-		font-weight: 500;
-	}
-	.meal-macros {
-		font-size: 11px;
-		color: var(--muted);
-	}
-	.del-btn {
-		width: 24px;
-		height: 24px;
-		border: none;
-		background: transparent;
-		color: var(--muted);
-		font-size: 12px;
-		cursor: pointer;
-		border-radius: 50%;
-	}
-	.del-btn:hover {
-		background: #fef2f2;
-		color: var(--over);
-	}
+	.tl-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 22px 10px; border: 1px dashed var(--line); border-radius: 16px; }
+	.tl-head { font-size: 13px; color: var(--muted); margin: 2px 2px 6px; }
+	.meal-row { display: flex; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line-soft); }
+	.meal-row:last-child { border-bottom: none; }
+	.meal-time { font-size: 12px; color: var(--muted); width: 42px; flex-shrink: 0; padding-top: 2px; font-variant-numeric: tabular-nums; }
+	.meal-body { flex: 1; min-width: 0; cursor: pointer; }
+	.meal-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.meal-body.open .meal-name { white-space: normal; overflow: visible; }
+	.meal-macros { font-size: 13px; color: var(--ink-soft); }
+	.meal-macros b { font-family: var(--serif); font-weight: 500; }
+	.meal-macros .sep { color: var(--line); margin: 0 5px; }
+	.meal-macros .mac { margin-left: 4px; }
+	.meal-macros .over, .meal-macros b.over { color: var(--over); }
+	.meal-del { align-self: center; color: var(--muted); font-size: 19px; padding: 6px; flex-shrink: 0; border: none; background: transparent; cursor: pointer; }
+	.meal-del:hover { color: var(--over); }
+	.meal-head { display: flex; align-items: center; gap: 8px; }
+	.meal-head .meal-name { flex: 1; min-width: 0; margin-bottom: 0; }
+	.meal-head .mi-dot { width: 9px; height: 9px; flex-shrink: 0; }
+	.mi-list { margin-top: 7px; display: flex; flex-direction: column; gap: 5px; }
+	.mi-list.collapsed { display: none; }
+	.mi { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+	.mi-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+	.mi-dot.ok { background: #4a7c59; }
+	.mi-dot.warn { background: var(--warn); }
+	.mi-dot.bad { background: var(--over); }
+	.mi-name { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.mi-mac { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+	.meal-chevron { font-size: 10px; color: var(--muted); margin-left: 6px; transition: transform 0.2s; }
+	.meal-body.open .meal-chevron { transform: rotate(90deg); }
+	.mi-flag { margin-left: auto; flex-shrink: 0; font-size: 12px; font-weight: 600; }
+	.mi-flag.ok { color: #4a7c59; }
+	.mi-flag.warn { color: var(--warn); }
+	.mi-flag.bad { color: var(--over); }
 </style>

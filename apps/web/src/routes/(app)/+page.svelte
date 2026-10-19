@@ -17,15 +17,15 @@
 
 	// Today tab components
 	import CalorieStatus from '$lib/components/today/CalorieStatus.svelte';
+	import MacroGates from '$lib/components/today/MacroGates.svelte';
+	import FoodBuckets from '$lib/components/today/FoodBuckets.svelte';
 	import Timeline from '$lib/components/today/Timeline.svelte';
 	import WaterTracker from '$lib/components/today/WaterTracker.svelte';
+	import LogMealButton from '$lib/components/today/LogMealButton.svelte';
 	import ExerciseTracker from '$lib/components/today/ExerciseTracker.svelte';
 	import SerumBlock from '$lib/components/today/SerumBlock.svelte';
-	import PhaseBar from '$lib/components/today/PhaseBar.svelte';
-	import Ratings from '$lib/components/today/Ratings.svelte';
-	import Notes from '$lib/components/today/Notes.svelte';
-	import MacroGates from '$lib/components/today/MacroGates.svelte';
 	import CheckinTab from '$lib/components/checkin/CheckinTab.svelte';
+	import TrendsTab from '$lib/components/trends/TrendsTab.svelte';
 
 	type Tab = 'today' | 'daily' | 'trends' | 'nutrition';
 	let activeTab = $state<Tab>('today');
@@ -130,15 +130,14 @@
 		<div class="scroll">
 			{#if activeTab === 'today'}
 				<div class="tabpage">
+					<SerumBlock />
 					<CalorieStatus />
 					<MacroGates />
-					<PhaseBar />
-					<SerumBlock />
+					<FoodBuckets />
 					<Timeline />
 					<WaterTracker />
+					<LogMealButton onclick={() => { /* TODO: open meal logging sheet */ }} />
 					<ExerciseTracker />
-					<Ratings />
-					<Notes />
 				</div>
 			{:else if activeTab === 'daily'}
 				<div class="tabpage">
@@ -146,8 +145,7 @@
 				</div>
 			{:else if activeTab === 'trends'}
 				<div class="tabpage">
-					<!-- TODO: Trends tab (charts, compliance) -->
-					<div class="placeholder">Trends — weight chart, calorie chart, compliance</div>
+					<TrendsTab />
 				</div>
 			{:else if activeTab === 'nutrition'}
 				<div class="tabpage">
