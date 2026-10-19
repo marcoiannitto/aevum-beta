@@ -55,13 +55,14 @@ function rateCheck(ip) {
 
 // ─── CORS ────────────────────────────────────────────────────
 const EXTRA_ORIGINS = [
-  'https://aevum-web-d75.pages.dev',
   'http://localhost:5173',
   'http://localhost:8080',
   'http://127.0.0.1:8080'
 ];
 function corsHeaders(origin, allowed) {
-  const ok = origin === allowed || EXTRA_ORIGINS.includes(origin);
+  const ok = origin === allowed
+    || EXTRA_ORIGINS.includes(origin)
+    || (origin.endsWith('.aevum-web-d75.pages.dev') || origin === 'https://aevum-web-d75.pages.dev');
   if (!ok) return null;
   return {
     'Access-Control-Allow-Origin': origin,
