@@ -9,6 +9,8 @@
 	import { phaseFor, phReg, ruleParent } from '$lib/stores/phases';
 	import { ruleFor, bandClass, actMacros } from '$lib/stores/rules';
 	import { effectiveTarget, calorieBank, mifflin } from '$lib/stores/calorie';
+	import MacroGates from './MacroGates.svelte';
+	import FoodBuckets from './FoodBuckets.svelte';
 
 	let day = $derived($dayData);
 	let t = $derived(day ? calcTotals(day) : { kcal: 0, protein: 0, fat: 0, carbs: 0, exKcal: 0 });
@@ -81,6 +83,8 @@
 		</div>
 	{/if}
 
+	<MacroGates />
+	<FoodBuckets />
 	<div class="cal-disclaimer">Targets are estimates. Consult your doctor for personalised advice.</div>
 </div>
 

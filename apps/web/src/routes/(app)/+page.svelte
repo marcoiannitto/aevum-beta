@@ -18,8 +18,6 @@
 
 	// Today tab components
 	import CalorieStatus from '$lib/components/today/CalorieStatus.svelte';
-	import MacroGates from '$lib/components/today/MacroGates.svelte';
-	import FoodBuckets from '$lib/components/today/FoodBuckets.svelte';
 	import Timeline from '$lib/components/today/Timeline.svelte';
 	import WaterTracker from '$lib/components/today/WaterTracker.svelte';
 	import LogMealButton from '$lib/components/today/LogMealButton.svelte';
@@ -202,11 +200,9 @@
 				<div class="tabpage">
 					<SerumBlock />
 					<CalorieStatus />
-					<MacroGates />
-					<FoodBuckets />
-					<Timeline />
 					<WaterTracker />
 					<LogMealButton onclick={() => { mealEditIndex = -1; mealLogOpen = true; }} />
+					<Timeline />
 					<ExerciseTracker />
 				</div>
 			{:else if activeTab === 'daily'}
@@ -246,6 +242,8 @@
 	.scroll {
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
+		max-width: 520px;
+		margin: 0 auto;
 	}
 	.tabpage {
 		padding: 16px 18px 24px;
