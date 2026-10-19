@@ -56,7 +56,6 @@ function rateCheck(ip) {
 // ─── CORS ────────────────────────────────────────────────────
 const EXTRA_ORIGINS = [
   'https://aevum-web-d75.pages.dev',
-  'https://beta.niramaya.sg',
   'http://localhost:5173',
   'http://localhost:8080',
   'http://127.0.0.1:8080'
