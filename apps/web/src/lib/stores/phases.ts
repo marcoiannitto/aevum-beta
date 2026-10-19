@@ -97,7 +97,7 @@ export function loadPhases() {
 				applyPhases(d.phases);
 			}
 		})
-		.catch(() => {});
+		.catch((err) => { console.error('[AEVUM] loadPhases failed:', err.message || err); });
 }
 
 /** Look up a phase by key */

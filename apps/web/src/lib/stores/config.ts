@@ -56,7 +56,7 @@ export function loadConfig(): void {
 				applyConfig(arr);
 			}
 		})
-		.catch(() => {});
+		.catch((err) => { console.error('[AEVUM] loadConfig failed:', err.message || err); });
 }
 
 /** Get numeric config value */

@@ -93,5 +93,5 @@ export function loadRules(): void {
 				try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* noop */ }
 			}
 		})
-		.catch(() => {});
+		.catch((err) => { console.error('[AEVUM] loadRules failed:', err.message || err); });
 }

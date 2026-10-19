@@ -152,7 +152,7 @@ export function syncDay(): void {
 		notes: day.notes || '',
 		day_json: JSON.stringify(day),
 		updated_at: Date.now(),
-	}).catch(() => {});
+	}).catch((err) => { console.error('[AEVUM] syncDay failed:', err.message || err); });
 }
 
 /** Load all days from backend into localStorage */
@@ -174,5 +174,5 @@ export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 			// Reload current day from refreshed localStorage
 			loadDay(get(currentDay));
 		}
-	} catch { /* noop */ }
+	} catch (err) { console.error('[AEVUM] hydrateFromBackend failed:', (err as Error).message || err); }
 }

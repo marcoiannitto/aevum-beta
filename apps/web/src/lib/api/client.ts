@@ -69,7 +69,9 @@ export async function api<T = unknown>(
 		}
 
 		if (!res.ok) {
-			throw new ApiError(res.status, `http ${res.status}`, action);
+			const errBody = await res.text().catch(() => '');
+			console.error(`[AEVUM] API ${action} → ${res.status}:`, errBody);
+			throw new ApiError(res.status, errBody || `http ${res.status}`, action);
 		}
 
 		const data = await res.json();
