@@ -405,7 +405,7 @@
 								<tr>
 									<td>{log.day}</td><td>{log.date ?? ''}</td><td>{phaseForDay(log.day as number)}</td>
 									<td>{log.weight ?? '–'}</td><td>{log.kcal ?? '–'}</td><td>{log.protein ?? '–'}</td>
-									<td>{log.fat ?? '–'}</td><td>{log.carbs ?? '–'}</td><td>{log.water ?? '–'}</td>
+									<td>{log.fat ?? '–'}</td><td>{log.carbs ?? '–'}</td><td>{log.water_ml ? log.water_ml + ' ml' : '–'}</td>
 									<td>{log.exercise ?? '–'}</td>
 								</tr>
 							{/each}

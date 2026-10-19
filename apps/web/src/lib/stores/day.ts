@@ -3,8 +3,9 @@
  * Maps to currentDay/day/loadDay/saveDay/totals from index.html.
  */
 import { writable, get } from 'svelte/store';
-import { K, pid } from './auth';
+import { K, pid, profile } from './auth';
 import { api } from '$lib/api/client';
+import { phaseFor } from './phases';
 
 // --- Types ---
 
@@ -133,7 +134,7 @@ export function syncDay(): void {
 	const t = totals(day);
 	api('sync', {
 		day: num,
-		phase: '',
+		phase: phaseFor(num, get(profile)).key,
 		date: day.date || '',
 		weight: day.weight || null,
 		waist: day.waist || null,
@@ -143,7 +144,7 @@ export function syncDay(): void {
 		protein: t.protein,
 		fat: t.fat,
 		carbs: t.carbs,
-		water_ml: day.water || 0,
+		water_ml: (day.water || 0) * 250,
 		exercise: JSON.stringify(day.exercise || []),
 		exercise_kcal: t.exKcal,
 		energy: day.energy || '',
