@@ -28,11 +28,24 @@
 	import TrendsTab from '$lib/components/trends/TrendsTab.svelte';
 	import PlanTab from '$lib/components/plan/PlanTab.svelte';
 
+	// Overlays
+	import ProfilePanel from '$lib/components/profile/ProfilePanel.svelte';
+	import FoodHubSheet from '$lib/components/foodhub/FoodHubSheet.svelte';
+	import MealLogSheet from '$lib/components/meals/MealLogSheet.svelte';
+	import PhaseSheet from '$lib/components/phases/PhaseSheet.svelte';
+
 	type Tab = 'today' | 'daily' | 'trends' | 'nutrition';
 	let activeTab = $state<Tab>('today');
 
 	let todayNum = $state(1);
 	let booted = $state(false);
+
+	// Overlay state
+	let profileOpen = $state(false);
+	let foodHubOpen = $state(false);
+	let mealLogOpen = $state(false);
+	let mealEditIndex = $state(-1);
+	let phaseSheetOpen = $state(false);
 
 	// ── Day helpers (maps to todayDayNum / DAY_START_HOUR) ──
 
@@ -124,8 +137,8 @@
 			onPrevDay={prevDay}
 			onNextDay={nextDay}
 			onGoToday={goToday}
-			onOpenProfile={() => { /* TODO: profile panel */ }}
-			onOpenFoodHub={() => { /* TODO: food hub sheet */ }}
+			onOpenProfile={() => { profileOpen = true; }}
+			onOpenFoodHub={() => { foodHubOpen = true; }}
 		/>
 
 		<div class="scroll">
@@ -137,7 +150,7 @@
 					<FoodBuckets />
 					<Timeline />
 					<WaterTracker />
-					<LogMealButton onclick={() => { /* TODO: open meal logging sheet */ }} />
+					<LogMealButton onclick={() => { mealEditIndex = -1; mealLogOpen = true; }} />
 					<ExerciseTracker />
 				</div>
 			{:else if activeTab === 'daily'}
@@ -156,6 +169,12 @@
 		</div>
 
 		<BottomNav active={activeTab} onSwitch={switchTab} />
+
+		<!-- Overlays -->
+		<ProfilePanel open={profileOpen} onClose={() => { profileOpen = false; }} />
+		<FoodHubSheet open={foodHubOpen} onClose={() => { foodHubOpen = false; }} />
+		<MealLogSheet open={mealLogOpen} editIndex={mealEditIndex} onClose={() => { mealLogOpen = false; }} />
+		<PhaseSheet open={phaseSheetOpen} onClose={() => { phaseSheetOpen = false; }} />
 	</main>
 {:else}
 	<div class="loading">
