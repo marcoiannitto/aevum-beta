@@ -56,6 +56,8 @@ function rateCheck(ip) {
 // ─── CORS ────────────────────────────────────────────────────
 function corsHeaders(origin, allowed) {
   const ok = origin === allowed
+    || origin.endsWith('.aevum-web-d75.pages.dev')
+    || origin === 'https://aevum-web-d75.pages.dev'
     || origin === 'http://localhost:8080'
     || origin === 'http://127.0.0.1:8080';
   if (!ok) return null;
