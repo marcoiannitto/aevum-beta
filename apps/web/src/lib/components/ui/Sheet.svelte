@@ -64,6 +64,8 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
+		max-width: 480px;
+		margin: 0 auto;
 		max-height: 85dvh;
 		background: var(--card);
 		border-radius: 20px 20px 0 0;

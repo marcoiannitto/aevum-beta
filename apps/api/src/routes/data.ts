@@ -17,6 +17,15 @@ export async function getPhases(db: D1Database) {
   return { phases: rows.results };
 }
 
+// ─── Phase Transitions ──────────────────────────────────────
+
+export async function getPhaseTransitions(userId: string, db: D1Database) {
+  const rows = await db.prepare(
+    'SELECT from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY day'
+  ).bind(userId).all<any>();
+  return { transitions: rows.results };
+}
+
 // ─── Messages ────────────────────────────────────────────────
 
 export async function getMessages(db: D1Database) {

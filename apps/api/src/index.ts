@@ -21,7 +21,7 @@ import { getProfile, completeProfile, updateProfile } from './routes/profile.js'
 import { syncRow, getDays } from './routes/sync.js';
 import { getRules } from './routes/rules.js';
 import {
-  getConfig, getPhases, getMessages, getRecipes,
+  getConfig, getPhases, getPhaseTransitions, getMessages, getRecipes,
   getFitness, getFoods, getPolicy,
 } from './routes/data.js';
 import { getMealPlan, mealEngine } from './routes/meals.js';
@@ -210,6 +210,8 @@ app.post('/', async (c) => {
       return c.json(await getConfig(db));
     case 'phases':
       return c.json(await getPhases(db));
+    case 'phase_transitions':
+      return c.json(await getPhaseTransitions(userId, db));
     case 'messages':
       return c.json(await getMessages(db));
     case 'recipes':

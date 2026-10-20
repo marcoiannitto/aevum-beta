@@ -8,7 +8,7 @@
 	import { dayData, saveDay } from '$lib/stores/day';
 	import { currentDay } from '$lib/stores/day';
 	import { phaseFor } from '$lib/stores/phases';
-	import { aiPost } from '$lib/api/client';
+	import { api } from '$lib/api/client';
 
 	let {
 		open = false,
@@ -23,6 +23,8 @@
 
 	let mode = $state<'quick' | 'manual'>('quick');
 	let description = $state('');
+	let imageBase64 = $state('');
+	let imagePreview = $state('');
 	let mealName = $state('');
 	let kcal = $state('');
 	let protein = $state('');
@@ -31,6 +33,30 @@
 	let mealTime = $state('');
 	let loading = $state(false);
 	let error = $state('');
+	let fileInput: HTMLInputElement;
+
+	function onImagePick(e: Event) {
+		const file = (e.target as HTMLInputElement)?.files?.[0];
+		if (!file) return;
+		if (file.size > 4 * 1024 * 1024) {
+			error = 'Image too large (max 4 MB).';
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = () => {
+			const result = reader.result as string;
+			imagePreview = result;
+			// Strip data URI prefix for API
+			imageBase64 = result.replace(/^data:image\/\w+;base64,/, '');
+		};
+		reader.readAsDataURL(file);
+	}
+
+	function clearImage() {
+		imageBase64 = '';
+		imagePreview = '';
+		if (fileInput) fileInput.value = '';
+	}
 
 	// If editing, pre-fill
 	$effect(() => {
@@ -50,6 +76,8 @@
 			// Reset for new meal
 			mode = 'quick';
 			description = '';
+			imageBase64 = '';
+			imagePreview = '';
 			mealName = '';
 			kcal = '';
 			protein = '';
@@ -61,16 +89,17 @@
 	});
 
 	async function quickEstimate() {
-		if (!description.trim()) return;
+		if (!description.trim() && !imageBase64) return;
 		loading = true;
 		error = '';
 		try {
 			const pk = phaseFor(get(currentDay)).key;
-			const d = await aiPost<{ kcal: number; protein: number; fat: number; carbs: number }>({
-				action: 'estimate',
-				description: description.trim(),
-				phase: pk
-			});
+			const payload: Record<string, unknown> = { description: description.trim(), phase: pk };
+			if (imageBase64) payload.image = imageBase64;
+			const d = await api<{ kcal: number; protein: number; fat: number; carbs: number }>(
+				'estimate',
+				payload
+			);
 			mealName = description.trim();
 			kcal = String(Math.round(d.kcal));
 			protein = String(Math.round(d.protein));
@@ -128,10 +157,30 @@
 				placeholder="Describe your meal, e.g.&#10;Grilled chicken, rice, salad"
 				rows="3"
 			></textarea>
+
+			<div class="photo-row">
+				{#if imagePreview}
+					<div class="photo-preview">
+						<img src={imagePreview} alt="Meal photo" />
+						<button class="photo-clear" onclick={clearImage} aria-label="Remove photo">✕</button>
+					</div>
+				{:else}
+					<button class="btn-photo" onclick={() => fileInput.click()}>📷 Add photo</button>
+				{/if}
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept="image/*"
+					capture="environment"
+					onchange={onImagePick}
+					hidden
+				/>
+			</div>
+
 			{#if error}
 				<p class="err">{error}</p>
 			{/if}
-			<button class="btn-primary" onclick={quickEstimate} disabled={loading}>
+			<button class="btn-primary" onclick={quickEstimate} disabled={loading || (!description.trim() && !imageBase64)}>
 				{loading ? 'Estimating…' : 'Estimate macros'}
 			</button>
 			<div class="divider"><span>or</span></div>
@@ -187,6 +236,43 @@
 	.quick textarea:focus, .manual textarea:focus {
 		outline: none;
 		border-color: var(--gold);
+	}
+	.photo-row {
+		margin-top: 8px;
+	}
+	.btn-photo {
+		padding: 8px 14px;
+		border: 1px dashed var(--line);
+		border-radius: 8px;
+		font-size: 0.85rem;
+		color: var(--muted);
+		background: none;
+	}
+	.photo-preview {
+		position: relative;
+		display: inline-block;
+	}
+	.photo-preview img {
+		width: 80px;
+		height: 80px;
+		object-fit: cover;
+		border-radius: 8px;
+		border: 1px solid var(--line);
+	}
+	.photo-clear {
+		position: absolute;
+		top: -6px;
+		right: -6px;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: var(--ink);
+		color: #fff;
+		font-size: 0.7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
 	}
 	.err {
 		font-size: 0.82rem;

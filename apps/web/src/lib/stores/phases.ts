@@ -105,6 +105,15 @@ export function loadPhases() {
 			}
 		})
 		.catch((err) => { console.error('[AEVUM] loadPhases failed:', err.message || err); });
+
+	// Fetch phase transitions for the logged-in user
+	api<{ transitions: PhaseTransition[] }>('phase_transitions')
+		.then((d) => {
+			if (d?.transitions && Array.isArray(d.transitions)) {
+				phaseTransitions.set(d.transitions);
+			}
+		})
+		.catch((err) => { console.error('[AEVUM] loadPhaseTransitions failed:', err.message || err); });
 }
 
 /** Look up a phase by key */

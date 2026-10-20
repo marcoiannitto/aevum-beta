@@ -10,7 +10,7 @@
 	import { profile } from '$lib/stores/auth';
 	import { phaseFor } from '$lib/stores/phases';
 	import { currentDay } from '$lib/stores/day';
-	import { aiPost } from '$lib/api/client';
+	import { api } from '$lib/api/client';
 
 	let {
 		open = false,
@@ -79,7 +79,7 @@
 		checkLoading = true;
 		checkResult = null;
 		try {
-			const d = await aiPost<{ verdict: string; reason: string }>({ action: 'foodcheck', food, phase: pk });
+			const d = await api<{ verdict: string; reason: string }>('foodcheck', { food, phase: pk });
 			checkResult = d;
 			checkCache[cacheKey] = d;
 		} catch {
@@ -117,11 +117,10 @@
 		calcLoading = true;
 		calcResult = null;
 		try {
-			const d = await aiPost<{ kcal: number; protein: number; fat: number; carbs: number }>({
-				action: 'estimate',
-				description: desc,
-				phase: currentPhaseKey()
-			});
+			const d = await api<{ kcal: number; protein: number; fat: number; carbs: number }>(
+				'estimate',
+				{ description: desc, phase: currentPhaseKey() }
+			);
 			calcResult = d;
 		} catch {
 			calcResult = null;
