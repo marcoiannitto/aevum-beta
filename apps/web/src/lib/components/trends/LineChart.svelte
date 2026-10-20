@@ -8,17 +8,26 @@
 		v: number;
 	}
 
+	interface PhaseBand {
+		from: number;
+		to: number;
+		color: string;
+		name: string;
+	}
+
 	let {
 		data = [],
 		unit = 'kg',
 		target = null as number | null,
 		band = null as { center: number; green: number; amber: number } | null,
+		phaseBands = [] as PhaseBand[],
 		height = 160
 	}: {
 		data: DataPoint[];
 		unit?: string;
 		target?: number | null;
 		band?: { center: number; green: number; amber: number } | null;
+		phaseBands?: PhaseBand[];
 		height?: number;
 	} = $props();
 
@@ -148,6 +157,15 @@
 		<!-- X labels -->
 		{#each xLabels as lbl}
 			<text x={lbl.x} y={height - 4} font-size="9" fill="var(--muted)" text-anchor="middle" font-family="sans-serif">{lbl.label}</text>
+		{/each}
+
+		<!-- Phase background bands -->
+		{#each phaseBands as pb}
+			{@const x1 = Math.max(padL, xOf(pb.from))}
+			{@const x2 = Math.min(W - padR, xOf(pb.to))}
+			{#if x2 > x1}
+				<rect x={x1} y={padT} width={x2 - x1} height={chartH} fill={pb.color} opacity="0.07" />
+			{/if}
 		{/each}
 
 		<!-- Band (stabilization) -->

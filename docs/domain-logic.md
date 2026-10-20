@@ -179,6 +179,15 @@ Example (protein, target = 90g):
 
 Compliance checking in `packages/shared/src/compliance.ts`.
 
+### Frontend Trends Compliance (v3.1.0+)
+
+The Trends tab uses rules-based compliance for calorie charts:
+- `ruleFor(phaseKey, 'kcal')` looks up green_lo/green_hi per phase
+- Values are treated as multipliers of the effective target (e.g., 0.9 = 90% of target)
+- Falls back to 0.9/1.1 if no rule found
+- CalorieBars uses amber_lo/amber_hi for bar coloring (falls back to 0.85/1.1)
+- Calorie bank adjustment is added to targets when the phase has `calorie_bank` enabled
+
 ---
 
 ## Config Keys (D1 `config` table)

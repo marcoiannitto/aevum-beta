@@ -6,10 +6,11 @@
 	import { get } from 'svelte/store';
 	import { pid, profile } from '$lib/stores/auth';
 	import { K } from '$lib/stores/auth';
-	import { phaseFor } from '$lib/stores/phases';
+	import { phaseFor, phReg } from '$lib/stores/phases';
 	import { totals, type DayData } from '$lib/stores/day';
-	import { effectiveTarget } from '$lib/stores/calorie';
-	import { totalDays } from '$lib/stores/phases';
+	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
+	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
+	import { ruleFor } from '$lib/stores/rules';
 
 	import LineChart from './LineChart.svelte';
 	import StatRow from './StatRow.svelte';
@@ -19,8 +20,55 @@
 	// Collect series from localStorage
 	interface WPoint { day: number; v: number }
 	interface CalBar { day: number; kcal: number; target: number }
+	interface PhaseBand { from: number; to: number; color: string; name: string }
 
-	const maxDay = $derived(totalDays($profile) || 31);
+	/** Scan localStorage for the highest day number with data */
+	function highestDataDay(): number {
+		if (typeof window === 'undefined') return 0;
+		const id = get(pid);
+		if (!id) return 0;
+		let max = 0;
+		const prefix = `aevum_${id}_day_`;
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.startsWith(prefix)) {
+				const num = parseInt(key.slice(prefix.length), 10);
+				if (!isNaN(num) && num > max) max = num;
+			}
+		}
+		return max;
+	}
+
+	const maxDay = $derived(Math.max(totalDays($profile), highestDataDay()) || 31);
+
+	/** Compute phase bands for chart overlays */
+	const phaseBands = $derived.by((): PhaseBand[] => {
+		const lens = phaseLens($profile);
+		const list = get(phasesList);
+		if (!list.length) return [];
+
+		const bands: PhaseBand[] = [];
+		let cum = 0;
+		for (const ph of list) {
+			const dur = lens[ph.key] ?? 0;
+			if (dur > 0) {
+				bands.push({ from: cum + 1, to: cum + dur, color: ph.color, name: ph.name });
+				cum += dur;
+			}
+		}
+		// Post-program: extend last phase to maxDay
+		if (cum < maxDay) {
+			const currentPh = phaseFor(cum + 1, $profile);
+			const reg = phReg(currentPh.key);
+			bands.push({
+				from: cum + 1,
+				to: maxDay,
+				color: reg?.color ?? currentPh.color,
+				name: reg?.name ?? currentPh.name
+			});
+		}
+		return bands;
+	});
 
 	function collectSeries() {
 		const id = get(pid);
@@ -45,7 +93,10 @@
 
 				const t = totals(dd);
 				if (t.kcal > 0) {
-					calories.push({ day: d, kcal: t.kcal, target: effectiveTarget(d) });
+					const target = effectiveTarget(d);
+					const reg = phReg(phaseFor(d, $profile).key);
+					const bankAdj = reg?.calorie_bank ? calorieBank(d) : 0;
+					calories.push({ day: d, kcal: t.kcal, target: target + bankAdj });
 				}
 			} catch { continue; }
 		}
@@ -68,7 +119,7 @@
 		const first = w[0];
 		const last = w[w.length - 1];
 		const totalChange = last.v - first.v;
-		const targetW = $profile?.target_weight;
+		const targetW = $profile?.target_kg;
 
 		const stats = [
 			{
@@ -126,8 +177,10 @@
 		const c = series.calories;
 		if (!c.length) return null;
 		const within = c.filter(d => {
-			const lo = d.target * 0.9;
-			const hi = d.target * 1.1;
+			const ph = phaseFor(d.day, $profile);
+			const rule = ruleFor(ph.key, 'kcal');
+			const lo = d.target * (rule?.green_lo ?? 0.9);
+			const hi = d.target * (rule?.green_hi ?? 1.1);
 			return d.kcal >= lo && d.kcal <= hi;
 		}).length;
 		return Math.round((within / c.length) * 100);
@@ -168,7 +221,8 @@
 		<LineChart
 			data={series.weight}
 			unit="kg"
-			target={$profile?.target_weight ? +$profile.target_weight : null}
+			target={$profile?.target_kg ? +$profile.target_kg : null}
+			{phaseBands}
 		/>
 	</section>
 
@@ -177,7 +231,7 @@
 		<section class="chart-section">
 			<h3>Waist</h3>
 			<StatRow stats={waistStats} />
-			<LineChart data={series.waist} unit="cm" height={120} />
+			<LineChart data={series.waist} unit="cm" height={120} {phaseBands} />
 		</section>
 	{/if}
 

@@ -3,6 +3,10 @@
   Maps to collectMacroDays + calorie bar rendering from index.html.
 -->
 <script lang="ts">
+	import { phaseFor } from '$lib/stores/phases';
+	import { ruleFor } from '$lib/stores/rules';
+	import { profile } from '$lib/stores/auth';
+
 	interface DayBar {
 		day: number;
 		kcal: number;
@@ -37,8 +41,10 @@
 		const cx = x(i);
 		const kcalH = yH(d.kcal);
 		const targetH = yH(d.target);
-		const overBudget = d.kcal > d.target * 1.1;
-		const underBudget = d.kcal < d.target * 0.85;
+		const ph = phaseFor(d.day, $profile);
+		const rule = ruleFor(ph.key, 'kcal');
+		const overBudget = d.kcal > d.target * (rule?.amber_hi ?? 1.1);
+		const underBudget = d.kcal < d.target * (rule?.amber_lo ?? 0.85);
 		return {
 			cx,
 			kcalH,

@@ -28,7 +28,7 @@
 	let editAct = $state('');
 	let saving = $state(false);
 
-	const APP_VERSION = 'v3.0.0';
+	const APP_VERSION = 'v3.1.0';
 
 	function startEdit() {
 		const p = get(profile);
