@@ -82,20 +82,32 @@ export function effectiveTarget(dayNum: number, p?: UserProfile | null): number 
 	}
 }
 
-/** Calorie bank: rolling average of surplus/deficit over window */
+/** Calorie bank: rolling average of surplus/deficit over window.
+ *  Reads bank config from the current phase (not global config).
+ *  Window is bounded to current phase only (never crosses phase boundaries). */
 export function calorieBank(dayNum: number, windowDays?: number): number {
 	const id = get(pid);
 	if (!id) return 0;
 
 	const prof = get(profile);
-	const win = windowDays ?? cfg('bank_window');
-	const clampLo = cfg('bank_clamp_lo');
-	const clampHi = cfg('bank_clamp_hi');
+	const currentPhase = phaseFor(dayNum, prof);
+	const reg = phReg(currentPhase.key);
+
+	// Read per-phase bank config; fall back to global cfg only if phase has no value
+	const win = windowDays ?? reg?.bank_window ?? cfg('bank_window');
+	const clampLo = reg?.bank_clamp_lo ?? cfg('bank_clamp_lo');
+	const clampHi = reg?.bank_clamp_hi ?? cfg('bank_clamp_hi');
+
+	if (win <= 0) return 0;
 
 	let sum = 0;
 	let count = 0;
 
 	for (let d = Math.max(1, dayNum - win); d < dayNum; d++) {
+		// Only include days that belong to the SAME phase
+		const dayPhase = phaseFor(d, prof);
+		if (dayPhase.key !== currentPhase.key) continue;
+
 		try {
 			const raw = localStorage.getItem(K(id, `day_${d}`));
 			if (!raw) continue;

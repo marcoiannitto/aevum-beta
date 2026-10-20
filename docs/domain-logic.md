@@ -117,7 +117,7 @@ Key differences by phase:
 - **Recomposition**: 90% TDEE, calorie bank enabled, higher protein
 
 ### Known Issues
-- Water rendering not fully wired to rules table in V3
+- ~~Water rendering not fully wired to rules table in V3~~ FIXED: WaterTracker reads `ruleFor(phase, 'water')`. Migration 0017 seeds flat 2.5L for all phases; recomp uses 0.04 L/kg (pre-scaled by backend).
 - No rule validation on save (can create contradictory bands)
 - Linear scan, no indexing (fine at current scale, ~30 rows)
 
@@ -154,9 +154,10 @@ Located in `apps/web/src/lib/stores/calorie.ts`. Switch on calorie_mode:
 
 ### Calorie Bank
 When `calorie_bank = 1` on a phase:
-- Unused calories (target minus consumed) roll to next day
-- Bank has a cap (configurable)
-- Enables flexible daily intake while hitting weekly average
+- Rolling average of surplus/deficit over `bank_window` days (per-phase, from `phases` table)
+- Clamped by `bank_clamp_lo`/`bank_clamp_hi` (per-phase, from `phases` table)
+- Window is bounded to current phase only (never crosses phase boundaries)
+- Falls back to global `cfg()` defaults only if phase has no value set
 
 ### Known Issues
 - `effectiveTarget()` switch handles modes that don't match DB column values (`mifflin`, `stab_tdee`, `stab_target`, `cut`, `ramp`, `adaptive` vs DB's `tdee_mult`, `ramp_then_hold`, `fixed`, `none`)

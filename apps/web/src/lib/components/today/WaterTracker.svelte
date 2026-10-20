@@ -3,20 +3,27 @@
   Maps to .water-block / renderWater() from index.html.
 -->
 <script lang="ts">
-	import { profile } from '$lib/stores/auth';
-	import { dayData, saveDay } from '$lib/stores/day';
-	import { cfg, cfgd } from '$lib/stores/config';
+	import { dayData, saveDay, currentDay } from '$lib/stores/day';
+	import { cfg } from '$lib/stores/config';
+	import { phaseFor } from '$lib/stores/phases';
+	import { ruleFor } from '$lib/stores/rules';
 
 	const GLASS_ML = $derived(cfg('glass_ml'));
 	const glasses = $derived($dayData?.water ?? 0);
 	const litres = $derived(glasses * GLASS_ML / 1000);
 
 	function waterGoalL(): number {
-		const w = $profile && +($profile as any).weight;
-		if (w && w > 0) {
-			const raw = w * cfgd('water_ml_per_kg', 30) / 1000;
-			return Math.round(raw * 10) / 10;
+		const pk = phaseFor($currentDay).key;
+		const rule = ruleFor(pk, 'water');
+
+		if (rule && rule.target != null && rule.target > 0) {
+			// Backend already scales per_kg_target_weight rules.
+			// Fixed rules return the value as-is.
+			// Round to 1 decimal for display.
+			return Math.round(rule.target * 10) / 10;
 		}
+
+		// Fallback: 2.5L (should not hit once migration 0017 runs)
 		return 2.5;
 	}
 

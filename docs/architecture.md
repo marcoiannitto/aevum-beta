@@ -84,7 +84,7 @@ aevum-beta/
 │   └── backup-d1.yml           # Daily D1 backup (2am UTC)
 ├── v2-api/
 │   ├── src/index.js            # Entire backend (single Worker file)
-│   ├── migrations/             # D1 migration files (0001-0016)
+│   ├── migrations/             # D1 migration files (0001-0017)
 │   └── wrangler.toml           # Worker config + D1 binding
 ├── meal-planner/               # Standalone recipe scaler (local JSON, no API)
 ├── fitness/                    # Exercise demo videos (.mp4)
@@ -150,6 +150,7 @@ aevum-beta/
 | `0014_phase_transitions.sql` | Phase transitions table | Applied |
 | `0015_orders.sql` | Orders table | Applied |
 | `0016_user_config.sql` | Per-user config overrides | Applied |
+| `0017_water_rules_all_phases.sql` | Seed flat 2.5L water rules for all phases (recomp already has 0.04 L/kg) | Pending |
 
 ---
 
