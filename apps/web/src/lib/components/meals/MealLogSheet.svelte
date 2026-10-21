@@ -106,8 +106,10 @@
 			fat = String(Math.round(d.fat));
 			carbs = String(Math.round(d.carbs));
 			mode = 'manual'; // switch to manual to let user review/edit
-		} catch {
-			error = 'Could not estimate. Try manual entry.';
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			console.error('[AEVUM] quickEstimate failed:', msg);
+			error = msg && msg !== 'undefined' ? msg : 'Could not estimate. Try manual entry.';
 		}
 		loading = false;
 	}

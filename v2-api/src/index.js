@@ -1097,17 +1097,26 @@ async function estimateMeal(userId, body, db, env) {
   const workerBody = { action: 'estimate', phase, description: body.description || '', policy };
   if (body.image) workerBody.image = body.image;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(workerBody)
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workerBody)
+    });
+  } catch (fetchErr) {
+    return { error: 'AI worker unreachable: ' + String(fetchErr.message || fetchErr) };
+  }
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    return { error: 'AI worker HTTP ' + res.status + (errText ? ': ' + errText.slice(0, 200) : '') };
+  }
   try {
     const data = await res.json();
     if (data.error) return { error: data.error, detail: data.detail || '' };
     return data;
   } catch {
-    return { error: 'worker parse error' };
+    return { error: 'AI worker returned invalid JSON' };
   }
 }
 
