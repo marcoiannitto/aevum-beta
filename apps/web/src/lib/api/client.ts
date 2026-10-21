@@ -97,8 +97,6 @@ export async function aiPost<T = unknown>(
 	const t = setTimeout(() => ctl.abort(), timeout);
 
 	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-	const tok = get(token);
-	if (tok) headers['Authorization'] = `Bearer ${tok}`;
 
 	try {
 		const res = await fetch(url, {

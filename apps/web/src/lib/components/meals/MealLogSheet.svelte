@@ -8,7 +8,7 @@
 	import { dayData, saveDay } from '$lib/stores/day';
 	import { currentDay } from '$lib/stores/day';
 	import { phaseFor } from '$lib/stores/phases';
-	import { api } from '$lib/api/client';
+	import { api, aiPost } from '$lib/api/client';
 
 	let {
 		open = false,
@@ -96,9 +96,8 @@
 			const pk = phaseFor(get(currentDay)).key;
 			const payload: Record<string, unknown> = { description: description.trim(), phase: pk };
 			if (imageBase64) payload.image = imageBase64;
-			const d = await api<{ kcal: number; protein: number; fat: number; carbs: number }>(
-				'estimate',
-				payload
+			const d = await aiPost<{ kcal: number; protein: number; fat: number; carbs: number }>(
+				{ action: 'estimate', ...payload }
 			);
 			mealName = description.trim();
 			kcal = String(Math.round(d.kcal));
