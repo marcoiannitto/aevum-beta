@@ -23,6 +23,7 @@
 
 	// Calorie bar logic
 	let showBar = $derived.by(() => {
+		void $phases; // track phase registry updates (fix #35b)
 		const calMode = reg?.calorie_mode;
 		const tMode = reg?.target_mode || 'none';
 		return calMode === 'bar' || tMode === 'tdee_mult' || tMode === 'ramp_then_hold' || isMacroAct;
@@ -31,6 +32,7 @@
 	let hasBank = $derived(!!(reg && +(reg.bank_window || 0)));
 
 	let target = $derived.by(() => {
+		void $phases; // track phase registry updates (fix #35b)
 		if (isMacroAct) {
 			const kr = ruleFor('activation', 'kcal');
 			return (kr && kr.target) ? kr.target : 650;
