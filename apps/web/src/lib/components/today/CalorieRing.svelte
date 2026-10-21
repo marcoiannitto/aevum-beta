@@ -2,12 +2,13 @@
 	import { profile } from '$lib/stores/auth';
 	import { currentDay, dayData, totals as calcTotals } from '$lib/stores/day';
 	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
-	import { phaseFor, phReg } from '$lib/stores/phases';
+	import { phases, phaseFor, phReg } from '$lib/stores/phases';
 
-	const ph = $derived(phaseFor($currentDay, $profile));
-	const reg = $derived(phReg(ph.key));
+	// Subscribe to $phases so Svelte 5 re-runs deriveds when phase registry updates (fix #35)
+	const ph = $derived(($phases, phaseFor($currentDay, $profile)));
+	const reg = $derived(($phases, phReg(ph.key)));
 	const t = $derived($dayData ? calcTotals($dayData) : { kcal: 0, protein: 0, fat: 0, carbs: 0, exKcal: 0 });
-	const target = $derived(effectiveTarget($currentDay, $profile));
+	const target = $derived(($phases, effectiveTarget($currentDay, $profile)));
 	const bank = $derived(reg?.calorie_bank ? calorieBank($currentDay) : 0);
 	const adjusted = $derived(target + bank);
 	const pct = $derived(adjusted > 0 ? Math.min(t.kcal / adjusted, 1.5) : 0);

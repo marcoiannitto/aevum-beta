@@ -6,7 +6,7 @@
 	import { get } from 'svelte/store';
 	import { profile } from '$lib/stores/auth';
 	import { currentDay, dayData, totals as calcTotals } from '$lib/stores/day';
-	import { phaseFor, phReg, ruleParent } from '$lib/stores/phases';
+	import { phases, phaseFor, phReg, ruleParent } from '$lib/stores/phases';
 	import { ruleFor, bandClass, actMacros } from '$lib/stores/rules';
 	import { effectiveTarget, calorieBank, mifflin } from '$lib/stores/calorie';
 	import MacroGates from './MacroGates.svelte';
@@ -14,8 +14,9 @@
 
 	let day = $derived($dayData);
 	let t = $derived(day ? calcTotals(day) : { kcal: 0, protein: 0, fat: 0, carbs: 0, exKcal: 0 });
-	let phase = $derived(phaseFor($currentDay, $profile));
-	let reg = $derived(phReg(phase.key));
+	// Subscribe to $phases so Svelte 5 re-runs deriveds when phase registry updates (fix #35)
+	let phase = $derived(($phases, phaseFor($currentDay, $profile)));
+	let reg = $derived(($phases, phReg(phase.key)));
 	let isMacroAct = $derived(
 		(reg ? reg.use_buckets : (phase.key === 'activation' || phase.key === 'transition')) && actMacros()
 	);

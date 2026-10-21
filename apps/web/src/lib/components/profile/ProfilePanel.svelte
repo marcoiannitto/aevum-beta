@@ -58,10 +58,12 @@
 			act: editAct
 		};
 		try {
-			await api('update_profile', fields);
+			const resp = await api<{ user?: Record<string, unknown> }>('update_profile', fields);
 			const p = get(profile);
 			if (p) {
-				saveProfile({ ...p, ...fields } as UserProfile);
+				// Merge server-recalculated values (e.g. current_target_kcal) over local fields (fix #34)
+				const serverFields = resp?.user ?? {};
+				saveProfile({ ...p, ...fields, ...serverFields } as UserProfile);
 			}
 			editing = false;
 		} catch { /* noop */ }

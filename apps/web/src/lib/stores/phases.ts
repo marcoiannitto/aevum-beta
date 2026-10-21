@@ -55,6 +55,8 @@ export const phasesList = writable<PhaseConfig[]>([]);
 export const phaseTransitions = writable<PhaseTransition[]>([]);
 
 const CACHE_KEY = 'aevum_phases_cache';
+const CACHE_VER_KEY = 'aevum_phases_cache_v';
+const CACHE_VERSION = 2; // bump when phases schema changes (fix #32)
 
 function applyPhases(arr: PhaseConfig[]) {
 	const map: Record<string, PhaseConfig> = {};
@@ -89,11 +91,16 @@ function applyPhases(arr: PhaseConfig[]) {
 }
 
 export function loadPhases() {
-	// Load from cache first
+	// Load from cache first — skip if cache version is stale (fix #32)
 	if (typeof window !== 'undefined') {
-		const c = localStorage.getItem(CACHE_KEY);
-		if (c) {
-			try { applyPhases(JSON.parse(c)); } catch { /* noop */ }
+		const ver = localStorage.getItem(CACHE_VER_KEY);
+		if (ver !== String(CACHE_VERSION)) {
+			localStorage.removeItem(CACHE_KEY);
+		} else {
+			const c = localStorage.getItem(CACHE_KEY);
+			if (c) {
+				try { applyPhases(JSON.parse(c)); } catch { /* noop */ }
+			}
 		}
 	}
 
@@ -101,6 +108,7 @@ export function loadPhases() {
 		.then((d) => {
 			if (d?.phases && Array.isArray(d.phases)) {
 				localStorage.setItem(CACHE_KEY, JSON.stringify(d.phases));
+				localStorage.setItem(CACHE_VER_KEY, String(CACHE_VERSION));
 				applyPhases(d.phases);
 			}
 		})

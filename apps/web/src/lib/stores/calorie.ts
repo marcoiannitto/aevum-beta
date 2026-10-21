@@ -112,6 +112,15 @@ export function effectiveTarget(dayNum: number, p?: UserProfile | null): number 
 		}
 		case 'tdee_mult':
 			return Math.round(liveTDEE(dayNum, prof) * (reg.calorie_cut ?? 1));
+		case 'ramp_then_hold': {
+			const from = reg.ramp_from ?? liveTDEE(dayNum, prof);
+			const to = liveTDEE(dayNum, prof);
+			const rampDays = reg.ramp_days ?? 14;
+			const pct = Math.min(dayNum / rampDays, 1);
+			const ramped = Math.round(from + (to - from) * pct);
+			// After ramp completes, hold at TDEE * calorie_cut
+			return pct >= 1 ? Math.round(to * (reg.calorie_cut ?? 1)) : ramped;
+		}
 		case 'adaptive':
 			return prof.current_target_kcal ?? mifflin(prof);
 		default:

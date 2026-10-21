@@ -6,10 +6,13 @@
 	import { get } from 'svelte/store';
 	import { pid, profile } from '$lib/stores/auth';
 	import { K } from '$lib/stores/auth';
-	import { phaseFor, phReg } from '$lib/stores/phases';
+	import { phases, phaseFor, phReg } from '$lib/stores/phases';
 	import { totals, type DayData } from '$lib/stores/day';
 	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
 	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
+
+	// Touch $phases to track phase registry updates for reactivity (fix #35)
+	$effect(() => { void $phases; });
 	import { ruleFor } from '$lib/stores/rules';
 
 	import LineChart from './LineChart.svelte';
