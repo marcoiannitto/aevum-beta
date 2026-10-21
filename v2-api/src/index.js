@@ -193,6 +193,7 @@ export default {
         case 'rules':      return json(await getRules(userId, db), cors);
         case 'config':     return json(await getConfig(db), cors);
         case 'phases':     return json(await getPhases(db), cors);
+        case 'phase_transitions': return json(await getPhaseTransitions(userId, db), cors);
         case 'messages':   return json(await getMessages(db), cors);
         case 'recipes':    return json(await getRecipes(db), cors);
         case 'fitness':    return json(await getFitness(db), cors);
@@ -509,6 +510,13 @@ async function getConfig(db) {
 async function getPhases(db) {
   const rows = await db.prepare('SELECT * FROM phases ORDER BY sort_order').all();
   return { phases: rows.results };
+}
+
+async function getPhaseTransitions(userId, db) {
+  const rows = await db.prepare(
+    'SELECT id, from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY day ASC'
+  ).bind(userId).all();
+  return { transitions: rows.results };
 }
 
 // ─── Messages ────────────────────────────────────────────────
