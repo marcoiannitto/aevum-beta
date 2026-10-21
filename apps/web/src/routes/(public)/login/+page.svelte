@@ -15,7 +15,7 @@
 	// Free user registration
 	let freeName = $state('');
 	let freeSex = $state('M');
-	let freeAge = $state('');
+	let freeDob = $state('');
 	let freeHeight = $state('');
 	let freeWeight = $state('');
 	let freeAct = $state('moderate');
@@ -151,7 +151,7 @@
 	}
 
 	async function handleFreeRegister() {
-		if (!freeName.trim() || !freeAge || !freeHeight || !freeWeight) {
+		if (!freeName.trim() || !freeDob || !freeHeight || !freeWeight) {
 			error = 'Fill all fields';
 			return;
 		}
@@ -168,7 +168,7 @@
 			}>('register', {
 				name: freeName.trim(),
 				sex: freeSex,
-				age: +freeAge,
+				dob: freeDob,
 				height: +freeHeight,
 				weight: +freeWeight,
 				act: freeAct
@@ -183,7 +183,7 @@
 			const prof: UserProfile = {
 				name: freeName.trim(),
 				sex: freeSex,
-				age: +freeAge,
+				dob: freeDob,
 				height: +freeHeight,
 				weight: +freeWeight,
 				act: freeAct,
@@ -288,8 +288,8 @@
 					</select>
 				</label>
 				<label class="field half">
-					<span>Age</span>
-					<input type="number" bind:value={freeAge} placeholder="30" />
+					<span>Date of birth</span>
+					<input type="date" bind:value={freeDob} />
 				</label>
 			</div>
 

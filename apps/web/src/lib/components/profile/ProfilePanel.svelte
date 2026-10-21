@@ -8,6 +8,7 @@
 	import { profile, pid, isProgram, saveProfile, type UserProfile } from '$lib/stores/auth';
 	import { logoutAndReset } from '$lib/stores/reset';
 	import { api } from '$lib/api/client';
+	import { actLabels, actFactors } from '$lib/stores/config';
 
 	let {
 		open = false,
@@ -74,6 +75,27 @@
 		return Math.floor(diff / 31557600000);
 	}
 
+	/** Map stored activity value (numeric factor or string label) to display label */
+	function activityLabel(act: string | number | undefined): string {
+		if (!act) return '—';
+		const labels = actLabels();
+		const factors = actFactors();
+		// If stored as string label, find it directly
+		const str = String(act).toLowerCase();
+		const labelIdx = labels.findIndex(l => l.toLowerCase() === str);
+		if (labelIdx >= 0) return labels[labelIdx];
+		// If stored as numeric factor, find closest match
+		const n = parseFloat(String(act));
+		if (!isNaN(n)) {
+			let best = 0;
+			for (let i = 1; i < factors.length; i++) {
+				if (Math.abs(factors[i] - n) < Math.abs(factors[best] - n)) best = i;
+			}
+			return labels[best] || String(act);
+		}
+		return String(act);
+	}
+
 	function doLogout() {
 		logoutAndReset();
 		onClose();
@@ -116,7 +138,7 @@
 						{#if $profile.target_kg}
 							<div class="stat-row"><span class="stat-label">Target</span><span class="stat-val">{$profile.target_kg} kg</span></div>
 						{/if}
-						<div class="stat-row"><span class="stat-label">Activity</span><span class="stat-val">{$profile.act || '—'}</span></div>
+						<div class="stat-row"><span class="stat-label">Activity</span><span class="stat-val">{activityLabel($profile.act)}</span></div>
 					</div>
 
 					<button class="btn-edit" onclick={startEdit}>Edit profile</button>

@@ -25,7 +25,7 @@ function resolveActivityFactor(act: string | number | undefined): number {
 
 /** Mifflin-St Jeor TDEE — delegates to @aevum/shared */
 export function mifflin(p: UserProfile): number {
-	const age = p.age ?? (p.dob ? dobToAge(p.dob) : 30);
+	const age = p.dob ? dobToAge(p.dob) : (p.age ?? 30);
 	const sex: 'm' | 'f' = (p.sex || 'm').toLowerCase() as 'm' | 'f';
 	const factor = resolveActivityFactor(p.act);
 	return mifflinTDEE(p.weight, p.height, age, sex, factor);

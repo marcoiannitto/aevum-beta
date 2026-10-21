@@ -134,7 +134,7 @@
 			day.meals.push(entry);
 		}
 
-		dayData.set(day);
+		dayData.set({ ...day });
 		saveDay(true);
 		onClose();
 	}
@@ -144,7 +144,7 @@
 		const day = get(dayData);
 		if (!day?.meals?.[editIndex]) return;
 		day.meals.splice(editIndex, 1);
-		dayData.set(day);
+		dayData.set({ ...day });
 		saveDay(true);
 		onClose();
 	}
@@ -172,7 +172,6 @@
 					bind:this={fileInput}
 					type="file"
 					accept="image/*"
-					capture="environment"
 					onchange={onImagePick}
 					hidden
 				/>

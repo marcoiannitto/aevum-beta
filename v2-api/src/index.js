@@ -225,6 +225,36 @@ function dobToAge(dob) {
   return (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) ? a - 1 : a;
 }
 
+const ACT_DEFAULTS = {
+  labels: ['sedentary', 'light', 'moderate', 'active', 'extra'],
+  factors: [1.2, 1.375, 1.55, 1.725, 1.9]
+};
+
+/** Resolve activity input to numeric factor.
+ *  Accepts numeric string ("1.725") or label ("moderate").
+ *  Reads act_labels/activity_factors from config DB; falls back to defaults. */
+async function resolveActivity(actInput, db) {
+  const n = parseFloat(actInput);
+  if (!isNaN(n) && n > 0 && n < 10) return n; // already numeric
+
+  // Read label/factor mapping from config
+  let labels = ACT_DEFAULTS.labels;
+  let factors = ACT_DEFAULTS.factors;
+  try {
+    const rows = await db.prepare(
+      "SELECT key, value FROM config WHERE key IN ('act_labels', 'activity_factors')"
+    ).all();
+    for (const r of rows.results || []) {
+      if (r.key === 'act_labels') labels = r.value.split(',').map(s => s.trim().toLowerCase());
+      if (r.key === 'activity_factors') factors = r.value.split(',').map(Number);
+    }
+  } catch { /* use defaults */ }
+
+  const label = String(actInput || '').trim().toLowerCase();
+  const idx = labels.findIndex(l => l === label);
+  return factors[idx >= 0 ? idx : 2] ?? 1.55;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // ROUTE HANDLERS
 // ═══════════════════════════════════════════════════════════════
@@ -239,7 +269,7 @@ async function doRegister(body, db) {
   const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
-  const act = parseFloat(body.act) || 1.55;
+  const act = await resolveActivity(body.act, db);
   const target_kg = parseFloat(body.target_kg) || null;
   if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
@@ -351,7 +381,7 @@ async function completeProfile(userId, body, db) {
   const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
-  const act = parseFloat(body.act) || 1.55;
+  const act = await resolveActivity(body.act, db);
   const target_kg = parseFloat(body.target_kg) || null;
   if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
@@ -381,7 +411,8 @@ async function updateProfile(userId, body, db) {
         sets.push('dob = ?'); vals.push(body.dob);
         sets.push('age = ?'); vals.push(dobToAge(body.dob));
       } else if (key === 'act') {
-        sets.push('activity = ?'); vals.push(parseFloat(body.act));
+        const actFactor = await resolveActivity(body.act, db);
+        sets.push('activity = ?'); vals.push(actFactor);
       } else if (key === 'height') {
         sets.push('height = ?'); vals.push(parseFloat(body.height));
       } else if (key === 'target_kg') {
