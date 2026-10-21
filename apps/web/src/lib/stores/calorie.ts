@@ -23,12 +23,47 @@ function resolveActivityFactor(act: string | number | undefined): number {
 	return factors[idx >= 0 ? idx : 2] ?? 1.55;
 }
 
-/** Mifflin-St Jeor TDEE — delegates to @aevum/shared */
+/** Mifflin-St Jeor TDEE — delegates to @aevum/shared.
+ *  Uses profile.weight (start_weight). For current-weight TDEE, use liveTDEE(). */
 export function mifflin(p: UserProfile): number {
 	const age = p.dob ? dobToAge(p.dob) : (p.age ?? 30);
 	const sex: 'm' | 'f' = (p.sex || 'm').toLowerCase() as 'm' | 'f';
 	const factor = resolveActivityFactor(p.act);
 	return mifflinTDEE(p.weight, p.height, age, sex, factor);
+}
+
+/** Rolling average weight from daily weigh-ins in localStorage.
+ *  Falls back to profile.weight (start_weight) if no weigh-ins found. */
+export function rollingWeight(dayNum: number, prof?: UserProfile | null, windowDays?: number): number {
+	const p = prof ?? get(profile);
+	if (!p) return 0;
+	const id = get(pid);
+	if (!id) return p.weight;
+
+	const win = windowDays ?? cfg('drift_review_days');
+	let sum = 0;
+	let count = 0;
+
+	for (let d = Math.max(1, dayNum - win + 1); d <= dayNum; d++) {
+		try {
+			const raw = localStorage.getItem(K(id, `day_${d}`));
+			if (!raw) continue;
+			const dd = JSON.parse(raw) as DayData;
+			const w = parseFloat(dd.weight);
+			if (w > 0) { sum += w; count++; }
+		} catch { continue; }
+	}
+
+	return count > 0 ? sum / count : p.weight;
+}
+
+/** Live TDEE using rolling average weight instead of start_weight */
+export function liveTDEE(dayNum: number, prof?: UserProfile | null): number {
+	const p = prof ?? get(profile);
+	if (!p) return 0;
+	const w = rollingWeight(dayNum, p);
+	const clone = { ...p, weight: w };
+	return mifflin(clone);
 }
 
 /** Stabilization TDEE (maintenance weight-based) */
@@ -65,16 +100,18 @@ export function effectiveTarget(dayNum: number, p?: UserProfile | null): number 
 		case 'stab_target':
 			return stabTargetKcal(prof);
 		case 'cut': {
-			const base = mifflin(prof);
+			const base = liveTDEE(dayNum, prof);
 			return Math.round(base - (reg.calorie_cut ?? 0));
 		}
 		case 'ramp': {
-			const from = reg.ramp_from ?? mifflin(prof);
-			const to = mifflin(prof);
+			const from = reg.ramp_from ?? liveTDEE(dayNum, prof);
+			const to = liveTDEE(dayNum, prof);
 			const rampDays = reg.ramp_days ?? 14;
 			const pct = Math.min(dayNum / rampDays, 1);
 			return Math.round(from + (to - from) * pct);
 		}
+		case 'tdee_mult':
+			return Math.round(liveTDEE(dayNum, prof) * (reg.calorie_cut ?? 1));
 		case 'adaptive':
 			return prof.current_target_kcal ?? mifflin(prof);
 		default:

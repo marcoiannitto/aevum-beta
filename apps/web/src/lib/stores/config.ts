@@ -23,7 +23,7 @@ export const DEFAULTS: Record<string, number | string> = {
 	water_ml_per_kg: 30,
 	stab_buffer_kcal: 200,
 	activity_factors: '1.2,1.375,1.55,1.725,1.9',
-	act_labels: 'Sedentary,Lightly Active,Moderately Active,Very Active,Extra Active'
+	act_labels: 'No exercise,1-3 days/week,3-5 days/week,6-7 days/week,Athlete / physical job + training'
 };
 
 const CACHE_KEY = 'aevum_config_cache';

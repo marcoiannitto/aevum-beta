@@ -1,7 +1,7 @@
 # AEVUM Domain Logic
 
 > Single source of truth for phase model, rules engine, calorie logic, compliance, and data shapes.
-> Updated 2026-10-20.
+> Updated 2026-10-21.
 
 ---
 
@@ -135,22 +135,30 @@ TDEE = BMR * activity_factor
 
 - `sex_offset`: male = +5, female = -161
 - `sex` comparison: lowercase `'m'` or `'f'` (V2 bug used uppercase `'F'`)
-- `activity_factor`: numeric (1.2 sedentary, 1.375 light, 1.55 moderate, 1.725 active, 1.9 very active)
+- `activity_factor`: numeric (1.2 no exercise, 1.375 1-3 days/week, 1.55 3-5 days/week, 1.725 6-7 days/week, 1.9 athlete/physical job)
 
-### Calorie Target Modes (`calorie_mode` on `phases` table)
+### Weight for TDEE
+- `mifflin(prof)`: uses `profile.weight` (start_weight from DB). Used for registration, stabilization.
+- `liveTDEE(dayNum, prof)`: uses `rollingWeight()`, a 7-day average of daily weigh-ins from localStorage. Falls back to start_weight if no weigh-ins. Used for `cut`, `ramp`, `tdee_mult` modes.
+- `rollingWeight(dayNum, prof, windowDays?)`: reads `DayData.weight` from localStorage for `drift_review_days` (default 7) days back.
+
+### Calorie Target Modes (`target_mode` on `phases` table)
 | Mode | Logic |
 |---|---|
-| `none` | No target (loading, activation, transition, stabilization) |
-| `tdee_mult` | TDEE * calorie_cut (maintenance: *0.95, recomposition: *0.90) |
-| `fixed` | Use `current_target_kcal` from user profile directly |
-| `ramp_then_hold` | Planned, not implemented |
+| `mifflin` | Raw TDEE from start_weight |
+| `stab_tdee` | TDEE at stabilization target weight |
+| `stab_target` | stab TDEE + buffer |
+| `cut` | liveTDEE (rolling weight) minus calorie_cut (absolute kcal) |
+| `ramp` | Linear ramp from ramp_from to liveTDEE over ramp_days |
+| `tdee_mult` | liveTDEE (rolling weight) * calorie_cut (e.g. 0.9 = 10% deficit) |
+| `adaptive` | Uses current_target_kcal from backend (drift-adjusted) |
+| default | current_target_kcal or need or mifflin fallback |
 
 ### Effective Target (`effectiveTarget()`)
-Located in `apps/web/src/lib/stores/calorie.ts`. Switch on calorie_mode:
-1. Look up phase's `calorie_mode`
-2. If `tdee_mult`: compute TDEE, multiply by `calorie_cut`
-3. If `fixed`: use `profile.current_target_kcal`
-4. Apply calorie bank adjustments if enabled
+Located in `apps/web/src/lib/stores/calorie.ts`. Switch on `target_mode`:
+1. Look up phase via `phaseFor(dayNum)`, get `phReg(key)`
+2. Switch on `reg.target_mode` (see table above)
+3. Calorie bank adjustments applied separately if enabled
 
 ### Calorie Bank
 When `calorie_bank = 1` on a phase:
@@ -160,8 +168,8 @@ When `calorie_bank = 1` on a phase:
 - Falls back to global `cfg()` defaults only if phase has no value set
 
 ### Known Issues
-- `effectiveTarget()` switch handles modes that don't match DB column values (`mifflin`, `stab_tdee`, `stab_target`, `cut`, `ramp`, `adaptive` vs DB's `tdee_mult`, `ramp_then_hold`, `fixed`, `none`)
-- Adding a new mode means editing the switch + hoping the string matches
+- Adding a new target_mode means editing the effectiveTarget() switch
+- Drift review (adaptive target adjustment based on weight trend) not yet ported from V1 to V3
 
 ---
 

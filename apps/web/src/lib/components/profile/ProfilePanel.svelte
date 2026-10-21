@@ -154,11 +154,9 @@
 						<label class="field"><span>Target weight (kg)</span><input type="number" bind:value={editTarget} /></label>
 						<label class="field"><span>Activity level</span>
 							<select bind:value={editAct}>
-								<option value="sedentary">Sedentary</option>
-								<option value="light">Light</option>
-								<option value="moderate">Moderate</option>
-								<option value="active">Very Active</option>
-								<option value="extra">Extra Active</option>
+								{#each actLabels() as label, i}
+									<option value={String(actFactors()[i])}>{label}</option>
+								{/each}
 							</select>
 						</label>
 						<div class="edit-actions">
