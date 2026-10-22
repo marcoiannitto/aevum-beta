@@ -25,7 +25,7 @@ let _loadPromise: Promise<void> | null = null;
 export function loadPrograms(): Promise<void> {
   if (_loadPromise) return _loadPromise;
 
-  _loadPromise = api<{ programs: Program[] }>('programs', {}, { contentType: 'text/plain;charset=utf-8' })
+  _loadPromise = api<{ programs: Program[] }>('programs', {}, { noAuth: true })
     .then((d) => {
       if (d?.programs && Array.isArray(d.programs)) {
         programs.set(d.programs);

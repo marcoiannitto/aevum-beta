@@ -119,6 +119,8 @@ app.post('/', async (c) => {
       return c.json(await authGoogle(body, db, env));
     case 'login':
       return c.json(await doLogin(body, db));
+    case 'programs':
+      return c.json(await getPrograms(db));
   }
 
   // ── Auth required from here — use shared auth logic ────────
@@ -219,8 +221,6 @@ app.post('/', async (c) => {
       return c.json(await getPhases(db));
     case 'phase_transitions':
       return c.json(await getPhaseTransitions(userId, db));
-    case 'programs':
-      return c.json(await getPrograms(db));
     case 'set_program':
       return c.json(await setProgram(userId, body, db));
     case 'messages':
