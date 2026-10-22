@@ -136,7 +136,7 @@
 			{
 				label: 'Change',
 				value: `${totalChange > 0 ? '+' : ''}${totalChange.toFixed(1)} kg`,
-				delta: totalChange > 0 ? '▲' : totalChange < 0 ? '▼' : '—',
+				delta: `${totalChange > 0 ? '▲' : totalChange < 0 ? '▼' : '—'} ${Math.abs(totalChange).toFixed(1)} kg total`,
 				deltaClass: (totalChange < 0 ? 'down' : totalChange > 0 ? 'up' : 'flat') as 'up' | 'down' | 'flat'
 			}
 		];
@@ -145,8 +145,8 @@
 			const remaining = last.v - +targetW;
 			stats.push({
 				label: 'To target',
-				value: `${remaining > 0 ? '' : '+'}${Math.abs(remaining).toFixed(1)} kg`,
-				delta: remaining > 0 ? `${remaining.toFixed(1)} to go` : 'Reached!',
+				value: `${Math.abs(remaining).toFixed(1)} kg`,
+				delta: remaining > 0 ? `${remaining.toFixed(1)} kg to go` : 'Target reached!',
 				deltaClass: (remaining <= 0 ? 'down' : 'flat') as 'up' | 'down' | 'flat'
 			});
 		}
@@ -169,7 +169,7 @@
 			{
 				label: 'Change',
 				value: `${change > 0 ? '+' : ''}${change.toFixed(1)} cm`,
-				delta: change > 0 ? '▲' : change < 0 ? '▼' : '—',
+				delta: `${change > 0 ? '▲' : change < 0 ? '▼' : '—'} ${Math.abs(change).toFixed(1)} cm total`,
 				deltaClass: (change < 0 ? 'down' : change > 0 ? 'up' : 'flat') as 'up' | 'down' | 'flat'
 			}
 		];

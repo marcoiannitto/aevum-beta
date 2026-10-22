@@ -40,6 +40,7 @@
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
+| #41  | Trends stat row: V2 hero card  | OPEN        | Rebuild StatRow.svelte to V2 single-card + chips pattern |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
