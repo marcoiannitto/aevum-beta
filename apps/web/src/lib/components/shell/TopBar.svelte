@@ -3,9 +3,10 @@
   Maps to .topbar / .daybar / .phasebar from index.html.
 -->
 <script lang="ts">
-	import { profile } from '$lib/stores/auth';
-	import { currentDay, dayData } from '$lib/stores/day';
+	import { profile, isProgram } from '$lib/stores/auth';
+	import { currentDay, currentDate, dayData } from '$lib/stores/day';
 	import { phaseFor, phasesList, phaseLens } from '$lib/stores/phases';
+	import { fmtShort, effToday } from '$lib/helpers/date';
 	import { get } from 'svelte/store';
 
 	interface Props {
@@ -14,13 +15,15 @@
 		onPrevDay?: () => void;
 		onNextDay?: () => void;
 		onGoToday?: () => void;
-		todayDayNum?: number;
 	}
 
-	let { onOpenProfile, onOpenFoodHub, onPrevDay, onNextDay, onGoToday, todayDayNum = 1 }: Props = $props();
+	let { onOpenProfile, onOpenFoodHub, onPrevDay, onNextDay, onGoToday }: Props = $props();
 
-	let phase = $derived(phaseFor($currentDay, $profile));
-	let isToday = $derived($currentDay === todayDayNum);
+	let dayNum = $derived($currentDay);
+	let phase = $derived(phaseFor(dayNum, $profile));
+	let isToday = $derived(
+		$currentDate.toDateString() === effToday().toDateString()
+	);
 
 	// Phase bar segments
 	let segments = $derived.by(() => {
@@ -53,8 +56,11 @@
 	<div class="daybar">
 		<button class="arrow" onclick={onPrevDay} aria-label="Previous day">‹</button>
 		<div class="center">
-			<div class="dnum">Day {$currentDay}</div>
-			<button class="phase tappable" style="color:{phase.color}">{phase.name}</button>
+			<div class="dnum">{fmtShort($currentDate)}</div>
+			{#if $isProgram && dayNum > 0}
+				<div class="dday">Day {dayNum}</div>
+				<button class="phase tappable" style="color:{phase.color}">{phase.name}</button>
+			{/if}
 			{#if !isToday}
 				<button class="today-jump" onclick={onGoToday}>Back to today</button>
 			{/if}
@@ -122,6 +128,11 @@
 		font-size: 16px;
 		font-weight: 500;
 		letter-spacing: 0.02em;
+	}
+	.dday {
+		font-size: 11px;
+		color: var(--muted);
+		margin-top: 1px;
 	}
 	.phase {
 		font-size: 12px;

@@ -7,10 +7,11 @@
 	import { get } from 'svelte/store';
 	import { profile, pid, isProgram, loadStoredProfile, saveProfile, type UserProfile } from '$lib/stores/auth';
 	import { hydrateFromBackend } from '$lib/stores/day';
-	import { currentDay, dayData, loadDay, saveDay, syncDay } from '$lib/stores/day';
+	import { currentDay, currentDate, dayData, loadDay, loadDate, saveDay, syncDay } from '$lib/stores/day';
 	import { phaseFor, loadPhases, totalDays } from '$lib/stores/phases';
 	import { loadConfig, cfg } from '$lib/stores/config';
 	import { loadRules } from '$lib/stores/rules';
+	import { effToday } from '$lib/helpers/date';
 	import { api } from '$lib/api/client';
 
 	import TopBar from '$lib/components/shell/TopBar.svelte';
@@ -36,7 +37,6 @@
 	type Tab = 'today' | 'daily' | 'trends' | 'nutrition';
 	let activeTab = $state<Tab>('today');
 
-	let todayNum = $state(1);
 	let booted = $state(false);
 
 	// Overlay state
@@ -46,44 +46,28 @@
 	let mealEditIndex = $state(-1);
 	let phaseSheetOpen = $state(false);
 
-	// ── Day helpers (maps to todayDayNum / DAY_START_HOUR) ──
+	// ── Navigation (date-first) ──
 
-	function dayStartDate(): Date {
-		const now = new Date();
-		const hour = cfg('day_start_hour');
-		if (now.getHours() < hour) {
-			now.setDate(now.getDate() - 1);
-		}
-		return now;
-	}
-
-	function todayDayNum(): number {
-		const prof = get(profile);
-		if (!prof?.start_date) return 1;
-		const start = new Date(prof.start_date);
-		const today = dayStartDate();
-		const diff = Math.floor((today.getTime() - start.getTime()) / 86400000);
-		return Math.max(1, diff + 1);
-	}
-
-	// ── Navigation ──
-
-	function goDay(n: number) {
+	function goDate(date: Date) {
 		saveDay();
-		syncDay(); // push to backend before navigating
-		loadDay(n);
+		syncDay();
+		loadDate(date);
 	}
 
 	function prevDay() {
-		if (get(currentDay) > 1) goDay(get(currentDay) - 1);
+		const d = new Date(get(currentDate));
+		d.setDate(d.getDate() - 1);
+		goDate(d);
 	}
 
 	function nextDay() {
-		goDay(get(currentDay) + 1);
+		const d = new Date(get(currentDate));
+		d.setDate(d.getDate() + 1);
+		goDate(d);
 	}
 
 	function goToday() {
-		goDay(todayNum);
+		goDate(effToday());
 	}
 
 	function switchTab(tab: Tab) {
@@ -93,31 +77,29 @@
 	// ── Boot sequence (maps to boot() from index.html) ──
 
 	async function boot() {
-		// 1. Compute today's day number
-		todayNum = todayDayNum();
+		// 1. Start with today's date from the phone
+		const today = effToday();
+		loadDate(today);
 
-		// 2. Load day data
-		loadDay(todayNum);
-
-		// 3. Load config, phases, rules in parallel (fire-and-forget)
+		// 2. Load config, phases, rules in parallel (fire-and-forget)
 		loadConfig();
 		loadPhases();
 		loadRules();
 
-		// 4. Fetch fresh profile from server
+		// 3. Fetch fresh profile from server
 		try {
 			const d = await api<{ profile?: UserProfile }>('profile', {}, { contentType: 'text/plain;charset=utf-8' });
 			if (d?.profile) {
 				const prof = d.profile;
 				if (prof.program === false) isProgram.set(false);
 				saveProfile(prof);
-				// Recalculate today after profile update
-				todayNum = todayDayNum();
+				// Re-load today with updated profile (day number may now resolve)
+				loadDate(today);
 			}
-		} catch { /* noop — local profile is good enough */ }
+		} catch { /* noop, local profile is good enough */ }
 
-		// 5. Hydrate day data from backend into localStorage
-		await hydrateFromBackend(todayNum);
+		// 4. Hydrate day data from backend into localStorage
+		await hydrateFromBackend(get(currentDay) || 1);
 
 		booted = true;
 	}
@@ -138,9 +120,8 @@
 		if (next <= now) next.setDate(next.getDate() + 1);
 		const ms = next.getTime() - now.getTime();
 		setTimeout(() => {
-			todayNum = todayDayNum();
-			loadDay(todayNum);
-			startDayRolloverTimer(); // schedule next
+			loadDate(effToday());
+			startDayRolloverTimer();
 		}, ms);
 	}
 
@@ -149,11 +130,11 @@
 			saveDay();
 			syncDay();
 		} else {
-			// Returning — check if day rolled over
-			const newToday = todayDayNum();
-			if (newToday !== todayNum) {
-				todayNum = newToday;
-				loadDay(todayNum);
+			// Returning: check if day rolled over
+			const today = effToday();
+			const viewing = get(currentDate);
+			if (today.toDateString() !== viewing.toDateString()) {
+				loadDate(today);
 			}
 		}
 	}
@@ -187,7 +168,6 @@
 {#if booted}
 	<main class="tracker">
 		<TopBar
-			todayDayNum={todayNum}
 			onPrevDay={prevDay}
 			onNextDay={nextDay}
 			onGoToday={goToday}

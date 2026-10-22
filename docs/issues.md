@@ -41,6 +41,7 @@
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
+| #42  | Date-first header rewrite      | IN PROGRESS | Use phone date as source of truth, day number derived from start_date |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |

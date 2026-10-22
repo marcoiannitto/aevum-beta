@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { profile, isProgram } from '$lib/stores/auth';
 	import { currentDay } from '$lib/stores/day';
+	import { currentDate } from '$lib/stores/day';
 	import { phaseFor } from '$lib/stores/phases';
-	import { dayToDate, fmtShort, todayDayNum } from '$lib/helpers/date';
+	import { fmtShort, effToday, todayDayNum } from '$lib/helpers/date';
 
 	let { onPrev, onNext, onToday }: {
 		onPrev: () => void;
@@ -11,9 +12,11 @@
 	} = $props();
 
 	const ph = $derived(phaseFor($currentDay, $profile));
-	const dt = $derived(dayToDate($currentDay));
-	const todayNum = $derived(todayDayNum());
-	const isToday = $derived(todayNum > 0 && $currentDay === todayNum);
+	const dayNum = $derived($currentDay);
+	const today = $derived(effToday());
+	const isToday = $derived(
+		$currentDate.toDateString() === today.toDateString()
+	);
 </script>
 
 <header class="topbar">
@@ -22,26 +25,24 @@
 		<span class="who">{$profile?.name || 'Profile'}</span>
 	</div>
 	<div class="line2">
-		<button class="nav-btn" onclick={onPrev} disabled={$currentDay <= 1}>‹</button>
+		<button class="nav-btn" onclick={onPrev}>‹</button>
 		<div class="day-info">
-			{#if $isProgram}
-				<span class="day-label">
-					{dt ? fmtShort(dt) : `Day ${$currentDay}`}
-					<span class="dday-date">Day {$currentDay}</span>
-				</span>
+			<span class="day-label">
+				{fmtShort($currentDate)}
+				{#if $isProgram && dayNum > 0}
+					<span class="dday-date">Day {dayNum}</span>
+				{/if}
+			</span>
+			{#if $isProgram && dayNum > 0}
 				<span class="phase-badge" style:color={ph.color}>
 					<span class="phase-dot" style:background={ph.color}></span>
 					{ph.name}
-				</span>
-			{:else}
-				<span class="day-label">
-					{dt ? fmtShort(dt) : `Day ${$currentDay}`}
 				</span>
 			{/if}
 		</div>
 		<button class="nav-btn" onclick={onNext}>›</button>
 	</div>
-	{#if !isToday && todayNum > 0}
+	{#if !isToday}
 		<button class="today-btn" onclick={onToday}>Today</button>
 	{/if}
 </header>

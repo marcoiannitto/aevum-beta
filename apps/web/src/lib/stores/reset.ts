@@ -4,7 +4,7 @@
  */
 import { get } from 'svelte/store';
 import { profile, isProgram, pid, logout } from './auth';
-import { dayData, currentDay, dayPhases } from './day';
+import { dayData, currentDay, currentDate, dayPhases } from './day';
 import { rules } from './rules';
 import { phases, phasesList, phaseTransitions } from './phases';
 import { config, DEFAULTS } from './config';
@@ -21,7 +21,8 @@ export function resetAllStores(): void {
 
 	// Reset day stores
 	dayData.set(null);
-	currentDay.set(1);
+	currentDay.set(0);
+	currentDate.set(new Date());
 	dayPhases.set({});
 
 	// Reset rules

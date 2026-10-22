@@ -34,12 +34,12 @@ export function dayToDate(dayNum: number): Date | null {
 	return d;
 }
 
-/** Convert a Date to a day number */
+/** Convert a Date to a day number (0 if no start_date) */
 export function dateToDayNum(date: Date): number {
 	const p = get(profile);
-	if (!p?.start_date) return 1;
+	if (!p?.start_date) return 0;
 	const start = new Date(p.start_date + 'T00:00:00');
-	if (isNaN(start.getTime())) return 1;
+	if (isNaN(start.getTime())) return 0;
 	const diff = Math.floor((date.getTime() - start.getTime()) / 86400000);
 	return diff + 1;
 }

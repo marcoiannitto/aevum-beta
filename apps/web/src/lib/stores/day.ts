@@ -6,6 +6,7 @@ import { writable, get } from 'svelte/store';
 import { K, pid, profile } from './auth';
 import { api } from '$lib/api/client';
 import { phaseFor } from './phases';
+import { dateToDayNum, effToday } from '$lib/helpers/date';
 
 // --- Date helper ---
 
@@ -111,7 +112,12 @@ export interface DayData {
 
 // --- Stores ---
 
-export const currentDay = writable<number>(1);
+/** The calendar date the user is viewing. Source of truth. */
+export const currentDate = writable<Date>(new Date());
+
+/** Day number in the program (derived from currentDate + start_date). 0 if no program. */
+export const currentDay = writable<number>(0);
+
 export const dayData = writable<DayData | null>(null);
 export const dayPhases = writable<Record<number, string>>({});
 
@@ -156,6 +162,15 @@ export function loadDay(dayNum: number): void {
 
 	// Remember last viewed day
 	try { localStorage.setItem(K(id, 'lastDay'), String(dayNum)); } catch { /* noop */ }
+}
+
+/** Navigate to a calendar date. Sets currentDate + computes day number from start_date. */
+export function loadDate(date: Date): void {
+	currentDate.set(date);
+	const dayNum = dateToDayNum(date);
+	// dateToDayNum returns 0 when no start_date. Day data is keyed by day number,
+	// so for free users (no program), key by days-since-first-open or just 1.
+	loadDay(dayNum || 1);
 }
 
 export function saveDay(silent = false): void {
@@ -266,7 +281,7 @@ export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 				} catch { /* skip malformed rows */ }
 			}
 			// Reload current day from refreshed localStorage
-			loadDay(get(currentDay));
+			loadDay(get(currentDay) || 1);
 		}
 		// After successful hydrate, flush any pending syncs
 		flushSyncQueue();
