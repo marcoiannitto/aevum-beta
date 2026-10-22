@@ -38,6 +38,7 @@
 | #41 | Trends stat row: V2 hero card          | DONE   | c270ef7 | Single hero card + colored chips, matching V2 pattern |
 | #42 | Date-first header rewrite              | DONE   | 9fa399c | Phone date is source of truth, day number from start_date |
 | #43 | Meal ingredient expand broken          | DONE   |         | MealLogSheet was dropping `items` from AI response |
+| #26 | Program selector                       | DONE   |         | Migration 0018, backend routes, stores, ProgramPicker UI |
 
 ## In progress
 
@@ -57,9 +58,7 @@
 
 ## Needs input
 
-| #   | Title                          | Blocker |
-|-----|--------------------------------|---------|
-| #26 | Program selector UI            | Needs Marco's design direction |
+(none)
 
 ---
 

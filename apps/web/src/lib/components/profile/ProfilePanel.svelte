@@ -9,6 +9,8 @@
 	import { logoutAndReset } from '$lib/stores/reset';
 	import { api } from '$lib/api/client';
 	import { actLabels, actFactors } from '$lib/stores/config';
+	import { currentProgram } from '$lib/stores/programs';
+	import ProgramPicker from '$lib/components/programs/ProgramPicker.svelte';
 
 	let {
 		open = false,
@@ -28,6 +30,7 @@
 	let editTarget = $state('');
 	let editAct = $state('');
 	let saving = $state(false);
+	let programPickerOpen = $state(false);
 
 	const APP_VERSION = 'v3.1.0';
 
@@ -168,6 +171,28 @@
 					</div>
 				{/if}
 
+				<!-- Program -->
+				{#if $isProgram}
+					{@const prog = currentProgram()}
+					<div class="section">
+						<h3>Program</h3>
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<div class="prog-row" onclick={() => programPickerOpen = true}>
+							<div class="prog-info">
+								{#if prog}
+									<span class="prog-dot" style="background: {prog.color}"></span>
+									<span class="prog-label">{prog.name}</span>
+								{:else}
+									<span class="prog-dot" style="background: #B08D2E"></span>
+									<span class="prog-label">AEVUM</span>
+								{/if}
+							</div>
+							<span class="prog-change">Change</span>
+						</div>
+					</div>
+				{/if}
+
 				<!-- Coach -->
 				{#if $profile.coach_whatsapp}
 					<div class="section">
@@ -197,6 +222,8 @@
 		<button class="close-x" onclick={onClose} aria-label="Close panel">✕</button>
 	</aside>
 {/if}
+
+<ProgramPicker open={programPickerOpen} onClose={() => programPickerOpen = false} />
 
 <style>
 	.scrim {
@@ -337,6 +364,37 @@
 		text-decoration: none;
 	}
 	.link-row:hover { color: var(--gold); }
+	.prog-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 10px 12px;
+		background: var(--paper);
+		border-radius: 8px;
+		cursor: pointer;
+	}
+	.prog-info {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.prog-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.prog-label {
+		font-family: var(--serif);
+		font-weight: 600;
+		font-size: 0.92rem;
+		letter-spacing: 0.02em;
+	}
+	.prog-change {
+		font-size: 0.82rem;
+		color: var(--gold);
+		font-weight: 500;
+	}
 	.footer {
 		display: flex;
 		align-items: center;

@@ -58,6 +58,7 @@ export interface UserProfile {
 	maintenance_diet?: string;
 	phase_mode?: string;
 	program?: boolean;
+	program_id?: string;
 	coach_whatsapp?: string;
 	[key: string]: unknown;
 }

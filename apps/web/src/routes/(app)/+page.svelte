@@ -11,6 +11,7 @@
 	import { phaseFor, loadPhases, totalDays } from '$lib/stores/phases';
 	import { loadConfig, cfg } from '$lib/stores/config';
 	import { loadRules } from '$lib/stores/rules';
+	import { loadPrograms } from '$lib/stores/programs';
 	import { effToday } from '$lib/helpers/date';
 	import { api } from '$lib/api/client';
 
@@ -81,8 +82,9 @@
 		const today = effToday();
 		loadDate(today);
 
-		// 2. Load config, phases, rules in parallel (fire-and-forget)
+		// 2. Load config, phases, rules, programs in parallel (fire-and-forget)
 		loadConfig();
+		loadPrograms();
 		loadPhases();
 		loadRules();
 

@@ -36,6 +36,7 @@ export async function getProfile(userId: string, db: D1Database) {
       phase_mode: row.phase_mode || '',
       program: !!row.program,
       notes: row.notes || '',
+      program_id: row.program_id || 'aevum',
     },
   };
 }

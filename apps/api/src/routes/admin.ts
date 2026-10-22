@@ -34,7 +34,7 @@ export async function adminSeed(body: any, db: D1Database) {
 
   const allowed = [
     'recipes', 'messages', 'movements', 'workouts', 'rules', 'foods',
-    'policy', 'config', 'ingredients', 'catered_menu', 'phases',
+    'policy', 'config', 'ingredients', 'catered_menu', 'phases', 'programs',
   ];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
 
@@ -81,7 +81,7 @@ export async function adminList(body: any, db: D1Database) {
   const table = String(body.table || '');
   const allowed = [
     'recipes', 'messages', 'movements', 'workouts', 'rules', 'foods',
-    'policy', 'config', 'ingredients', 'catered_menu', 'phases',
+    'policy', 'config', 'ingredients', 'catered_menu', 'phases', 'programs',
   ];
   if (!allowed.includes(table)) return { error: 'table not allowed: ' + table };
   const rows = await db.prepare(`SELECT * FROM ${table}`).all<any>();
@@ -116,6 +116,7 @@ export async function adminUpdateUser(body: any, db: D1Database) {
     'stabilization_days', 'start_date', 'notes', 'current_target_kcal',
     'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg',
     'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name',
+    'program_id',
   ];
 
   // Auto-set start_date when activating program and no start_date exists

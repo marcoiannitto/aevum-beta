@@ -39,6 +39,9 @@ import {
   adminImport, adminUpdateUser, adminUserCreate,
   adminUserDelete,
 } from './routes/admin.js';
+import {
+  getPrograms, setProgram, adminPrograms, adminProgramTransitions,
+} from './routes/programs.js';
 import { adminScanSave, adminScanList, adminScanDelete } from './routes/scans.js';
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -182,6 +185,10 @@ app.post('/', async (c) => {
         return c.json(await adminScanList(body, db));
       case 'admin_scan_delete':
         return c.json(await adminScanDelete(body, db));
+      case 'admin_programs':
+        return c.json(await adminPrograms(body, db));
+      case 'admin_program_transitions':
+        return c.json(await adminProgramTransitions(body, db));
       case 'admin_mealplan': {
         const targetId = String(body.user_id || '');
         if (!targetId) return c.json({ error: 'user_id required' }, 400);
@@ -212,6 +219,10 @@ app.post('/', async (c) => {
       return c.json(await getPhases(db));
     case 'phase_transitions':
       return c.json(await getPhaseTransitions(userId, db));
+    case 'programs':
+      return c.json(await getPrograms(db));
+    case 'set_program':
+      return c.json(await setProgram(userId, body, db));
     case 'messages':
       return c.json(await getMessages(db));
     case 'recipes':

@@ -11,6 +11,7 @@ import { config, DEFAULTS } from './config';
 import { planData, planLoaded, planDay, planEdit } from './plan';
 import { movements, workouts, fitnessLoaded } from './fitness';
 import { recipes, recipesLoaded } from './recipes';
+import { programs, programsLoaded } from './programs';
 
 export function resetAllStores(): void {
 	const id = get(pid);
@@ -51,6 +52,10 @@ export function resetAllStores(): void {
 	recipes.set([]);
 	recipesLoaded.set(false);
 
+	// Reset programs
+	programs.set([]);
+	programsLoaded.set(false);
+
 	// Clear localStorage caches
 	if (typeof window === 'undefined') return;
 
@@ -76,6 +81,7 @@ export function resetAllStores(): void {
 			'aevum_fitness_cache',
 			'aevum_recipes_cache',
 			'aevum_fav_recipes',
+			'aevum_programs_cache',
 		];
 		for (const k of globalKeys) {
 			try { localStorage.removeItem(k); } catch { /* noop */ }

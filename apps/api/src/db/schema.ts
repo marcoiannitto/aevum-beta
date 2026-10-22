@@ -132,6 +132,30 @@ export const phases = sqliteTable('phases', {
   drift_band_kg: real('drift_band_kg'),
 });
 
+// ─── Programs ───────────────────────────────────────────────
+
+export const programs = sqliteTable('programs', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  color: text('color').default('#3E7A6A'),
+  sort_order: integer('sort_order').default(0),
+  is_active: integer('is_active').default(1),
+});
+
+// ─── Program Transitions ────────────────────────────────────
+
+export const programTransitions = sqliteTable('program_transitions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  user_id: text('user_id').notNull(),
+  from_program: text('from_program'),
+  to_program: text('to_program').notNull(),
+  from_phase: text('from_phase'),
+  to_phase: text('to_phase'),
+  switched_at: text('switched_at').notNull(),
+  notes: text('notes'),
+});
+
 // ─── Phase Transitions (NEW — fixes retroactive phase bug) ──
 
 export const phaseTransitions = sqliteTable('phase_transitions', {

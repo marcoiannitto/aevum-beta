@@ -5,6 +5,7 @@
 import { writable, get } from 'svelte/store';
 import { api } from '$lib/api/client';
 import { profile, isProgram } from './auth';
+import { currentProgramId } from './programs';
 import {
 	phaseFor as sharedPhaseFor,
 	activationDays as sharedActivationDays,
@@ -46,6 +47,7 @@ export interface PhaseConfig {
 	inherits_rules_from: string | null;
 	food_rule_line: string | null;
 	fitness_intro: string | null;
+	program_id: string | null;
 	explainer: Record<string, unknown>;
 	[key: string]: unknown;
 }
@@ -58,7 +60,7 @@ const CACHE_KEY = 'aevum_phases_cache';
 const CACHE_VER_KEY = 'aevum_phases_cache_v';
 const CACHE_VERSION = 2; // bump when phases schema changes (fix #32)
 
-function applyPhases(arr: PhaseConfig[]) {
+function applyPhases(arr: PhaseConfig[], programId?: string) {
 	const map: Record<string, PhaseConfig> = {};
 	arr.forEach((p) => {
 		const o: PhaseConfig = {
@@ -81,12 +83,24 @@ function applyPhases(arr: PhaseConfig[]) {
 		map[p.key] = o;
 	});
 
+	// Filter phasesList to only the current program's phases
+	const pid = programId || currentProgramId();
 	const list = arr
-		.filter((p) => !!p.is_program)
+		.filter((p) => !!p.is_program && (p.program_id === pid || (!p.program_id && pid === 'aevum')))
 		.sort((a, b) => a.sort_order - b.sort_order)
 		.map((p) => map[p.key]);
 
 	phases.set(map);
+	phasesList.set(list);
+}
+
+/** Re-filter phasesList for a different program (called on program switch) */
+export function filterPhasesForProgram(programId: string) {
+	const $phases = get(phases);
+	const all = Object.values($phases);
+	const list = all
+		.filter((p) => !!p.is_program && (p.program_id === programId || (!p.program_id && programId === 'aevum')))
+		.sort((a, b) => a.sort_order - b.sort_order);
 	phasesList.set(list);
 }
 
