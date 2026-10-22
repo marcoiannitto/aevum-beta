@@ -36,12 +36,13 @@
 | #28 | Reactivity fixes                       | DONE   | ea099d3 | |
 | #29 | Calorie simplification                 | DONE   | 7e0a44b | Stripped to liveTDEE only |
 | #41 | Trends stat row: V2 hero card          | DONE   | c270ef7 | Single hero card + colored chips, matching V2 pattern |
+| #42 | Date-first header rewrite              | DONE   | 9fa399c | Phone date is source of truth, day number from start_date |
+| #43 | Meal ingredient expand broken          | DONE   |         | MealLogSheet was dropping `items` from AI response |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #42  | Date-first header rewrite      | IN PROGRESS | Use phone date as source of truth, day number derived from start_date |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |

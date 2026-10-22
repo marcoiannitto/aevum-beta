@@ -33,6 +33,7 @@
 	let mealTime = $state('');
 	let loading = $state(false);
 	let error = $state('');
+	let estimatedItems = $state<unknown[]>([]);
 	let cameraInput: HTMLInputElement;
 	let galleryInput: HTMLInputElement;
 
@@ -73,6 +74,7 @@
 				fat = String(meal.fat || '');
 				carbs = String(meal.carbs || '');
 				mealTime = meal.time || new Date().toTimeString().slice(0, 5);
+				estimatedItems = (meal as any).items || [];
 			}
 		} else if (open) {
 			// Reset for new meal
@@ -87,6 +89,7 @@
 			carbs = '';
 			mealTime = new Date().toTimeString().slice(0, 5);
 			error = '';
+			estimatedItems = [];
 		}
 	});
 
@@ -98,14 +101,15 @@
 			const pk = phaseFor(get(currentDay)).key;
 			const payload: Record<string, unknown> = { description: description.trim(), phase: pk };
 			if (imageBase64) payload.image = imageBase64;
-			const d = await aiPost<{ kcal: number; protein: number; fat: number; carbs: number }>(
+			const d = await aiPost<{ name?: string; kcal: number; protein: number; fat: number; carbs: number; items?: unknown[] }>(
 				{ action: 'estimate', ...payload }
 			);
-			mealName = description.trim();
+			mealName = d.name || description.trim();
 			kcal = String(Math.round(d.kcal));
 			protein = String(Math.round(d.protein));
 			fat = String(Math.round(d.fat));
 			carbs = String(Math.round(d.carbs));
+			estimatedItems = d.items || [];
 			mode = 'manual'; // switch to manual to let user review/edit
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
@@ -120,7 +124,7 @@
 		if (!day) return;
 		if (!day.meals) day.meals = [];
 
-		const entry = {
+		const entry: Record<string, unknown> = {
 			name: mealName || description || 'Meal',
 			kcal: +(kcal || 0),
 			protein: +(protein || 0),
@@ -129,6 +133,7 @@
 			time: mealTime || new Date().toTimeString().slice(0, 5),
 			ts: Date.now()
 		};
+		if (estimatedItems.length > 0) entry.items = estimatedItems;
 
 		if (editIndex >= 0 && day.meals[editIndex]) {
 			day.meals[editIndex] = entry;
