@@ -48,6 +48,7 @@
 |------|--------------------------------|-------------|-------|
 | #26c | Programs dropdown only shows AEVUM | OPEN    | loadPrograms() refactored to fetch API first, cache as fallback only. Awaited in admin and ProgramPicker. Pushed in v3.1.6 but not yet confirmed working. May need further debugging (API response, auth, or rendering timing). |
 | #26d | ProgramPicker empty on mobile  | OPEN        | Bottom sheet opens but shows no program cards. Same root cause as #26c. Needs testing after #26c is confirmed. |
+| #44  | Meal expand: ingredients breakdown missing | OPEN | Clicking a logged meal should expand to show each ingredient with its individual kcal, protein, fat, carbs. These should add up to the meal total. Was working before, now broken. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
