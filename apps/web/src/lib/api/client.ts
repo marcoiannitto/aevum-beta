@@ -65,7 +65,9 @@ export async function api<T = unknown>(
 		});
 
 		if (res.status === 401) {
-			token.set(null);
+			// Only wipe token if we actually sent auth — a noAuth call
+			// returning 401 doesn't mean OUR token is invalid
+			if (!opts.noAuth) token.set(null);
 			throw new ApiError(401, 'Session expired', action);
 		}
 
