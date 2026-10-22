@@ -174,30 +174,36 @@ export const TABLES: Record<string, TableDef> = {
 	phases: {
 		stickyCol: true,
 		cols: [
+			// Identity
 			{ key: 'key', label: 'Key', w: 'col-mid' },
-			{ key: 'name', label: 'Name', w: 'col-mid' },
-			{ key: 'color', label: 'Color', w: 'col-narrow' },
-			{ key: 'sort_order', label: 'Order', w: 'col-narrow', type: 'number' },
-			{ key: 'is_program', label: 'Program', w: 'col-narrow', type: 'number' },
 			{ key: 'program_id', label: 'Prog ID', w: 'col-mid' },
+			{ key: 'name', label: 'Name', w: 'col-mid' },
+			{ key: 'sort_order', label: 'Order', w: 'col-narrow', type: 'number' },
+			{ key: 'color', label: 'Color', w: 'col-narrow' },
+			{ key: 'is_program', label: 'Is Prog', w: 'col-narrow', type: 'number' },
+			{ key: 'inherits_rules_from', label: 'Inherits', w: 'col-mid' },
+			// Calories and targets
 			{ key: 'calorie_mode', label: 'Cal Mode', w: 'col-mid' },
 			{ key: 'target_mode', label: 'Target Mode', w: 'col-mid' },
 			{ key: 'calorie_cut', label: 'TDEE Cut', w: 'col-narrow', type: 'number' },
 			{ key: 'target_fixed_lo', label: 'Fixed Lo', w: 'col-narrow', type: 'number' },
 			{ key: 'target_fixed_hi', label: 'Fixed Hi', w: 'col-narrow', type: 'number' },
+			// Ramp
 			{ key: 'ramp_from', label: 'Ramp From', w: 'col-narrow', type: 'number' },
 			{ key: 'ramp_days', label: 'Ramp Days', w: 'col-narrow', type: 'number' },
 			{ key: 'ramp_pct', label: 'Ramp %', w: 'col-mid' },
+			// Bank
+			{ key: 'calorie_bank', label: 'Has Bank', w: 'col-narrow', type: 'number' },
 			{ key: 'bank_window', label: 'Bank Win', w: 'col-narrow', type: 'number' },
 			{ key: 'bank_clamp_lo', label: 'Bank Lo', w: 'col-narrow', type: 'number' },
 			{ key: 'bank_clamp_hi', label: 'Bank Hi', w: 'col-narrow', type: 'number' },
+			// Drift
 			{ key: 'drift_enabled', label: 'Drift', w: 'col-narrow', type: 'number' },
 			{ key: 'drift_review_days', label: 'Review d', w: 'col-narrow', type: 'number' },
 			{ key: 'drift_step_kcal', label: 'Step kcal', w: 'col-narrow', type: 'number' },
 			{ key: 'drift_floor_kcal', label: 'Floor kcal', w: 'col-narrow', type: 'number' },
 			{ key: 'drift_band_kg', label: 'Band kg', w: 'col-narrow', type: 'number' },
-			{ key: 'calorie_bank', label: 'Has Bank', w: 'col-narrow', type: 'number' },
-			{ key: 'inherits_rules_from', label: 'Inherits', w: 'col-mid' },
+			// Phase config
 			{ key: 'duration_default', label: 'Dur Days', w: 'col-narrow', type: 'number' },
 			{ key: 'requires_serum', label: 'Serum', w: 'col-narrow', type: 'number' },
 			{ key: 'has_fasting', label: 'Fasting', w: 'col-narrow', type: 'number' },
