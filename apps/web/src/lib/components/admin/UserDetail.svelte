@@ -39,7 +39,7 @@
 	const LOG_TABS = ['logs', 'meals', 'notes', 'vitals'] as const;
 
 	onMount(async () => {
-		loadPrograms();
+		await loadPrograms();
 		await loadUser();
 		// Dynamic Chart.js import to avoid SSR
 		try {

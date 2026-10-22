@@ -18,10 +18,14 @@
 
 	let switching = $state('');
 	let error = $state('');
+	let loading = $state(false);
 
-	// Ensure programs are loaded when picker opens
+	// Load programs fresh every time picker opens
 	$effect(() => {
-		if (open && !$programs.length) loadPrograms();
+		if (open) {
+			loading = true;
+			loadPrograms().finally(() => { loading = false; });
+		}
 	});
 
 	async function pick(programId: string) {
@@ -44,6 +48,9 @@
 	{/if}
 
 	<div class="program-list">
+		{#if loading && !$programs.length}
+			<p class="loading-text">Loading programs…</p>
+		{/if}
 		{#each $programs as prog}
 			{@const active = prog.id === currentProgramId()}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -79,6 +86,12 @@
 </Sheet>
 
 <style>
+	.loading-text {
+		text-align: center;
+		color: var(--muted);
+		font-size: 0.88rem;
+		padding: 20px 0;
+	}
 	.error {
 		background: rgba(200, 60, 60, 0.1);
 		color: var(--over);

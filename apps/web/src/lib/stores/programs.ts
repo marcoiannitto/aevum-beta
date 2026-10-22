@@ -20,16 +20,12 @@ export const programsLoaded = writable(false);
 
 const CACHE_KEY = 'aevum_programs_cache';
 
-export function loadPrograms(): void {
-  // Load from cache first
-  if (typeof window !== 'undefined') {
-    const c = localStorage.getItem(CACHE_KEY);
-    if (c) {
-      try { programs.set(JSON.parse(c)); } catch { /* noop */ }
-    }
-  }
+let _loadPromise: Promise<void> | null = null;
 
-  api<{ programs: Program[] }>('programs', {}, { contentType: 'text/plain;charset=utf-8' })
+export function loadPrograms(): Promise<void> {
+  if (_loadPromise) return _loadPromise;
+
+  _loadPromise = api<{ programs: Program[] }>('programs', {}, { contentType: 'text/plain;charset=utf-8' })
     .then((d) => {
       if (d?.programs && Array.isArray(d.programs)) {
         programs.set(d.programs);
@@ -37,7 +33,19 @@ export function loadPrograms(): void {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(d.programs)); } catch { /* noop */ }
       }
     })
-    .catch((err) => { console.error('[AEVUM] loadPrograms failed:', err.message || err); });
+    .catch((err) => {
+      console.error('[AEVUM] loadPrograms failed:', err.message || err);
+      // Fallback to cache only if API fails
+      if (typeof window !== 'undefined') {
+        const c = localStorage.getItem(CACHE_KEY);
+        if (c) {
+          try { programs.set(JSON.parse(c)); } catch { /* noop */ }
+        }
+      }
+    })
+    .finally(() => { _loadPromise = null; });
+
+  return _loadPromise;
 }
 
 /** Get the user's current program from their profile */
