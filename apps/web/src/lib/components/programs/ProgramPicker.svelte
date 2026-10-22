@@ -6,7 +6,7 @@
 	import { get } from 'svelte/store';
 	import Sheet from '$lib/components/ui/Sheet.svelte';
 	import { profile } from '$lib/stores/auth';
-	import { programs, switchProgram, currentProgramId } from '$lib/stores/programs';
+	import { programs, switchProgram, currentProgramId, loadPrograms } from '$lib/stores/programs';
 
 	let {
 		open = false,
@@ -18,6 +18,11 @@
 
 	let switching = $state('');
 	let error = $state('');
+
+	// Ensure programs are loaded when picker opens
+	$effect(() => {
+		if (open && !$programs.length) loadPrograms();
+	});
 
 	async function pick(programId: string) {
 		if (programId === currentProgramId()) return;

@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { adminApi, toast } from '$lib/stores/admin';
 	import { phaseFor } from '$lib/stores/phases';
+	import { programs, loadPrograms } from '$lib/stores/programs';
 
 	let { userId, onBack }: {
 		userId: number;
@@ -25,6 +26,7 @@
 	let sex = $state('');
 	let dob = $state('');
 	let height = $state('');
+	let programId = $state('');
 	let saving = $state(false);
 
 	// Charts
@@ -37,6 +39,7 @@
 	const LOG_TABS = ['logs', 'meals', 'notes', 'vitals'] as const;
 
 	onMount(async () => {
+		loadPrograms();
 		await loadUser();
 		// Dynamic Chart.js import to avoid SSR
 		try {
@@ -74,6 +77,7 @@
 			sex = String(p.sex ?? '');
 			dob = String(p.dob ?? '');
 			height = String(p.height ?? '');
+			programId = String(p.program_id ?? 'aevum');
 
 			// Render charts after data loads
 			setTimeout(() => renderCharts(), 100);
@@ -199,7 +203,7 @@
 	async function saveProfile() {
 		saving = true;
 		try {
-			const payload: Record<string, unknown> = { id: userId, name, email, start_date: startDate, sex, dob };
+			const payload: Record<string, unknown> = { id: userId, name, email, start_date: startDate, sex, dob, program_id: programId };
 			if (loadingDays) payload.loading_days = +loadingDays;
 			if (activationDays) payload.activation_days = +activationDays;
 			if (transitionDays) payload.transition_days = +transitionDays;
@@ -350,6 +354,16 @@
 				</div>
 				<div class="ef-group"><label>DOB</label><input type="date" bind:value={dob} /></div>
 				<div class="ef-group"><label>Height (cm)</label><input type="number" bind:value={height} /></div>
+				<div class="ef-group"><label>Program</label>
+					<select bind:value={programId}>
+						{#each $programs as prog}
+							<option value={prog.id}>{prog.name}</option>
+						{/each}
+						{#if !$programs.length}
+							<option value={programId}>{programId}</option>
+						{/if}
+					</select>
+				</div>
 			</div>
 			<button class="btn btn-primary" onclick={saveProfile} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
 		</div>
