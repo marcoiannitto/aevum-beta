@@ -179,6 +179,7 @@ export const TABLES: Record<string, TableDef> = {
 			{ key: 'color', label: 'Color', w: 'col-narrow' },
 			{ key: 'sort_order', label: 'Order', w: 'col-narrow', type: 'number' },
 			{ key: 'is_program', label: 'Program', w: 'col-narrow', type: 'number' },
+			{ key: 'program_id', label: 'Prog ID', w: 'col-mid' },
 			{ key: 'calorie_mode', label: 'Cal Mode', w: 'col-mid' },
 			{ key: 'target_mode', label: 'Target Mode', w: 'col-mid' },
 			{ key: 'calorie_cut', label: 'TDEE Cut', w: 'col-narrow', type: 'number' },

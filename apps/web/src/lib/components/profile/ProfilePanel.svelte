@@ -32,7 +32,7 @@
 	let saving = $state(false);
 	let programPickerOpen = $state(false);
 
-	const APP_VERSION = 'v3.1.2';
+	const APP_VERSION = 'v3.1.3';
 
 	function startEdit() {
 		const p = get(profile);
