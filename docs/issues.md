@@ -41,14 +41,16 @@
 | #26 | Program selector                       | DONE   |         | Migration 0018/0019, backend routes, stores, ProgramPicker UI |
 | #26a| Admin phases: program_id column        | DONE   | 0d601c3 | Added program_id column, reordered all columns into logical groups |
 | #26b| Admin user detail: program dropdown    | DONE   | 0d601c3 | Added select dropdown bound to programs store, saves via admin_update_user |
+| #26c| Programs dropdown only shows AEVUM     | DONE   | b0469e6 | Root cause: loadPrograms used user token (null in admin). Fix: programs endpoint made unauthenticated (public config). |
+| #26d| ProgramPicker empty on mobile          | DONE   | b0469e6 | Same root cause as #26c. Fixed by noAuth flag on store. |
+| #45 | loadPrograms 400 on deployed app       | DONE   | b0469e6 | Deployed API didn't have programs route. Same commit fixes it; needs redeploy. |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #26c | Programs dropdown only shows AEVUM | OPEN    | loadPrograms() refactored to fetch API first, cache as fallback only. Awaited in admin and ProgramPicker. Pushed in v3.1.6 but not yet confirmed working. May need further debugging (API response, auth, or rendering timing). |
-| #26d | ProgramPicker empty on mobile  | OPEN        | Bottom sheet opens but shows no program cards. Same root cause as #26c. Needs testing after #26c is confirmed. |
 | #44  | Meal expand: ingredients breakdown missing | OPEN | Clicking a logged meal should expand to show each ingredient with its individual kcal, protein, fat, carbs. These should add up to the meal total. Was working before, now broken. |
+| #46  | AI worker 403 on quickEstimate | OPEN | sweet-fire-a436 worker returning 403. Not a code bug. Check Cloudflare dashboard: worker active? API key valid? |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
