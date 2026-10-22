@@ -3,7 +3,8 @@
  * Uses @aevum/shared for core TDEE calculation (single source of truth).
  */
 import { get } from 'svelte/store';
-import { profile, type UserProfile } from './auth';
+import { profile, pid, K, type UserProfile } from './auth';
+import { type DayData } from './day';
 import { phReg, phaseFor } from './phases';
 import { cfg } from './config';
 import { mifflinTDEE, dobToAge } from '@aevum/shared';
