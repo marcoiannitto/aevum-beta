@@ -1289,7 +1289,7 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name'];
+  const allowed = ['program', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name', 'phase_mode'];
 
   // Auto-set start_date when activating program and no start_date exists
   if (body.program === 1 && !body.start_date) {

@@ -95,6 +95,12 @@ export function effectiveTarget(dayNum: number, p?: UserProfile | null): number 
 		return reg.target_fixed_lo ?? prof.current_target_kcal ?? mifflin(prof);
 	}
 
+	// TDEE multiplier mode: liveTDEE * calorie_cut (e.g. 0.8 for 20% deficit)
+	if (reg?.target_mode === 'tdee_mult') {
+		const mult = reg.calorie_cut ?? 1;
+		return Math.round(liveTDEE(dayNum, prof) * mult);
+	}
+
 	// Everything else: liveTDEE based on rolling average weight
 	return Math.round(liveTDEE(dayNum, prof));
 }

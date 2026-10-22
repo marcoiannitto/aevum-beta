@@ -33,7 +33,8 @@
 	let mealTime = $state('');
 	let loading = $state(false);
 	let error = $state('');
-	let fileInput: HTMLInputElement;
+	let cameraInput: HTMLInputElement;
+	let galleryInput: HTMLInputElement;
 
 	function onImagePick(e: Event) {
 		const file = (e.target as HTMLInputElement)?.files?.[0];
@@ -55,7 +56,8 @@
 	function clearImage() {
 		imageBase64 = '';
 		imagePreview = '';
-		if (fileInput) fileInput.value = '';
+		if (cameraInput) cameraInput.value = '';
+		if (galleryInput) galleryInput.value = '';
 	}
 
 	// If editing, pre-fill
@@ -166,10 +168,19 @@
 						<button class="photo-clear" onclick={clearImage} aria-label="Remove photo">✕</button>
 					</div>
 				{:else}
-					<button class="btn-photo" onclick={() => fileInput.click()}>📷 Add photo</button>
+					<button class="btn-photo" onclick={() => cameraInput.click()}>📷 Camera</button>
+					<button class="btn-photo" onclick={() => galleryInput.click()}>🖼️ Gallery</button>
 				{/if}
 				<input
-					bind:this={fileInput}
+					bind:this={cameraInput}
+					type="file"
+					accept="image/*"
+					capture="environment"
+					onchange={onImagePick}
+					hidden
+				/>
+				<input
+					bind:this={galleryInput}
 					type="file"
 					accept="image/*"
 					onchange={onImagePick}
@@ -239,6 +250,9 @@
 	}
 	.photo-row {
 		margin-top: 8px;
+		display: flex;
+		gap: 8px;
+		align-items: center;
 	}
 	.btn-photo {
 		padding: 8px 14px;
