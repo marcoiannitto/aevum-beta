@@ -68,6 +68,8 @@
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
 | #59  | AI worker sporadic 403         | OPEN        | Anthropic API rate-limits cause sporadic "ai http 403". Fix: add 1-retry with 1s backoff in `callAI` for 403/429 responses. |
+| #60  | Admin: add/edit programs        | OPEN        | No admin UI for creating programs. Currently requires raw SQL in D1 across `programs` + `phases` tables. Need a form that creates both rows with validation so nothing is missed. |
+| #61  | Admin: edit phase config        | OPEN        | Need UI to edit all phase parameters (calorie_mode, target_mode, food_rule_line, explainer_json, duration, gates, etc.) so program rules can be tuned without touching D1 directly. |
 
 ## Deferred (post-rollout)
 
