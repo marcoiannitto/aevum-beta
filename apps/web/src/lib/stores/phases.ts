@@ -56,6 +56,9 @@ export const phases = writable<Record<string, PhaseConfig>>({});
 export const phasesList = writable<PhaseConfig[]>([]);
 export const phaseTransitions = writable<PhaseTransition[]>([]);
 
+/** True once the phases API has responded (distinguishes "0 phases" from "not loaded yet") */
+export const phasesLoaded = writable(false);
+
 const CACHE_KEY = 'aevum_phases_cache';
 const CACHE_VER_KEY = 'aevum_phases_cache_v';
 const CACHE_VERSION = 2; // bump when phases schema changes (fix #32)
@@ -113,7 +116,7 @@ export function loadPhases() {
 		} else {
 			const c = localStorage.getItem(CACHE_KEY);
 			if (c) {
-				try { applyPhases(JSON.parse(c)); } catch { /* noop */ }
+				try { applyPhases(JSON.parse(c)); phasesLoaded.set(true); } catch { /* noop */ }
 			}
 		}
 	}
@@ -124,6 +127,7 @@ export function loadPhases() {
 				localStorage.setItem(CACHE_KEY, JSON.stringify(d.phases));
 				localStorage.setItem(CACHE_VER_KEY, String(CACHE_VERSION));
 				applyPhases(d.phases);
+				phasesLoaded.set(true);
 			}
 		})
 		.catch((err) => { console.error('[AEVUM] loadPhases failed:', err.message || err); });
@@ -170,8 +174,10 @@ export function phaseFor(dayNum: number, prof?: Record<string, unknown> | null):
 		return { key: 'tracker', name: trk?.name ?? 'Tracking', color: trk?.color ?? MAINT_COLOR };
 	}
 
-	// 0-phase programs (maintenance, recomposition, keto): return program name as phase
-	if ($list.length === 0) {
+	// 0-phase programs (maintenance, recomposition, keto): return program name as phase.
+	// Only use this branch when phases have actually loaded (Object.keys check).
+	// If phases haven't loaded yet, fall through to sharedPhaseFor() which works from profile fields.
+	if ($list.length === 0 && Object.keys($phases).length > 0) {
 		const progId = currentProgramId();
 		const reg = $phases[progId];
 		if (reg) {

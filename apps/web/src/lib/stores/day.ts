@@ -6,8 +6,16 @@
 import { writable, get } from 'svelte/store';
 import { K, pid, profile } from './auth';
 import { api } from '$lib/api/client';
-import { phaseFor } from './phases';
+import { phaseFor, phasesLoaded } from './phases';
 import { programDayNum, dateStr, effToday } from '$lib/helpers/date';
+
+/**
+ * "aevum" as a phase key is always wrong (it's a program, not a phase).
+ * Maintenance/recomposition/keto as phase keys are valid for 0-phase programs.
+ */
+function isInvalidPhase(phase: string): boolean {
+	return phase === 'aevum';
+}
 
 // --- Date helper (kept for backward compat) ---
 
@@ -246,9 +254,12 @@ export function saveDay(silent = false): void {
 	// Ensure date is set (from currentDate, not computed from day number)
 	if (!day.date) day.date = dateStr(get(currentDate));
 
-	// Stamp phase on first save (immutable once set)
-	if (!day.phase) {
-		day.phase = phaseFor(num, get(profile)).key;
+	// Stamp phase on first save, but only if phases have loaded.
+	// Also re-stamp if "aevum" was incorrectly stored as phase (bug fix).
+	if (get(phasesLoaded)) {
+		if (!day.phase || isInvalidPhase(day.phase)) {
+			day.phase = phaseFor(num, get(profile)).key;
+		}
 	}
 
 	const ds = day.date;
@@ -292,9 +303,11 @@ export function syncDay(): void {
 	// Ensure date is set
 	if (!day.date) day.date = dateStr(get(currentDate));
 
-	// Stamp phase if not yet set (immutable once set)
-	if (!day.phase) {
-		day.phase = phaseFor(num, get(profile)).key;
+	// Stamp phase (same logic as saveDay: wait for phases, fix program-ID stamps)
+	if (get(phasesLoaded)) {
+		if (!day.phase || isInvalidPhase(day.phase)) {
+			day.phase = phaseFor(num, get(profile)).key;
+		}
 	}
 
 	const t = totals(day);
