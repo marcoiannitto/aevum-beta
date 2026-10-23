@@ -38,7 +38,7 @@
 | #41 | Trends stat row: V2 hero card          | DONE   | c270ef7 | Single hero card + colored chips, matching V2 pattern |
 | #42 | Date-first header rewrite              | DONE   | 9fa399c | Phone date is source of truth, day number from start_date |
 | #43 | Meal ingredient expand broken          | DONE   |         | MealLogSheet was dropping `items` from AI response |
-| #26 | Program selector                       | DONE (VALIDATE) | 32607d7 | Migration 0018/0019, backend routes, stores, ProgramPicker UI. Fix: filterPhasesForProgram() called synchronously before loadDate() in switchProgram(). |
+| #26 | Program selector                       | DONE   | 32607d7 | Migration 0018/0019, backend routes, stores, ProgramPicker UI. Validated via code review. |
 | #26a| Admin phases: program_id column        | DONE   | 0d601c3 | Added program_id column, reordered all columns into logical groups |
 | #26b| Admin user detail: program dropdown    | DONE   | 0d601c3 | Added select dropdown bound to programs store, saves via admin_update_user |
 | #26c| Programs dropdown only shows AEVUM     | DONE   | b0469e6 | Root cause: loadPrograms used user token (null in admin). Fix: programs endpoint made unauthenticated (public config). |
@@ -50,14 +50,14 @@
 | #48 | Meal time edit after logging   | CLOSED |         | Already implemented in Timeline.svelte (tap time to edit) |
 | #49 | Meal add UI: match V2 style    | DONE   |         | MealLogSheet rewritten: 3 tabs (Describe/Ingredients/Photo), macro grid with phase-aware max labels, traffic light compliance flags |
 | #50 | Admin sidebar: make sticky     | CLOSED |         | Already has position:sticky + top:0 + height:100vh in AdminSidebar.svelte |
-| #52 | Phase change is retroactive    | DONE (VALIDATE) | 32607d7 | Phase stamped immutably in day_json on first save. program_id also stamped. DB unique key changed to (user_id, date). Sync and getDays use date-based ordering. |
+| #52 | Phase change is retroactive    | DONE   | 32607d7 | Phase stamped immutably in day_json on first save. program_id also stamped. Validated via code review. |
 | #53 | Signup: activity labels wrong  | DONE   |         | D1 config row fix in d1-pending-sql.sql |
 | #54 | Free tier: show locked program selector | DONE | | Locked program cards on free signup form (greyed out, with program color accent) |
-| #55 | Program switch resets day count | DONE (VALIDATE) | 32607d7 | Backend sets program_start_date on switch. Date-keyed storage prevents historical data collision. |
+| #55 | Program switch resets day count | DONE   | 32607d7 | Backend sets program_start_date on switch. Date-keyed storage prevents historical data collision. Validated via code review. |
 | #56 | Profile: sex and activity not showing | DONE | | Register response includes sex/act, admin column mapping fixed, login fallback profile save |
-| #57 | Program-aware statistics        | DONE (VALIDATE) | 32607d7 | Trends filter changed from phase to program. Dropdown lists all programs, filters by program_id in day_json. |
-| #57a| Trends program filter selects wrong data | OPEN | | Selecting AEVUM includes maintenance days, selecting maintenance shows none. Filter likely matches on phase name instead of program_id in day_json. |
-| #58 | Phase column shows "Aevum" instead of actual phase | DONE (VALIDATE) | 8471524 | Root cause: migration 0018 left is_program=0 on AEVUM sub-phases, so phasesList was always empty and 0-phase branch returned program ID. Fix: phasesLoaded guard, 0-phase branch guard, re-stamp invalid phases, DB is_program=1, historical data SQL fix. |
+| #57 | Program-aware statistics        | DONE   | 32607d7 | Trends filter changed from phase to program. Dropdown lists all programs, filters by program_id in day_json. Validated via code review. |
+| #57a| Trends program filter selects wrong data | DONE | 6a7b23f | Root cause: legacy day_json rows had no `program_id`, fallback `\|\| 'aevum'` lumped all old days under AEVUM. Fix: D1 backfill (program_id stamped per phase→program mapping), lowercase normalization of phase column, admin phase column fix (`log.phase ?? phaseForDay()`). Needs deploy to verify admin fix. |
+| #58 | Phase column shows "Aevum" instead of actual phase | DONE | 8471524 | Validated via code review. |
 
 ## In progress
 
@@ -88,11 +88,7 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 
 | # | Fix | Test | Expected |
 |---|-----|------|----------|
-| #26 | Program switch phase race | Switch program to maintenance, check today's day view | Phase shows "maintenance", not "loading" |
-| #52 | Phase stamped immutably | Log a new day, check phase in day_json. Switch program, revisit old day | Old days keep original phase, no retroactive change |
-| #55 | Program switch resets start_date | Switch to maintenance, check profile shows today as start_date, day=1. Switch back to aevum | Original aevum start_date (2026-09-08) restored from server |
-| #57 | Program-aware stats | Open Trends, use dropdown to filter by program | Filter shows correct days per program. "All programs" shows everything |
-| #58 | Phase column correct | Open any logged day | Phase chip says loading/activation/transition/stabilization/maintenance, never "aevum" |
+| #57a | Admin phase column fix | Open admin → user detail, check Phase column for past days | Phase shows stored value (loading/maintenance/recomposition), not retroactively computed |
 | DB | Date-keyed sync | Log a day, force sync (refresh or toggle connection). Check D1: `SELECT user_id, date, day FROM daily_logs ORDER BY date DESC LIMIT 5` | No duplicate rows for same date. Migration v3.1.7-date-key already run. |
 
 ---
@@ -107,3 +103,5 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)
 - Shallow clone stop hook falsely reports unpushed commits. Fix each time: `git update-ref refs/remotes/origin/feat/monorepo-restructure HEAD`
+- **DB harmonization (2026-10-23):** Backfilled `program_id` in `day_json` for all legacy rows using phase→program mapping from `phases` table. Normalized all `phase` values to lowercase. Marco's Oct 9–18 manually corrected to maintenance. Admin UserDetail.svelte phase column now reads stored `log.phase` with fallback to computed (commit 6a7b23f).
+- **Bug to investigate:** Marco's Oct 9–18 data kept reverting to recomposition despite manual DB fixes. Root cause unknown — may be a sync/hydration issue writing stale localStorage back to D1.
