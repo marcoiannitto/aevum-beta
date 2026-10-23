@@ -60,7 +60,10 @@ export interface UserProfile {
 	program?: boolean;
 	program_id?: string;
 	coach_whatsapp?: string;
-	[key: string]: unknown;
+	needs_profile?: boolean;
+	notes?: string;
+	start_weight?: number;
+	activation_model?: string;
 }
 
 export const profile = writable<UserProfile | null>(null);

@@ -22,6 +22,7 @@
 	let reversed = $derived([...meals].reverse());
 
 	let expandedIdx = $state<number | null>(null);
+	let editingTimeIdx = $state<number | null>(null);
 
 	interface ItemEntry {
 		name: string;
@@ -72,6 +73,25 @@
 	function originalIndex(reversedIdx: number): number {
 		return meals.length - 1 - reversedIdx;
 	}
+
+	function startEditTime(oi: number, e: Event) {
+		e.stopPropagation();
+		editingTimeIdx = oi;
+	}
+
+	function commitTime(oi: number, e: Event) {
+		const input = e.target as HTMLInputElement;
+		const val = input.value; // "HH:MM"
+		if (!$dayData || !val) { editingTimeIdx = null; return; }
+		$dayData.meals[oi].time = val;
+		$dayData.meals[oi].ts = null; // clear ts so time takes priority
+		editingTimeIdx = null;
+		saveDay();
+	}
+
+	function cancelEditTime() {
+		editingTimeIdx = null;
+	}
 </script>
 
 {#if meals.length === 0}
@@ -85,7 +105,20 @@
 			{@const items = ((meal as any).items || []) as ItemEntry[]}
 			{@const hasItems = items.length > 0}
 			<div class="meal-row">
-				<div class="meal-time">{meal.time || (meal.ts ? fmtTime(meal.ts) : '– –')}</div>
+				{#if editingTimeIdx === oi}
+				<input
+					class="meal-time-input"
+					type="time"
+					value={meal.time || (meal.ts ? fmtTime(meal.ts) : '')}
+					onchange={(e) => commitTime(oi, e)}
+					onblur={() => cancelEditTime()}
+					autofocus
+				/>
+			{:else}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="meal-time" onclick={(e) => startEditTime(oi, e)}>{meal.time || (meal.ts ? fmtTime(meal.ts) : '– –')}</div>
+			{/if}
 				<div class="meal-body" class:open={isOpen} role="button" tabindex="0" onclick={() => toggleExpand(oi)} onkeydown={(e) => e.key === 'Enter' && toggleExpand(oi)}>
 					{#if noMacros}
 						{@const st = mealStatus(meal)}
@@ -150,7 +183,9 @@
 	.tl-head { font-size: 13px; color: var(--muted); margin: 2px 2px 6px; }
 	.meal-row { display: flex; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line-soft); }
 	.meal-row:last-child { border-bottom: none; }
-	.meal-time { font-size: 12px; color: var(--muted); width: 42px; flex-shrink: 0; padding-top: 2px; font-variant-numeric: tabular-nums; }
+	.meal-time { font-size: 12px; color: var(--muted); width: 42px; flex-shrink: 0; padding-top: 2px; font-variant-numeric: tabular-nums; cursor: pointer; border-radius: 4px; }
+	.meal-time:hover { background: var(--line-soft); }
+	.meal-time-input { width: 52px; flex-shrink: 0; font-size: 12px; padding: 2px 0; border: 1px solid var(--gold); border-radius: 4px; background: var(--paper); color: var(--ink); font-family: inherit; font-variant-numeric: tabular-nums; }
 	.meal-body { flex: 1; min-width: 0; cursor: pointer; }
 	.meal-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 	.meal-body.open .meal-name { white-space: normal; overflow: visible; }

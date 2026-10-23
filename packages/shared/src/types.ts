@@ -23,7 +23,8 @@ export interface Profile {
   maintenance_mode: string | null;
   maintenance_diet: string | null;
   phase_mode: PhaseMode | null;
-  program: string | null;
+  program: string | null; // DB: text (program name). API returns !!program (boolean). Frontend uses boolean.
+  program_id: string | null; // FK → programs.id. API defaults to 'aevum'.
   notes: string | null;
   email: string | null;
   start_date: string | null;

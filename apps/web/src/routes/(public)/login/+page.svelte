@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { token, pid, isProgram, loadStoredProfile, saveProfile } from '$lib/stores/auth';
 	import { api, GOOGLE_CLIENT_ID } from '$lib/api/client';
+	import { actLabels, actFactors } from '$lib/stores/config';
 	import type { UserProfile } from '$lib/stores/auth';
 
 	let view = $state<'main' | 'token' | 'free'>('main');
@@ -18,7 +19,7 @@
 	let freeDob = $state('');
 	let freeHeight = $state('');
 	let freeWeight = $state('');
-	let freeAct = $state('moderate');
+	let freeAct = $state('1.55');
 
 	let googleLoaded = $state(false);
 
@@ -179,18 +180,16 @@
 			if (d.token) $token = d.token;
 			if (d.id) $pid = d.id;
 
-			// Build a local profile
-			const prof: UserProfile = {
-				name: freeName.trim(),
-				sex: freeSex,
-				dob: freeDob,
-				height: +freeHeight,
-				weight: +freeWeight,
-				act: freeAct,
-				program: false
-			};
 			isProgram.set(false);
-			saveProfile(prof);
+
+			// Fetch server-normalized profile (correct sex case, activity factor, etc.)
+			try {
+				const p = await api<{ profile: UserProfile }>('profile', {}, { contentType: 'text/plain;charset=utf-8' });
+				if (p?.profile) {
+					saveProfile({ ...p.profile, program: false });
+				}
+			} catch { /* profile will load on next boot */ }
+
 			goto('/');
 		} catch (e: unknown) {
 			error = (e as Error).message || 'Connection error';
@@ -307,11 +306,9 @@
 			<label class="field">
 				<span>Activity level</span>
 				<select bind:value={freeAct}>
-					<option value="sedentary">Sedentary</option>
-					<option value="light">Lightly Active</option>
-					<option value="moderate">Moderately Active</option>
-					<option value="active">Very Active</option>
-					<option value="extra">Extra Active</option>
+					{#each actLabels() as label, i}
+						<option value={String(actFactors()[i])}>{label}</option>
+					{/each}
 				</select>
 			</label>
 

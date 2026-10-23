@@ -60,6 +60,8 @@
 		flex-shrink: 0;
 		overflow-y: auto;
 		height: 100vh;
+		position: sticky;
+		top: 0;
 	}
 	.sb-brand {
 		padding: 22px 20px 18px;

@@ -191,6 +191,17 @@
 							<span class="prog-change">Change</span>
 						</div>
 					</div>
+				{:else}
+					<div class="section">
+						<h3>Program</h3>
+						<div class="prog-row prog-locked">
+							<div class="prog-info">
+								<span class="prog-dot" style="background: #999"></span>
+								<span class="prog-label" style="color: var(--muted)">No program</span>
+							</div>
+							<span class="prog-upgrade">Upgrade</span>
+						</div>
+					</div>
 				{/if}
 
 				<!-- Coach -->
@@ -394,6 +405,18 @@
 		font-size: 0.82rem;
 		color: var(--gold);
 		font-weight: 500;
+	}
+	.prog-locked {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.prog-upgrade {
+		font-size: 0.78rem;
+		color: var(--muted);
+		font-weight: 500;
+		background: var(--line-soft);
+		padding: 2px 8px;
+		border-radius: 4px;
 	}
 	.footer {
 		display: flex;

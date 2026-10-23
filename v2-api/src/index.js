@@ -150,6 +150,7 @@ export default {
       if (action === 'register') return json(await doRegister(body, db), cors);
       if (action === 'auth_google') return json(await authGoogle(body, db, env), cors);
       if (action === 'login') return json(await doLogin(body, db), cors);
+      if (action === 'programs') return json(await listPrograms(db), cors);
 
       // Auth check
       const auth = await authenticate(request, db);
@@ -207,6 +208,8 @@ export default {
         case 'estimate':   return json(await estimateMeal(userId, body, db, env), cors);
         case 'foodcheck':  return json(await foodCheck(body, db, env), cors);
         case 'shoplist':   return json(await shopList(body, env), cors);
+        case 'set_program': return json(await setProgram(userId, body, db), cors);
+        case 'add_phase_transition': return json(await addPhaseTransition(userId, body, db), cors);
         default: return json({ error: 'Unknown action' }, cors, 400);
       }
     } catch (err) {
@@ -421,15 +424,30 @@ async function updateProfile(userId, body, db) {
         sets.push('name = ?'); vals.push(String(body.name).trim());
       } else if (key === 'phase_mode') {
         const pm = String(body.phase_mode).trim();
-        if (['maintenance', 'recomposition'].includes(pm)) {
+        if (['maintenance', 'recomposition', 'tracker', 'keto', 'weight_loss'].includes(pm)) {
           sets.push('phase_mode = ?'); vals.push(pm);
         }
       }
     }
   }
   if (!sets.length) return { error: 'nothing to update' };
+
+  // Read old phase_mode before updating (for transition record)
+  let oldPhaseMode = null;
+  const newPhaseMode = sets.some(s => s.startsWith('phase_mode ')) ? body.phase_mode : null;
+  if (newPhaseMode) {
+    const cur = await db.prepare('SELECT phase_mode FROM users WHERE id = ?').bind(userId).first();
+    oldPhaseMode = cur?.phase_mode || '';
+  }
+
   vals.push(userId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+
+  // Record phase transition if phase_mode changed
+  if (newPhaseMode && oldPhaseMode !== newPhaseMode) {
+    await recordPhaseTransition(userId, oldPhaseMode, newPhaseMode, db);
+  }
+
   // Recompute TDEE only when body-comp fields changed (not phase_mode or name alone)
   const tdeeFields = ['sex', 'dob', 'height', 'target_kg', 'activity'];
   const bodyChanged = sets.some(s => tdeeFields.some(f => s.startsWith(f + ' ')));
@@ -479,9 +497,26 @@ async function getProfile(userId, db) {
       maintenance_diet: row.maintenance_diet || '',
       phase_mode: row.phase_mode || '',
       program: !!row.program,
+      program_id: row.program_id || 'aevum',
       notes: row.notes || ''
     }
   };
+}
+
+// ─── Programs ───────────────────────────────────────────────
+async function listPrograms(db) {
+  const rows = await db.prepare('SELECT * FROM programs WHERE is_active = 1 ORDER BY sort_order').all();
+  return { programs: rows.results || [] };
+}
+
+async function setProgram(userId, body, db) {
+  const programId = String(body.program_id || '').trim();
+  if (!programId) return { error: 'program_id required' };
+  // Verify program exists
+  const prog = await db.prepare('SELECT id FROM programs WHERE id = ? AND is_active = 1').bind(programId).first();
+  if (!prog) return { error: 'invalid program_id' };
+  await db.prepare('UPDATE users SET program_id = ? WHERE id = ?').bind(programId, userId).run();
+  return { ok: true, program_id: programId };
 }
 
 // ─── Sync (upsert daily log) ─────────────────────────────────
@@ -548,6 +583,36 @@ async function getPhaseTransitions(userId, db) {
     'SELECT id, from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY day ASC'
   ).bind(userId).all();
   return { transitions: rows.results };
+}
+
+async function addPhaseTransition(userId, body, db) {
+  const fromPhase = String(body.from_phase || '').trim();
+  const toPhase = String(body.to_phase || '').trim();
+  const day = parseInt(body.day);
+  const date = String(body.date || '').trim();
+  const reason = body.reason ? String(body.reason).trim() : null;
+  if (!fromPhase || !toPhase || !day || !date) return { error: 'from_phase, to_phase, day, date required' };
+  await db.prepare(
+    'INSERT INTO phase_transitions (user_id, from_phase, to_phase, day, date, reason) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(userId, fromPhase, toPhase, day, date, reason).run();
+  return { ok: true };
+}
+
+/** Helper: insert a phase_transition record when phase_mode changes */
+async function recordPhaseTransition(userId, oldMode, newMode, db) {
+  if (!oldMode || !newMode || oldMode === newMode) return;
+  // Compute current day number from start_date
+  const user = await db.prepare('SELECT start_date FROM users WHERE id = ?').bind(userId).first();
+  const startDate = user?.start_date;
+  let day = 1;
+  let date = new Date().toISOString().slice(0, 10);
+  if (startDate) {
+    const diff = Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000);
+    day = Math.max(1, diff + 1);
+  }
+  await db.prepare(
+    'INSERT INTO phase_transitions (user_id, from_phase, to_phase, day, date, reason) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(userId, oldMode, newMode, day, date, 'mode_change').run();
 }
 
 // ─── Messages ────────────────────────────────────────────────
@@ -1289,7 +1354,8 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name', 'phase_mode'];
+  const allowed = ['program', 'program_id', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name', 'phase_mode'];
+  const validPhaseModes = ['maintenance', 'recomposition', 'tracker', 'keto', 'weight_loss'];
 
   // Auto-set start_date when activating program and no start_date exists
   if (body.program === 1 && !body.start_date) {
@@ -1303,13 +1369,65 @@ async function adminUpdateUser(body, db) {
   const vals = [];
   for (const key of allowed) {
     if (body[key] !== undefined) {
-      sets.push(`${key} = ?`);
-      vals.push(body[key]);
+      if (key === 'sex') {
+        // Normalize: lowercase, validate
+        const s = String(body.sex).toLowerCase();
+        if (s !== 'm' && s !== 'f') continue;
+        sets.push('sex = ?'); vals.push(s);
+      } else if (key === 'dob') {
+        // Write dob and recompute age
+        sets.push('dob = ?'); vals.push(body.dob);
+        sets.push('age = ?'); vals.push(dobToAge(body.dob));
+      } else if (key === 'age') {
+        // Skip standalone age writes (always derived from dob)
+        continue;
+      } else if (key === 'act') {
+        // Resolve label to numeric factor, write to correct column
+        const actFactor = await resolveActivity(body.act, db);
+        sets.push('activity = ?'); vals.push(actFactor);
+      } else if (key === 'phase_mode') {
+        const pm = String(body.phase_mode).trim();
+        if (!validPhaseModes.includes(pm)) continue;
+        sets.push('phase_mode = ?'); vals.push(pm);
+      } else {
+        sets.push(`${key} = ?`);
+        vals.push(body[key]);
+      }
     }
   }
   if (!sets.length) return { error: 'nothing to update' };
+
+  // Read old phase_mode before updating (for transition record)
+  let oldPhaseMode = null;
+  const newPhaseMode = sets.some(s => s.startsWith('phase_mode ')) ? body.phase_mode : null;
+  if (newPhaseMode) {
+    const cur = await db.prepare('SELECT phase_mode FROM users WHERE id = ?').bind(targetId).first();
+    oldPhaseMode = cur?.phase_mode || '';
+  }
+
   vals.push(targetId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+
+  // Record phase transition if phase_mode changed
+  if (newPhaseMode && oldPhaseMode !== newPhaseMode) {
+    await recordPhaseTransition(targetId, oldPhaseMode, newPhaseMode, db);
+  }
+
+  // Recompute TDEE when body-comp fields changed
+  const tdeeFields = ['sex', 'dob', 'height', 'target_kg', 'activity', 'start_weight'];
+  const bodyChanged = sets.some(s => tdeeFields.some(f => s.startsWith(f + ' ')));
+  if (bodyChanged) {
+    const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(targetId).first();
+    if (row && row.sex && row.height && (row.dob || row.age) && row.start_weight) {
+      const age = row.dob ? dobToAge(row.dob) : row.age;
+      const act = parseFloat(row.activity) || 1.55;
+      const s = row.sex === 'm' ? 5 : -161;
+      const tw = parseFloat(row.target_kg) || parseFloat(row.start_weight);
+      const tdee = Math.round((10 * tw + 6.25 * row.height - 5 * age + s) * act);
+      await db.prepare('UPDATE users SET current_target_kcal = ? WHERE id = ?').bind(tdee, targetId).run();
+    }
+  }
+
   return { ok: true };
 }
 

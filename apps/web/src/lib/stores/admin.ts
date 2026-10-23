@@ -224,13 +224,25 @@ export const TABLES: Record<string, TableDef> = {
 
 export const SIDEBAR_SECTIONS = [
 	{
+		title: 'People',
+		items: [
+			{ key: 'users', label: 'Users' }
+		]
+	},
+	{
+		title: 'Onboarding',
+		items: [
+			{ key: 'intakes', label: 'Intakes' }
+		]
+	},
+	{
 		title: 'Reference tables',
 		items: [
+			{ key: 'phases', label: 'Phases' },
 			{ key: 'rules', label: 'Rules' },
 			{ key: 'foods', label: 'Foods' },
 			{ key: 'policy', label: 'Policy' },
-			{ key: 'config', label: 'Config' },
-			{ key: 'phases', label: 'Phases' }
+			{ key: 'config', label: 'Config' }
 		]
 	},
 	{
@@ -247,18 +259,6 @@ export const SIDEBAR_SECTIONS = [
 		items: [
 			{ key: 'ingredients', label: 'Ingredients' },
 			{ key: 'catered_menu', label: 'Catered Menu' }
-		]
-	},
-	{
-		title: 'Onboarding',
-		items: [
-			{ key: 'intakes', label: 'Intakes' }
-		]
-	},
-	{
-		title: 'People',
-		items: [
-			{ key: 'users', label: 'Users' }
 		]
 	}
 ];

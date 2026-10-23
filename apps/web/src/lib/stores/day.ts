@@ -60,8 +60,8 @@ async function flushSyncQueue(): Promise<void> {
 				entry.nextRetryAt = Date.now() + 1000 * Math.pow(2, entry.retries); // 2s, 4s, 8s
 				remaining.push(entry);
 			} else {
-				// Keep for next session (reset retry counter, set nextRetryAt to 0)
-				remaining.push({ ...entry, retries: 0, nextRetryAt: 0 });
+				// Max retries exceeded — drop to avoid infinite loop
+				console.warn('[AEVUM] sync retry exhausted for day', entry.payload.day);
 			}
 		}
 	}
@@ -238,9 +238,9 @@ export function syncDay(): void {
 		water_ml: (day.water || 0) * 250,
 		exercise: JSON.stringify(day.exercise || []),
 		exercise_kcal: t.exKcal,
-		energy: day.energy || '',
-		hunger: day.hunger || '',
-		sleep: day.sleep || '',
+		energy: day.energy ?? '',
+		hunger: day.hunger ?? '',
+		sleep: day.sleep ?? '',
 		notes: day.notes || '',
 		day_json: JSON.stringify(day),
 		updated_at: Date.now(),

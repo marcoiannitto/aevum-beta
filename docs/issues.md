@@ -44,13 +44,23 @@
 | #26c| Programs dropdown only shows AEVUM     | DONE   | b0469e6 | Root cause: loadPrograms used user token (null in admin). Fix: programs endpoint made unauthenticated (public config). |
 | #26d| ProgramPicker empty on mobile          | DONE   | b0469e6 | Same root cause as #26c. Fixed by noAuth flag on store. |
 | #45 | loadPrograms 400 on deployed app       | DONE   | b0469e6 | Deployed API didn't have programs route. Same commit fixes it; needs redeploy. |
+| #44 | Meal expand: ingredients breakdown missing | DONE |         | Was broken, now fixed |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #44  | Meal expand: ingredients breakdown missing | OPEN | Clicking a logged meal should expand to show each ingredient with its individual kcal, protein, fat, carbs. These should add up to the meal total. Was working before, now broken. |
-| #46  | AI worker 403 on quickEstimate | OPEN | sweet-fire-a436 worker returning 403. Not a code bug. Check Cloudflare dashboard: worker active? API key valid? |
+| #47  | ProgramPicker popup renders below profile sheet | OPEN | Popup opens behind/below the profile window instead of on top. UX bug, needs root cause analysis. |
+| #46  | AI worker 401 on quickEstimate | DONE | Expired Anthropic API key. Updated `ANTHROPIC_KEY` secret in Cloudflare worker settings. |
+| #48  | Meal time edit after logging   | OPEN | After adding a meal, user needs to be able to change the timing. Currently no edit UI for meal time. |
+| #49  | Meal add UI: match V2 style    | OPEN | V3 "add a meal" UI doesn't match V2. Replicate V2 meal logging UI exactly. |
+| #52  | Phase change is retroactive     | OPEN | Changing phase_mode retroactively changes all past days. Phase should be stamped into day_json at save time so historical data is immutable. Backfill needed for existing data. |
+| #53  | Signup: activity labels wrong  | OPEN | Registration form uses vague labels (Sedentary, Moderately Active, etc). Should use frequency-based labels (workouts per week) like the tracker does (#31). |
+| #54  | Free tier: show locked program selector | OPEN | Free tier signup doesn't show program selection. Should display it as locked/greyed out (available only for paid tiers) so users know it exists. |
+| #55  | Program logic: define and verify | OPEN | Program flow logic needs proper definition and verification that implementation matches. Scope TBD. |
+| #56  | Profile: sex and activity not showing after signup | OPEN | Free tier signup saves sex and activity but profile sheet shows them empty. Likely duplicate variable names (e.g. sex vs gender, activity vs act). Audit all user fields for duplicates and ensure signup → profile → DB uses one variable per parameter. |
+| #50  | Admin sidebar: make sticky     | OPEN | Sidebar scrolls with page. Should be fixed/static (position: sticky or fixed). |
+| #51  | Admin sidebar: reorder menu    | OPEN | New order: People, Intakes, then reference tables (Phases, Rules, Foods, then rest unchanged). |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |

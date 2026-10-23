@@ -35,6 +35,9 @@ export const users = sqliteTable('users', {
   loading_days: integer('loading_days'),
   transition_days: integer('transition_days'),
   stabilization_days: integer('stabilization_days'),
+  program_id: text('program_id').default('aevum'),
+  needs_profile: integer('needs_profile').default(0),
+  coach_whatsapp: text('coach_whatsapp'),
   intake_token: text('intake_token'),
   created_at: text('created_at'),
 });
@@ -110,8 +113,11 @@ export const rules = sqliteTable('rules', {
 
 export const phases = sqliteTable('phases', {
   key: text('key').primaryKey(),
+  program_id: text('program_id'),
   name: text('name'),
   sort_order: integer('sort_order'),
+  color: text('color'),
+  is_program: integer('is_program').default(0),
   calorie_mode: text('calorie_mode'),
   calorie_cut: real('calorie_cut'),
   macro_rules: text('macro_rules'),
@@ -122,6 +128,7 @@ export const phases = sqliteTable('phases', {
   ramp_from: text('ramp_from'),
   ramp_days: integer('ramp_days'),
   ramp_pct: real('ramp_pct'),
+  calorie_bank: integer('calorie_bank').default(0),
   bank_window: integer('bank_window'),
   bank_clamp_lo: real('bank_clamp_lo'),
   bank_clamp_hi: real('bank_clamp_hi'),
@@ -130,6 +137,12 @@ export const phases = sqliteTable('phases', {
   drift_step_kcal: integer('drift_step_kcal'),
   drift_floor_kcal: integer('drift_floor_kcal'),
   drift_band_kg: real('drift_band_kg'),
+  duration_default: integer('duration_default'),
+  requires_serum: integer('requires_serum').default(0),
+  has_fasting: integer('has_fasting').default(0),
+  gate_fat: real('gate_fat'),
+  gate_carb: real('gate_carb'),
+  use_buckets: integer('use_buckets').default(0),
 });
 
 // ─── Programs ───────────────────────────────────────────────
