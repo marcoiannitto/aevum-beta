@@ -1,7 +1,7 @@
 # AEVUM Tracker V3 -- Issue Tracker
 
 > Branch: `feat/monorepo-restructure`
-> Last updated: 2026-10-22
+> Last updated: 2026-10-23
 
 ## Status legend
 
@@ -45,13 +45,14 @@
 | #26d| ProgramPicker empty on mobile          | DONE   | b0469e6 | Same root cause as #26c. Fixed by noAuth flag on store. |
 | #45 | loadPrograms 400 on deployed app       | DONE   | b0469e6 | Deployed API didn't have programs route. Same commit fixes it; needs redeploy. |
 | #44 | Meal expand: ingredients breakdown missing | DONE |         | Was broken, now fixed |
+| #46 | AI worker 401 on quickEstimate | DONE   |         | Expired Anthropic API key. Updated `ANTHROPIC_KEY` secret in Cloudflare worker settings. |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
 | #47  | ProgramPicker popup renders below profile sheet | OPEN | Popup opens behind/below the profile window instead of on top. UX bug, needs root cause analysis. |
-| #46  | AI worker 401 on quickEstimate | DONE | Expired Anthropic API key. Updated `ANTHROPIC_KEY` secret in Cloudflare worker settings. |
+| #57  | Phase-aware statistics          | OPEN | Stats (macros, weight, etc.) should show averages/values per phase, not globally. Each phase has different targets so stats need phase context. Depends on #52 (phase must be immutably stamped before stats can rely on it). |
 | #48  | Meal time edit after logging   | OPEN | After adding a meal, user needs to be able to change the timing. Currently no edit UI for meal time. |
 | #49  | Meal add UI: match V2 style    | OPEN | V3 "add a meal" UI doesn't match V2. Replicate V2 meal logging UI exactly. |
 | #52  | Phase change is retroactive     | OPEN | Changing phase_mode retroactively changes all past days. Phase should be stamped into day_json at save time so historical data is immutable. Backfill needed for existing data. |
