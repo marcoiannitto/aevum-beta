@@ -67,6 +67,7 @@
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
+| #59  | AI worker sporadic 403         | OPEN        | Anthropic API rate-limits cause sporadic "ai http 403". Fix: add 1-retry with 1s backoff in `callAI` for 403/429 responses. |
 
 ## Deferred (post-rollout)
 
