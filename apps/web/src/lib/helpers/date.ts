@@ -34,7 +34,8 @@ export function dayToDate(dayNum: number): Date | null {
 	return d;
 }
 
-/** Convert a Date to a day number (0 if no start_date) */
+/** Convert a Date to a day number relative to original start_date (0 if no start_date).
+ *  Used for absolute day numbering (admin/historical). */
 export function dateToDayNum(date: Date): number {
 	const p = get(profile);
 	if (!p?.start_date) return 0;
@@ -42,6 +43,27 @@ export function dateToDayNum(date: Date): number {
 	if (isNaN(start.getTime())) return 0;
 	const diff = Math.floor((date.getTime() - start.getTime()) / 86400000);
 	return diff + 1;
+}
+
+/** Convert a Date to a program-relative day number.
+ *  Uses program_start_date (resets on program switch).
+ *  Falls back to start_date for backward compat. */
+export function programDayNum(date: Date): number {
+	const p = get(profile) as Record<string, unknown> | null;
+	const psd = (p?.program_start_date as string) || (p?.start_date as string);
+	if (!psd) return 0;
+	const start = new Date(psd + 'T00:00:00');
+	if (isNaN(start.getTime())) return 0;
+	const diff = Math.floor((date.getTime() - start.getTime()) / 86400000);
+	return diff + 1;
+}
+
+/** Format a Date as YYYY-MM-DD string */
+export function dateStr(date: Date): string {
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, '0');
+	const d = String(date.getDate()).padStart(2, '0');
+	return `${y}-${m}-${d}`;
 }
 
 /** Today's day number (or 0 if no start_date) */

@@ -67,11 +67,11 @@ export async function switchProgram(programId: string): Promise<{ ok: boolean; e
     const d = await api<{ ok?: boolean; error?: string; program_id?: string; start_date?: string }>('set_program', { program_id: programId });
     if (d?.error) return { ok: false, error: d.error };
 
-    // Update profile with new program_id and reset start_date (#55)
+    // Update profile with new program_id and program_start_date (never overwrite start_date)
     const p = get(profile);
     if (p) {
-      const newStartDate = d?.start_date || new Date().toISOString().slice(0, 10);
-      saveProfile({ ...p, program_id: programId, start_date: newStartDate } as any);
+      const newProgramStart = d?.start_date || new Date().toISOString().slice(0, 10);
+      saveProfile({ ...p, program_id: programId, program_start_date: newProgramStart } as any);
     }
 
     // Reload phases and rules for the new program

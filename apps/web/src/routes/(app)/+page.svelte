@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { profile, pid, isProgram, loadStoredProfile, saveProfile, type UserProfile } from '$lib/stores/auth';
-	import { hydrateFromBackend } from '$lib/stores/day';
+	import { hydrateFromBackend, migrateToDateKeys } from '$lib/stores/day';
 	import { currentDay, currentDate, dayData, loadDay, loadDate, saveDay, syncDay } from '$lib/stores/day';
 	import { phaseFor, loadPhases, totalDays } from '$lib/stores/phases';
 	import { loadConfig, cfg } from '$lib/stores/config';
@@ -95,6 +95,8 @@
 				const prof = d.profile;
 				if (prof.program === false) isProgram.set(false);
 				saveProfile(prof);
+				// Migrate old day-number keys to date keys (one-time, after profile loads)
+				migrateToDateKeys();
 				// Re-load today with updated profile (day number may now resolve)
 				loadDate(today);
 			}

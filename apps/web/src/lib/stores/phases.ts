@@ -170,6 +170,16 @@ export function phaseFor(dayNum: number, prof?: Record<string, unknown> | null):
 		return { key: 'tracker', name: trk?.name ?? 'Tracking', color: trk?.color ?? MAINT_COLOR };
 	}
 
+	// 0-phase programs (maintenance, recomposition, keto): return program name as phase
+	if ($list.length === 0) {
+		const progId = currentProgramId();
+		const reg = $phases[progId];
+		if (reg) {
+			return { key: progId, name: reg.name, color: reg.color || MAINT_COLOR };
+		}
+		return { key: progId, name: progId.charAt(0).toUpperCase() + progId.slice(1), color: MAINT_COLOR };
+	}
+
 	if ($list.length) {
 		const lens = phaseLens(p);
 		let cum = 0;

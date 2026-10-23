@@ -9,7 +9,7 @@
 	import { logoutAndReset } from '$lib/stores/reset';
 	import { api } from '$lib/api/client';
 	import { actLabels, actFactors } from '$lib/stores/config';
-	import { currentProgram } from '$lib/stores/programs';
+	import { programs, currentProgramId } from '$lib/stores/programs';
 	import ProgramPicker from '$lib/components/programs/ProgramPicker.svelte';
 
 	let {
@@ -31,6 +31,12 @@
 	let editAct = $state('');
 	let saving = $state(false);
 	let programPickerOpen = $state(false);
+
+	// Reactive program lookup (fixes stale display on program switch)
+	const currentProg = $derived.by(() => {
+		const pid = ($profile as Record<string, unknown>)?.program_id as string || 'aevum';
+		return $programs.find(p => p.id === pid) || null;
+	});
 
 	const APP_VERSION = 'v3.1.6';
 
@@ -173,16 +179,15 @@
 
 				<!-- Program -->
 				{#if $isProgram}
-					{@const prog = currentProgram()}
 					<div class="section">
 						<h3>Program</h3>
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div class="prog-row" onclick={() => programPickerOpen = true}>
 							<div class="prog-info">
-								{#if prog}
-									<span class="prog-dot" style="background: {prog.color}"></span>
-									<span class="prog-label">{prog.name}</span>
+								{#if currentProg}
+									<span class="prog-dot" style="background: {currentProg.color}"></span>
+									<span class="prog-label">{currentProg.name}</span>
 								{:else}
 									<span class="prog-dot" style="background: #B08D2E"></span>
 									<span class="prog-label">AEVUM</span>

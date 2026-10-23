@@ -36,6 +36,7 @@ export const users = sqliteTable('users', {
   transition_days: integer('transition_days'),
   stabilization_days: integer('stabilization_days'),
   program_id: text('program_id').default('aevum'),
+  program_start_date: text('program_start_date'),
   needs_profile: integer('needs_profile').default(0),
   coach_whatsapp: text('coach_whatsapp'),
   intake_token: text('intake_token'),
@@ -55,9 +56,9 @@ export const authTokens = sqliteTable('auth_tokens', {
 
 export const dailyLogs = sqliteTable('daily_logs', {
   user_id: text('user_id').notNull(),
-  day: integer('day').notNull(),
+  day: integer('day').default(0),
   phase: text('phase'),
-  date: text('date'),
+  date: text('date').notNull().default(''),
   weight: real('weight'),
   waist: real('waist'),
   serum_am: text('serum_am'),

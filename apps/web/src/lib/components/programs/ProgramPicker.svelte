@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
 	import Sheet from '$lib/components/ui/Sheet.svelte';
-	import { profile } from '$lib/stores/auth';
+	import { profile, isProgram } from '$lib/stores/auth';
 	import { programs, switchProgram, currentProgramId, loadPrograms } from '$lib/stores/programs';
 
 	let {
@@ -30,8 +30,21 @@
 
 	async function pick(programId: string) {
 		if (programId === currentProgramId()) return;
-		switching = programId;
 		error = '';
+
+		// AEVUM gate: directed program, not self-service
+		if (programId === 'aevum') {
+			error = 'AEVUM is a directed program. Contact Marco to enroll.';
+			return;
+		}
+
+		// Paid-only gate: all programs except "tracker" require paid subscription
+		if (programId !== 'tracker' && !get(isProgram)) {
+			error = 'This program requires a paid subscription.';
+			return;
+		}
+
+		switching = programId;
 		const result = await switchProgram(programId);
 		switching = '';
 		if (result.ok) {

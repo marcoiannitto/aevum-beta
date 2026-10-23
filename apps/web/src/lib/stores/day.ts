@@ -1,14 +1,15 @@
 /**
  * Day store — current day data, load/save, totals.
- * Maps to currentDay/day/loadDay/saveDay/totals from index.html.
+ * Storage key: K(userId, `day_${YYYY-MM-DD}`) — date is the identity.
+ * Day number is a derived display value from program_start_date.
  */
 import { writable, get } from 'svelte/store';
 import { K, pid, profile } from './auth';
 import { api } from '$lib/api/client';
 import { phaseFor } from './phases';
-import { dateToDayNum, effToday } from '$lib/helpers/date';
+import { programDayNum, dateStr, effToday } from '$lib/helpers/date';
 
-// --- Date helper ---
+// --- Date helper (kept for backward compat) ---
 
 /** Compute calendar date (YYYY-MM-DD) for a given day number from profile.start_date */
 export function dateForDay(dayNum: number): string {
@@ -17,10 +18,68 @@ export function dateForDay(dayNum: number): string {
 	if (!sd) return '';
 	const d = new Date(sd);
 	d.setDate(d.getDate() + dayNum - 1); // day 1 = start_date
-	const y = d.getFullYear();
-	const m = String(d.getMonth() + 1).padStart(2, '0');
-	const dd = String(d.getDate()).padStart(2, '0');
-	return `${y}-${m}-${dd}`;
+	return dateStr(d);
+}
+
+// --- localStorage migration ---
+
+/** One-time migration from day-number keys to date keys */
+export function migrateToDateKeys(): void {
+	const id = get(pid);
+	const p = get(profile) as Record<string, unknown> | null;
+	if (!id || !p) return;
+
+	const migKey = K(id, 'storage_migrated_v2');
+	try { if (localStorage.getItem(migKey)) return; } catch { return; }
+
+	const sd = p.start_date as string;
+	if (!sd) {
+		// No start_date — nothing to migrate
+		try { localStorage.setItem(migKey, '1'); } catch { /* noop */ }
+		return;
+	}
+
+	const startDate = new Date(sd + 'T00:00:00');
+	if (isNaN(startDate.getTime())) {
+		try { localStorage.setItem(migKey, '1'); } catch { /* noop */ }
+		return;
+	}
+
+	// Scan old day_N keys (up to 500 days)
+	for (let d = 1; d <= 500; d++) {
+		const oldKey = K(id, `day_${d}`);
+		try {
+			const raw = localStorage.getItem(oldKey);
+			if (!raw) continue;
+
+			const dd = JSON.parse(raw) as DayData;
+
+			// Compute date for this day number
+			let dk = dd.date;
+			if (!dk) {
+				const dt = new Date(startDate);
+				dt.setDate(dt.getDate() + d - 1);
+				dk = dateStr(dt);
+				dd.date = dk;
+			}
+
+			const newKey = K(id, `day_${dk}`);
+			// Don't overwrite if date-keyed data already exists (it's newer)
+			if (!localStorage.getItem(newKey)) {
+				localStorage.setItem(newKey, JSON.stringify(dd));
+			}
+
+			// Also migrate timestamp
+			const tsOld = K(id, `day_${d}_ts`);
+			const tsNew = K(id, `day_${dk}_ts`);
+			const tsRaw = localStorage.getItem(tsOld);
+			if (tsRaw && !localStorage.getItem(tsNew)) {
+				localStorage.setItem(tsNew, tsRaw);
+			}
+		} catch { continue; }
+	}
+
+	try { localStorage.setItem(migKey, '1'); } catch { /* noop */ }
 }
 
 // --- Retry queue ---
@@ -61,7 +120,7 @@ async function flushSyncQueue(): Promise<void> {
 				remaining.push(entry);
 			} else {
 				// Max retries exceeded — drop to avoid infinite loop
-				console.warn('[AEVUM] sync retry exhausted for day', entry.payload.day);
+				console.warn('[AEVUM] sync retry exhausted for date', entry.payload.date);
 			}
 		}
 	}
@@ -117,7 +176,7 @@ export interface DayData {
 /** The calendar date the user is viewing. Source of truth. */
 export const currentDate = writable<Date>(new Date());
 
-/** Day number in the program (derived from currentDate + start_date). 0 if no program. */
+/** Program-relative day number (derived from currentDate + program_start_date). 0 if no program. */
 export const currentDay = writable<number>(0);
 
 export const dayData = writable<DayData | null>(null);
@@ -125,7 +184,7 @@ export const dayPhases = writable<Record<number, string>>({});
 
 // --- Helpers ---
 
-export function blankDay(dayNum?: number): DayData {
+export function blankDay(ds?: string): DayData {
 	return {
 		meals: [],
 		water: 0,
@@ -138,40 +197,43 @@ export function blankDay(dayNum?: number): DayData {
 		hunger: 0,
 		sleep: 0,
 		notes: '',
-		date: dayNum != null ? dateForDay(dayNum) : '',
+		date: ds || '',
 	};
 }
 
+/** Load day data by calendar date string (YYYY-MM-DD). Primary entry point. */
 export function loadDay(dayNum: number): void {
+	// dayNum is now the program-relative day, but storage is by date
 	const id = get(pid);
-	currentDay.set(dayNum);
-	if (!id) { dayData.set(blankDay(dayNum)); return; }
+	const date = get(currentDate);
+	const ds = dateStr(date);
 
-	const key = K(id, `day_${dayNum}`);
+	currentDay.set(dayNum);
+	if (!id) { dayData.set(blankDay(ds)); return; }
+
+	const key = K(id, `day_${ds}`);
 	try {
 		const raw = localStorage.getItem(key);
 		if (raw) {
 			const parsed = JSON.parse(raw) as DayData;
-			// Backfill date if missing from older cached data
-			if (!parsed.date) parsed.date = dateForDay(dayNum);
+			// Ensure date field is set
+			if (!parsed.date) parsed.date = ds;
 			dayData.set(parsed);
 		} else {
-			dayData.set(blankDay(dayNum));
+			dayData.set(blankDay(ds));
 		}
 	} catch {
-		dayData.set(blankDay(dayNum));
+		dayData.set(blankDay(ds));
 	}
 
-	// Remember last viewed day
-	try { localStorage.setItem(K(id, 'lastDay'), String(dayNum)); } catch { /* noop */ }
+	// Remember last viewed date
+	try { localStorage.setItem(K(id, 'lastDay'), ds); } catch { /* noop */ }
 }
 
-/** Navigate to a calendar date. Sets currentDate + computes day number from start_date. */
+/** Navigate to a calendar date. Sets currentDate + computes program day number. */
 export function loadDate(date: Date): void {
 	currentDate.set(date);
-	const dayNum = dateToDayNum(date);
-	// dateToDayNum returns 0 when no start_date. Day data is keyed by day number,
-	// so for free users (no program), key by days-since-first-open or just 1.
+	const dayNum = programDayNum(date);
 	loadDay(dayNum || 1);
 }
 
@@ -181,16 +243,17 @@ export function saveDay(silent = false): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
-	// Ensure date is computed if missing
-	if (!day.date) day.date = dateForDay(num);
+	// Ensure date is set (from currentDate, not computed from day number)
+	if (!day.date) day.date = dateStr(get(currentDate));
 
 	// Stamp phase on first save (immutable once set)
 	if (!day.phase) {
 		day.phase = phaseFor(num, get(profile)).key;
 	}
 
-	const key = K(id, `day_${num}`);
-	const tsKey = K(id, `day_${num}_ts`);
+	const ds = day.date;
+	const key = K(id, `day_${ds}`);
+	const tsKey = K(id, `day_${ds}_ts`);
 	try {
 		localStorage.setItem(key, JSON.stringify(day));
 		localStorage.setItem(tsKey, String(Date.now()));
@@ -226,8 +289,8 @@ export function syncDay(): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
-	// Ensure date is computed if missing
-	if (!day.date) day.date = dateForDay(num);
+	// Ensure date is set
+	if (!day.date) day.date = dateStr(get(currentDate));
 
 	// Stamp phase if not yet set (immutable once set)
 	if (!day.phase) {
@@ -236,9 +299,9 @@ export function syncDay(): void {
 
 	const t = totals(day);
 	const payload: Record<string, unknown> = {
-		day: num,
+		date: day.date,          // primary key (YYYY-MM-DD)
+		day: num,                // program day number (informational)
 		phase: day.phase,
-		date: day.date,
 		weight: day.weight || null,
 		waist: day.waist || null,
 		serumAM: day.serumAM,
@@ -272,30 +335,37 @@ export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 	if (!id) return;
 
 	try {
-		const data = await api<{ days: { day: number; day_json: string; updated_at: string; phase: string }[] }>('getdays');
+		const data = await api<{ days: { day: number; day_json: string; updated_at: string; phase: string; date?: string }[] }>('getdays');
 		if (data?.days) {
 			for (const row of data.days) {
 				if (!row.day_json) continue;
 				try {
-					const key = K(id, `day_${row.day}`);
-					const tsKey = K(id, `day_${row.day}_ts`);
+					const parsed = JSON.parse(row.day_json) as DayData;
+
+					// Determine date key: prefer row.date, then parsed.date, then compute from day number
+					let dk = row.date || parsed.date;
+					if (!dk && row.day) dk = dateForDay(row.day);
+					if (!dk) continue; // can't key without a date
+
+					// Ensure date field in parsed data
+					if (!parsed.date) parsed.date = dk;
+					// Backfill phase from DB column if not in day_json (pre-fix data)
+					if (!parsed.phase && row.phase) parsed.phase = row.phase;
+
+					const key = K(id, `day_${dk}`);
+					const tsKey = K(id, `day_${dk}_ts`);
 					const serverTs = Number(row.updated_at) || 0;
 
 					// Compare timestamps: only overwrite if server is newer
 					const localTs = Number(localStorage.getItem(tsKey)) || 0;
 					if (localTs > 0 && localTs >= serverTs) continue;
 
-					const parsed = JSON.parse(row.day_json) as DayData;
-					// Backfill date if missing
-					if (!parsed.date) parsed.date = dateForDay(row.day);
-					// Backfill phase from DB column if not in day_json (pre-fix data)
-					if (!parsed.phase && row.phase) parsed.phase = row.phase;
 					localStorage.setItem(key, JSON.stringify(parsed));
 					localStorage.setItem(tsKey, String(serverTs));
 				} catch { /* skip malformed rows */ }
 			}
 			// Reload current day from refreshed localStorage
-			loadDay(get(currentDay) || 1);
+			loadDate(get(currentDate));
 		}
 		// After successful hydrate, flush any pending syncs
 		flushSyncQueue();

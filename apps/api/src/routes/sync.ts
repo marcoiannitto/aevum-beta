@@ -11,8 +11,8 @@ export async function syncRow(userId: string, body: any, db: D1Database) {
       serum_am, serum_pm, kcal, protein, fat, carbs, water_ml,
       exercise, exercise_kcal, energy, hunger, sleep, notes, day_json, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(user_id, day) DO UPDATE SET
-      phase=excluded.phase, date=excluded.date, weight=excluded.weight,
+    ON CONFLICT(user_id, date) DO UPDATE SET
+      phase=excluded.phase, day=excluded.day, weight=excluded.weight,
       waist=excluded.waist, serum_am=excluded.serum_am, serum_pm=excluded.serum_pm,
       kcal=excluded.kcal, protein=excluded.protein, fat=excluded.fat,
       carbs=excluded.carbs, water_ml=excluded.water_ml,
@@ -36,8 +36,8 @@ export async function syncRow(userId: string, body: any, db: D1Database) {
 
 export async function getDays(userId: string, db: D1Database) {
   const rows = await db.prepare(
-    'SELECT day, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY day'
-  ).bind(userId).all<{ day: number; day_json: string; updated_at: string; phase: string }>();
+    'SELECT day, day_json, updated_at, phase, date FROM daily_logs WHERE user_id = ? ORDER BY date'
+  ).bind(userId).all<{ day: number; day_json: string; updated_at: string; phase: string; date: string }>();
 
   return {
     days: rows.results.map(r => ({
@@ -45,6 +45,7 @@ export async function getDays(userId: string, db: D1Database) {
       day_json: r.day_json || '',
       updated_at: r.updated_at || '',
       phase: r.phase || '',
+      date: r.date || '',
     })),
   };
 }

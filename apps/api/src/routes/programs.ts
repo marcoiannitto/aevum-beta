@@ -45,9 +45,9 @@ export async function setProgram(userId: string, body: any, db: D1Database) {
   const now = new Date().toISOString();
   const today = now.slice(0, 10); // YYYY-MM-DD
 
-  // Update user (reset start_date to today) + log transition in a batch
+  // Update user (set program_start_date, never overwrite start_date) + log transition
   await db.batch([
-    db.prepare('UPDATE users SET program_id = ?, start_date = ? WHERE id = ?').bind(programId, today, userId),
+    db.prepare('UPDATE users SET program_id = ?, program_start_date = ? WHERE id = ?').bind(programId, today, userId),
     db.prepare(
       `INSERT INTO program_transitions (user_id, from_program, to_program, from_phase, to_phase, switched_at)
        VALUES (?, ?, ?, ?, ?, ?)`
@@ -62,7 +62,7 @@ export async function setProgram(userId: string, body: any, db: D1Database) {
   return {
     ok: true,
     program_id: programId,
-    start_date: today,
+    start_date: today,  // frontend reads this as program_start_date
     phases: phases.results,
   };
 }

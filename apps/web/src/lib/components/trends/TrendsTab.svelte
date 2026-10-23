@@ -10,6 +10,7 @@
 	import { totals, type DayData } from '$lib/stores/day';
 	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
 	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
+	import { dateStr, programDayNum } from '$lib/helpers/date';
 
 	// Touch $phases to track phase registry updates for reactivity (fix #35)
 	$effect(() => { void $phases; });
@@ -28,24 +29,22 @@
 	interface CalBar { day: number; kcal: number; target: number }
 	interface PhaseBand { from: number; to: number; color: string; name: string }
 
-	/** Scan localStorage for the highest day number with data */
-	function highestDataDay(): number {
-		if (typeof window === 'undefined') return 0;
-		const id = get(pid);
-		if (!id) return 0;
-		let max = 0;
-		const prefix = `aevum_${id}_day_`;
-		for (let i = 0; i < localStorage.length; i++) {
-			const key = localStorage.key(i);
-			if (key?.startsWith(prefix)) {
-				const num = parseInt(key.slice(prefix.length), 10);
-				if (!isNaN(num) && num > max) max = num;
-			}
+	/** Compute date range boundaries for iteration */
+	function dateRange(): { start: Date; end: Date; totalDayCount: number } {
+		const p = get(profile);
+		const sd = (p as Record<string, unknown>)?.start_date as string;
+		if (!sd) {
+			const today = new Date();
+			return { start: today, end: today, totalDayCount: 1 };
 		}
-		return max;
+		const start = new Date(sd + 'T00:00:00');
+		const end = new Date();
+		end.setDate(end.getDate() + 5); // 5-day lookahead
+		const totalDayCount = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1);
+		return { start, end, totalDayCount };
 	}
 
-	const maxDay = $derived(Math.max(totalDays($profile), highestDataDay()) || 31);
+	const maxDay = $derived(Math.max(totalDays($profile), dateRange().totalDayCount) || 31);
 
 	/** Compute phase bands for chart overlays */
 	const phaseBands = $derived.by((): PhaseBand[] => {
@@ -84,31 +83,35 @@
 		const waist: WPoint[] = [];
 		const calories: CalBar[] = [];
 
-		for (let d = 1; d <= maxDay + 5; d++) {
+		const { start, end } = dateRange();
+
+		for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
 			try {
-				const raw = localStorage.getItem(K(id, `day_${d}`));
+				const ds = dateStr(dt);
+				const raw = localStorage.getItem(K(id, `day_${ds}`));
 				if (!raw) continue;
 				const dd = JSON.parse(raw) as DayData;
+				const dayNum = programDayNum(dt);
 
 				// #57: Phase filter — skip days not in selected phase
 				if (selectedPhase !== 'all') {
-					const dayPhase = dd.phase || phaseFor(d, $profile).key;
+					const dayPhase = dd.phase || phaseFor(dayNum, $profile).key;
 					if (dayPhase !== selectedPhase) continue;
 				}
 
 				if (dd.weight && +dd.weight > 0) {
-					weight.push({ day: d, v: +dd.weight });
+					weight.push({ day: dayNum, v: +dd.weight });
 				}
 				if (dd.waist && +dd.waist > 0) {
-					waist.push({ day: d, v: +dd.waist });
+					waist.push({ day: dayNum, v: +dd.waist });
 				}
 
 				const t = totals(dd);
 				if (t.kcal > 0) {
-					const target = effectiveTarget(d);
-					const reg = phReg(phaseFor(d, $profile).key);
-					const bankAdj = reg?.calorie_bank ? calorieBank(d) : 0;
-					calories.push({ day: d, kcal: t.kcal, target: target + bankAdj });
+					const target = effectiveTarget(dayNum);
+					const reg = phReg(phaseFor(dayNum, $profile).key);
+					const bankAdj = reg?.calorie_bank ? calorieBank(dayNum) : 0;
+					calories.push({ day: dayNum, kcal: t.kcal, target: target + bankAdj });
 				}
 			} catch { continue; }
 		}
@@ -198,19 +201,23 @@
 		return Math.round((within / c.length) * 100);
 	});
 
-	// CSV export
+	// CSV export — date-keyed iteration
 	function exportCSV() {
 		const id = get(pid);
 		if (!id) return;
 
-		let csv = 'Day,Weight,Waist,Kcal,Protein,Fat,Carbs,Water,Energy,Hunger,Sleep\n';
-		for (let d = 1; d <= maxDay + 5; d++) {
+		let csv = 'Date,Day,Weight,Waist,Kcal,Protein,Fat,Carbs,Water,Energy,Hunger,Sleep\n';
+		const { start, end } = dateRange();
+
+		for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
 			try {
-				const raw = localStorage.getItem(K(id, `day_${d}`));
+				const ds = dateStr(dt);
+				const raw = localStorage.getItem(K(id, `day_${ds}`));
 				if (!raw) continue;
 				const dd = JSON.parse(raw) as DayData;
+				const dayNum = programDayNum(dt);
 				const t = totals(dd);
-				csv += `${d},${dd.weight || ''},${dd.waist || ''},${t.kcal},${t.protein},${t.fat},${t.carbs},${dd.water},${dd.energy},${dd.hunger},${dd.sleep}\n`;
+				csv += `${ds},${dayNum},${dd.weight || ''},${dd.waist || ''},${t.kcal},${t.protein},${t.fat},${t.carbs},${dd.water},${dd.energy},${dd.hunger},${dd.sleep}\n`;
 			} catch { continue; }
 		}
 

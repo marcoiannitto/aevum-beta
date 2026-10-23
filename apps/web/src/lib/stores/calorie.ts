@@ -4,11 +4,12 @@
  */
 import { get } from 'svelte/store';
 import { profile, pid, K, type UserProfile } from './auth';
-import { type DayData } from './day';
+import { type DayData, currentDate } from './day';
 import { phReg, phaseFor } from './phases';
 import { cfg } from './config';
 import { mifflinTDEE, dobToAge } from '@aevum/shared';
 import { actFactors, actLabels } from './config';
+import { dateStr } from '$lib/helpers/date';
 
 /** Resolve activity factor from profile: accepts numeric factor or string label */
 function resolveActivityFactor(act: string | number | undefined): number {
@@ -32,6 +33,7 @@ export function mifflin(p: UserProfile): number {
 }
 
 /** Rolling average weight from daily weigh-ins in localStorage.
+ *  Iterates by date range (YYYY-MM-DD keys), not day numbers.
  *  Falls back to profile.weight (start_weight) if no weigh-ins found. */
 export function rollingWeight(dayNum: number, prof?: UserProfile | null, windowDays?: number): number {
 	const p = prof ?? get(profile);
@@ -40,12 +42,16 @@ export function rollingWeight(dayNum: number, prof?: UserProfile | null, windowD
 	if (!id) return p.weight;
 
 	const win = windowDays ?? cfg('drift_review_days');
+	const today = get(currentDate);
 	let sum = 0;
 	let count = 0;
 
-	for (let d = Math.max(1, dayNum - win + 1); d <= dayNum; d++) {
+	for (let i = win - 1; i >= 0; i--) {
 		try {
-			const raw = localStorage.getItem(K(id, `day_${d}`));
+			const d = new Date(today);
+			d.setDate(d.getDate() - i);
+			const ds = dateStr(d);
+			const raw = localStorage.getItem(K(id, `day_${ds}`));
 			if (!raw) continue;
 			const dd = JSON.parse(raw) as DayData;
 			const w = parseFloat(dd.weight);
