@@ -127,11 +127,15 @@ export async function adminUpdateUser(body: any, db: D1Database) {
     }
   }
 
+  // Map API field names to DB column names where they differ
+  const colMap: Record<string, string> = { act: 'activity' };
+
   const sets: string[] = [];
   const vals: any[] = [];
   for (const key of allowed) {
     if (body[key] !== undefined) {
-      sets.push(`${key} = ?`);
+      const col = colMap[key] || key;
+      sets.push(`${col} = ?`);
       vals.push(body[key]);
     }
   }

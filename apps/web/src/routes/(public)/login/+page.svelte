@@ -4,6 +4,7 @@
 	import { token, pid, isProgram, loadStoredProfile, saveProfile } from '$lib/stores/auth';
 	import { api, GOOGLE_CLIENT_ID } from '$lib/api/client';
 	import { actLabels, actFactors } from '$lib/stores/config';
+	import { programs, loadPrograms } from '$lib/stores/programs';
 	import type { UserProfile } from '$lib/stores/auth';
 
 	let view = $state<'main' | 'token' | 'free'>('main');
@@ -41,6 +42,9 @@
 				return;
 			}
 		}
+
+		// Load programs list (no auth needed) for #54 locked picker
+		loadPrograms();
 
 		// Load Google Identity Services
 		loadGoogleScript();
@@ -188,7 +192,14 @@
 				if (p?.profile) {
 					saveProfile({ ...p.profile, program: false });
 				}
-			} catch { /* profile will load on next boot */ }
+			} catch {
+				// Fallback: build profile from register response + form inputs
+				saveProfile({
+					id: d.id!, name: freeName.trim(), sex: d.sex ?? freeSex,
+					act: d.act ?? +freeAct, dob: freeDob, height: +freeHeight,
+					start_weight: +freeWeight, program: false
+				} as UserProfile);
+			}
 
 			goto('/');
 		} catch (e: unknown) {
@@ -311,6 +322,23 @@
 					{/each}
 				</select>
 			</label>
+
+			<!-- #54: Locked program picker — show available programs as disabled -->
+			{#if $programs.length > 0}
+				<div class="prog-locked-section">
+					<span class="prog-locked-label">Programs — available with a subscription</span>
+					<div class="prog-locked-list">
+						{#each $programs as prog}
+							<div class="prog-locked-card" style="border-left: 3px solid {prog.color}">
+								<span class="prog-locked-name">{prog.name}</span>
+								{#if prog.description}
+									<span class="prog-locked-desc">{prog.description}</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
 
 			<button class="btn-primary" onclick={handleFreeRegister} disabled={loading}>
 				{loading ? 'Setting up…' : 'Start tracking'}
@@ -456,5 +484,41 @@
 		cursor: pointer;
 		padding: 4px;
 		font-family: inherit;
+	}
+	/* #54: Locked program cards */
+	.prog-locked-section {
+		width: 100%;
+		margin: 4px 0;
+	}
+	.prog-locked-label {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--muted);
+		margin-bottom: 6px;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.prog-locked-list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.prog-locked-card {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 10px 12px;
+		background: #f5f5f5;
+		border-radius: 8px;
+		opacity: 0.55;
+	}
+	.prog-locked-name {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.prog-locked-desc {
+		font-size: 0.78rem;
+		color: var(--muted);
 	}
 </style>

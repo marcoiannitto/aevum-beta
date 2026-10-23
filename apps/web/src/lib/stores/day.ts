@@ -108,6 +108,8 @@ export interface DayData {
 	sleep: number;
 	notes: string;
 	date: string;
+	/** Phase key stamped at first save. Immutable once set. */
+	phase?: string;
 }
 
 // --- Stores ---
@@ -182,6 +184,11 @@ export function saveDay(silent = false): void {
 	// Ensure date is computed if missing
 	if (!day.date) day.date = dateForDay(num);
 
+	// Stamp phase on first save (immutable once set)
+	if (!day.phase) {
+		day.phase = phaseFor(num, get(profile)).key;
+	}
+
 	const key = K(id, `day_${num}`);
 	const tsKey = K(id, `day_${num}_ts`);
 	try {
@@ -222,10 +229,15 @@ export function syncDay(): void {
 	// Ensure date is computed if missing
 	if (!day.date) day.date = dateForDay(num);
 
+	// Stamp phase if not yet set (immutable once set)
+	if (!day.phase) {
+		day.phase = phaseFor(num, get(profile)).key;
+	}
+
 	const t = totals(day);
 	const payload: Record<string, unknown> = {
 		day: num,
-		phase: phaseFor(num, get(profile)).key,
+		phase: day.phase,
 		date: day.date,
 		weight: day.weight || null,
 		waist: day.waist || null,
@@ -276,6 +288,8 @@ export async function hydrateFromBackend(_totalDays?: number): Promise<void> {
 					const parsed = JSON.parse(row.day_json) as DayData;
 					// Backfill date if missing
 					if (!parsed.date) parsed.date = dateForDay(row.day);
+					// Backfill phase from DB column if not in day_json (pre-fix data)
+					if (!parsed.phase && row.phase) parsed.phase = row.phase;
 					localStorage.setItem(key, JSON.stringify(parsed));
 					localStorage.setItem(tsKey, String(serverTs));
 				} catch { /* skip malformed rows */ }

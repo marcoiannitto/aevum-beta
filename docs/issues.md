@@ -46,23 +46,23 @@
 | #45 | loadPrograms 400 on deployed app       | DONE   | b0469e6 | Deployed API didn't have programs route. Same commit fixes it; needs redeploy. |
 | #44 | Meal expand: ingredients breakdown missing | DONE |         | Was broken, now fixed |
 | #46 | AI worker 401 on quickEstimate | DONE   |         | Expired Anthropic API key. Updated `ANTHROPIC_KEY` secret in Cloudflare worker settings. |
+| #47 | ProgramPicker popup renders below profile sheet | DONE |  | z-index raised from 900/901 to 1000/1001 in Sheet.svelte |
+| #48 | Meal time edit after logging   | CLOSED |         | Already implemented in Timeline.svelte (tap time to edit) |
+| #49 | Meal add UI: match V2 style    | DONE   |         | MealLogSheet rewritten: 3 tabs (Describe/Ingredients/Photo), macro grid with phase-aware max labels, traffic light compliance flags |
+| #50 | Admin sidebar: make sticky     | CLOSED |         | Already has position:sticky + top:0 + height:100vh in AdminSidebar.svelte |
+| #52 | Phase change is retroactive    | DONE   |         | Phase stamped immutably in day_json on first save. Backfill SQL in d1-pending-sql.sql |
+| #53 | Signup: activity labels wrong  | DONE   |         | D1 config row fix in d1-pending-sql.sql |
+| #54 | Free tier: show locked program selector | DONE | | Locked program cards on free signup form (greyed out, with program color accent) |
+| #55 | Program switch resets day count | DONE   |         | Backend resets start_date to today on program switch. Frontend updates profile + reloads day 1 |
+| #56 | Profile: sex and activity not showing | DONE | | Register response includes sex/act, admin column mapping fixed, login fallback profile save |
+| #57 | Phase-aware statistics          | DONE   |         | Phase filter dropdown in TrendsTab, collectSeries filters by dd.phase with phaseFor fallback |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #47  | ProgramPicker popup renders below profile sheet | OPEN | Popup opens behind/below the profile window instead of on top. UX bug, needs root cause analysis. |
-| #57  | Phase-aware statistics          | OPEN | Stats (macros, weight, etc.) should show averages/values per phase, not globally. Each phase has different targets so stats need phase context. Depends on #52 (phase must be immutably stamped before stats can rely on it). |
-| #48  | Meal time edit after logging   | OPEN | After adding a meal, user needs to be able to change the timing. Currently no edit UI for meal time. |
-| #49  | Meal add UI: match V2 style    | OPEN | V3 "add a meal" UI doesn't match V2. Replicate V2 meal logging UI exactly. |
-| #52  | Phase change is retroactive     | OPEN | Changing phase_mode retroactively changes all past days. Phase should be stamped into day_json at save time so historical data is immutable. Backfill needed for existing data. |
-| #53  | Signup: activity labels wrong  | OPEN | Registration form uses vague labels (Sedentary, Moderately Active, etc). Should use frequency-based labels (workouts per week) like the tracker does (#31). |
-| #54  | Free tier: show locked program selector | OPEN | Free tier signup doesn't show program selection. Should display it as locked/greyed out (available only for paid tiers) so users know it exists. |
-| #55  | Program logic: define and verify | OPEN | Program flow logic needs proper definition and verification that implementation matches. Scope TBD. |
-| #56  | Profile: sex and activity not showing after signup | OPEN | Free tier signup saves sex and activity but profile sheet shows them empty. Likely duplicate variable names (e.g. sex vs gender, activity vs act). Audit all user fields for duplicates and ensure signup → profile → DB uses one variable per parameter. |
-| #50  | Admin sidebar: make sticky     | OPEN | Sidebar scrolls with page. Should be fixed/static (position: sticky or fixed). |
-| #51  | Admin sidebar: reorder menu    | OPEN | New order: People, Intakes, then reference tables (Phases, Rules, Foods, then rest unchanged). |
-| #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c |
+| #51  | Admin sidebar: reorder menu    | NEEDS INPUT | Deferred — Marco will decide order later. |
+| #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
 

@@ -44,7 +44,7 @@ export async function doRegister(body: any, db: D1Database) {
     ).bind(token, id, 'user'),
   ]);
 
-  return { id, token, program: false, current_target_kcal: tdee };
+  return { id, token, program: false, current_target_kcal: tdee, sex, act };
 }
 
 /** Verify Google ID token, find or create user. */

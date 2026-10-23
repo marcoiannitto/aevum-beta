@@ -6,6 +6,7 @@ import { api } from '$lib/api/client';
 import { profile, saveProfile } from './auth';
 import { loadPhases } from './phases';
 import { loadRules } from './rules';
+import { loadDate } from './day';
 
 export interface Program {
   id: string;
@@ -63,18 +64,22 @@ export function currentProgram(): Program | null {
 /** Switch the user to a different program */
 export async function switchProgram(programId: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const d = await api<{ ok?: boolean; error?: string; program_id?: string }>('set_program', { program_id: programId });
+    const d = await api<{ ok?: boolean; error?: string; program_id?: string; start_date?: string }>('set_program', { program_id: programId });
     if (d?.error) return { ok: false, error: d.error };
 
-    // Update profile with new program_id
+    // Update profile with new program_id and reset start_date (#55)
     const p = get(profile);
     if (p) {
-      saveProfile({ ...p, program_id: programId } as any);
+      const newStartDate = d?.start_date || new Date().toISOString().slice(0, 10);
+      saveProfile({ ...p, program_id: programId, start_date: newStartDate } as any);
     }
 
     // Reload phases and rules for the new program
     loadPhases();
     loadRules();
+
+    // Reset to day 1 of new program
+    loadDate(new Date());
 
     return { ok: true };
   } catch (err: unknown) {

@@ -56,7 +56,7 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.4);
-		z-index: 900;
+		z-index: 1000;
 		animation: fadeIn 0.2s ease;
 	}
 	.sheet {
@@ -69,7 +69,7 @@
 		max-height: 85dvh;
 		background: var(--card);
 		border-radius: 20px 20px 0 0;
-		z-index: 901;
+		z-index: 1001;
 		display: flex;
 		flex-direction: column;
 		animation: slideUp 0.25s ease;

@@ -20,6 +20,9 @@
 	import CalorieBars from './CalorieBars.svelte';
 	import PhaseStrip from './PhaseStrip.svelte';
 
+	// #57: Phase filter
+	let selectedPhase = $state('all');
+
 	// Collect series from localStorage
 	interface WPoint { day: number; v: number }
 	interface CalBar { day: number; kcal: number; target: number }
@@ -87,6 +90,12 @@
 				if (!raw) continue;
 				const dd = JSON.parse(raw) as DayData;
 
+				// #57: Phase filter — skip days not in selected phase
+				if (selectedPhase !== 'all') {
+					const dayPhase = dd.phase || phaseFor(d, $profile).key;
+					if (dayPhase !== selectedPhase) continue;
+				}
+
 				if (dd.weight && +dd.weight > 0) {
 					weight.push({ day: d, v: +dd.weight });
 				}
@@ -107,10 +116,10 @@
 		return { weight, waist, calories };
 	}
 
-	// Reactive: re-collect when profile changes (start_date etc.)
+	// Reactive: re-collect when profile or phase filter changes
 	const series = $derived.by(() => {
-		// Touch profile to trigger reactivity
 		void $profile;
+		void selectedPhase;
 		return collectSeries();
 	});
 
@@ -215,6 +224,17 @@
 </script>
 
 <div class="trends">
+	<!-- #57: Phase filter -->
+	<div class="phase-filter">
+		<label for="phase-select">Phase</label>
+		<select id="phase-select" bind:value={selectedPhase}>
+			<option value="all">All phases</option>
+			{#each get(phasesList) as ph}
+				<option value={ph.key}>{ph.name}</option>
+			{/each}
+		</select>
+	</div>
+
 	<PhaseStrip />
 
 	<!-- Weight section -->
@@ -289,4 +309,25 @@
 		margin-top: 4px;
 	}
 	.export-btn:active { opacity: 0.7; }
+	.phase-filter {
+		display: flex; align-items: center; gap: 8px;
+		padding: 8px 14px;
+		background: var(--card, #fff);
+		border: 1px solid var(--line);
+		border-radius: 14px;
+	}
+	.phase-filter label {
+		font-size: 13px; font-weight: 600; color: var(--muted);
+		white-space: nowrap;
+	}
+	.phase-filter select {
+		flex: 1;
+		font-size: 14px;
+		padding: 6px 10px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--bg, #fafafa);
+		color: var(--ink);
+		font-family: inherit;
+	}
 </style>
