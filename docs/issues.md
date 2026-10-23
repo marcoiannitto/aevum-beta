@@ -71,6 +71,7 @@
 | #60  | Admin: add/edit programs        | OPEN        | No admin UI for creating programs. Currently requires raw SQL in D1 across `programs` + `phases` tables. Need a form that creates both rows with validation so nothing is missed. |
 | #61  | Admin: edit phase config        | OPEN        | Need UI to edit all phase parameters (calorie_mode, target_mode, food_rule_line, explainer_json, duration, gates, etc.) so program rules can be tuned without touching D1 directly. |
 | #62  | Food tab AI broken              | OPEN        | Macros estimate returns nothing, food check returns "error / Could not check. Try again." Likely related to #59 (sporadic 403) or a different API/routing issue. Needs investigation. |
+| #63  | Remove exercise from Today tab  | OPEN        | Exercise section in "Today" is redundant, already covered in Check-in. Remove it from DayView. |
 
 ## Deferred (post-rollout)
 
