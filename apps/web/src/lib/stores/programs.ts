@@ -4,7 +4,7 @@
 import { writable, get } from 'svelte/store';
 import { api } from '$lib/api/client';
 import { profile, saveProfile } from './auth';
-import { loadPhases } from './phases';
+import { loadPhases, filterPhasesForProgram } from './phases';
 import { loadRules } from './rules';
 import { loadDate } from './day';
 
@@ -74,11 +74,15 @@ export async function switchProgram(programId: string): Promise<{ ok: boolean; e
       saveProfile({ ...p, program_id: programId, program_start_date: newProgramStart } as any);
     }
 
-    // Reload phases and rules for the new program
+    // Immediately re-filter phases for new program (synchronous, uses cached phase map).
+    // This ensures phaseFor() returns the correct phase before loadDate() runs.
+    filterPhasesForProgram(programId);
+
+    // Reload phases and rules from API (async refresh)
     loadPhases();
     loadRules();
 
-    // Reset to day 1 of new program
+    // Navigate to today
     loadDate(new Date());
 
     return { ok: true };

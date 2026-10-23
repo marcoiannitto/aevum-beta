@@ -515,8 +515,9 @@ async function setProgram(userId, body, db) {
   // Verify program exists
   const prog = await db.prepare('SELECT id FROM programs WHERE id = ? AND is_active = 1').bind(programId).first();
   if (!prog) return { error: 'invalid program_id' };
-  await db.prepare('UPDATE users SET program_id = ? WHERE id = ?').bind(programId, userId).run();
-  return { ok: true, program_id: programId };
+  const startDate = new Date().toISOString().slice(0, 10);
+  await db.prepare('UPDATE users SET program_id = ?, program_start_date = ? WHERE id = ?').bind(programId, startDate, userId).run();
+  return { ok: true, program_id: programId, start_date: startDate };
 }
 
 // ─── Sync (upsert daily log) ─────────────────────────────────
@@ -528,8 +529,8 @@ async function syncRow(userId, body, db) {
       serum_am, serum_pm, kcal, protein, fat, carbs, water_ml,
       exercise, exercise_kcal, energy, hunger, sleep, notes, day_json, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(user_id, day) DO UPDATE SET
-      phase=excluded.phase, date=excluded.date, weight=excluded.weight,
+    ON CONFLICT(user_id, date) DO UPDATE SET
+      day=excluded.day, phase=excluded.phase, weight=excluded.weight,
       waist=excluded.waist, serum_am=excluded.serum_am, serum_pm=excluded.serum_pm,
       kcal=excluded.kcal, protein=excluded.protein, fat=excluded.fat,
       carbs=excluded.carbs, water_ml=excluded.water_ml,
@@ -553,9 +554,9 @@ async function syncRow(userId, body, db) {
 // ─── Get days (restore) ──────────────────────────────────────
 async function getDays(userId, db) {
   const rows = await db.prepare(
-    'SELECT day, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY day'
+    'SELECT day, date, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY date'
   ).bind(userId).all();
-  return { days: rows.results.map(r => ({ day: r.day, day_json: r.day_json || '', updated_at: r.updated_at || '', phase: r.phase || '' })) };
+  return { days: rows.results.map(r => ({ day: r.day, date: r.date || '', day_json: r.day_json || '', updated_at: r.updated_at || '', phase: r.phase || '' })) };
 }
 
 // ─── Meal plan ───────────────────────────────────────────────

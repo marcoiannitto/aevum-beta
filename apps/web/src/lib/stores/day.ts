@@ -177,6 +177,8 @@ export interface DayData {
 	date: string;
 	/** Phase key stamped at first save. Immutable once set. */
 	phase?: string;
+	/** Program ID stamped at first save. Immutable once set. */
+	program_id?: string;
 }
 
 // --- Stores ---
@@ -262,6 +264,12 @@ export function saveDay(silent = false): void {
 		}
 	}
 
+	// Stamp program_id on first save (immutable once set)
+	if (!day.program_id) {
+		const p = get(profile) as Record<string, unknown> | null;
+		day.program_id = (p?.program_id as string) || 'aevum';
+	}
+
 	const ds = day.date;
 	const key = K(id, `day_${ds}`);
 	const tsKey = K(id, `day_${ds}_ts`);
@@ -308,6 +316,12 @@ export function syncDay(): void {
 		if (!day.phase || isInvalidPhase(day.phase)) {
 			day.phase = phaseFor(num, get(profile)).key;
 		}
+	}
+
+	// Stamp program_id (same logic as saveDay)
+	if (!day.program_id) {
+		const prof = get(profile) as Record<string, unknown> | null;
+		day.program_id = (prof?.program_id as string) || 'aevum';
 	}
 
 	const t = totals(day);

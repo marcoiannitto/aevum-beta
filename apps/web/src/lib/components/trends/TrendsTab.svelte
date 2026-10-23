@@ -11,6 +11,7 @@
 	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
 	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
 	import { dateStr, programDayNum } from '$lib/helpers/date';
+	import { programs, currentProgramId } from '$lib/stores/programs';
 
 	// Touch $phases to track phase registry updates for reactivity (fix #35)
 	$effect(() => { void $phases; });
@@ -21,8 +22,8 @@
 	import CalorieBars from './CalorieBars.svelte';
 	import PhaseStrip from './PhaseStrip.svelte';
 
-	// #57: Phase filter
-	let selectedPhase = $state('all');
+	// #57: Program filter (replaced phase filter)
+	let selectedProgram = $state('all');
 
 	// Collect series from localStorage
 	interface WPoint { day: number; v: number }
@@ -93,10 +94,10 @@
 				const dd = JSON.parse(raw) as DayData;
 				const dayNum = programDayNum(dt);
 
-				// #57: Phase filter — skip days not in selected phase
-				if (selectedPhase !== 'all') {
-					const dayPhase = dd.phase || phaseFor(dayNum, $profile).key;
-					if (dayPhase !== selectedPhase) continue;
+				// #57: Program filter — skip days not in selected program
+				if (selectedProgram !== 'all') {
+					const dayProgram = dd.program_id || 'aevum';
+					if (dayProgram !== selectedProgram) continue;
 				}
 
 				if (dd.weight && +dd.weight > 0) {
@@ -119,10 +120,10 @@
 		return { weight, waist, calories };
 	}
 
-	// Reactive: re-collect when profile or phase filter changes
+	// Reactive: re-collect when profile or program filter changes
 	const series = $derived.by(() => {
 		void $profile;
-		void selectedPhase;
+		void selectedProgram;
 		return collectSeries();
 	});
 
@@ -231,13 +232,13 @@
 </script>
 
 <div class="trends">
-	<!-- #57: Phase filter -->
+	<!-- #57: Program filter -->
 	<div class="phase-filter">
-		<label for="phase-select">Phase</label>
-		<select id="phase-select" bind:value={selectedPhase}>
-			<option value="all">All phases</option>
-			{#each get(phasesList) as ph}
-				<option value={ph.key}>{ph.name}</option>
+		<label for="program-select">Program</label>
+		<select id="program-select" bind:value={selectedProgram}>
+			<option value="all">All programs</option>
+			{#each $programs as prog}
+				<option value={prog.id}>{prog.name}</option>
 			{/each}
 		</select>
 	</div>
