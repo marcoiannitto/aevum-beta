@@ -38,7 +38,7 @@
 | #41 | Trends stat row: V2 hero card          | DONE   | c270ef7 | Single hero card + colored chips, matching V2 pattern |
 | #42 | Date-first header rewrite              | DONE   | 9fa399c | Phone date is source of truth, day number from start_date |
 | #43 | Meal ingredient expand broken          | DONE   |         | MealLogSheet was dropping `items` from AI response |
-| #26 | Program selector                       | REOPENED |       | Migration 0018/0019, backend routes, stores, ProgramPicker UI. Reopened: switching to maintenance triggers "loading" phase instead of maintenance. |
+| #26 | Program selector                       | DONE (VALIDATE) | 32607d7 | Migration 0018/0019, backend routes, stores, ProgramPicker UI. Fix: filterPhasesForProgram() called synchronously before loadDate() in switchProgram(). |
 | #26a| Admin phases: program_id column        | DONE   | 0d601c3 | Added program_id column, reordered all columns into logical groups |
 | #26b| Admin user detail: program dropdown    | DONE   | 0d601c3 | Added select dropdown bound to programs store, saves via admin_update_user |
 | #26c| Programs dropdown only shows AEVUM     | DONE   | b0469e6 | Root cause: loadPrograms used user token (null in admin). Fix: programs endpoint made unauthenticated (public config). |
@@ -50,22 +50,18 @@
 | #48 | Meal time edit after logging   | CLOSED |         | Already implemented in Timeline.svelte (tap time to edit) |
 | #49 | Meal add UI: match V2 style    | DONE   |         | MealLogSheet rewritten: 3 tabs (Describe/Ingredients/Photo), macro grid with phase-aware max labels, traffic light compliance flags |
 | #50 | Admin sidebar: make sticky     | CLOSED |         | Already has position:sticky + top:0 + height:100vh in AdminSidebar.svelte |
-| #52 | Phase change is retroactive    | REOPENED |       | Phase stamped immutably in day_json on first save. Reopened: program switch to maintenance created new day 1 at top of list, upsetting historical data. Trends track by "day" instead of "date", needs to use date. |
+| #52 | Phase change is retroactive    | DONE (VALIDATE) | 32607d7 | Phase stamped immutably in day_json on first save. program_id also stamped. DB unique key changed to (user_id, date). Sync and getDays use date-based ordering. |
 | #53 | Signup: activity labels wrong  | DONE   |         | D1 config row fix in d1-pending-sql.sql |
 | #54 | Free tier: show locked program selector | DONE | | Locked program cards on free signup form (greyed out, with program color accent) |
-| #55 | Program switch resets day count | REOPENED |       | Backend resets start_date to today on program switch. Reopened: reset works but disrupts historical data ordering. Needs investigation. |
+| #55 | Program switch resets day count | DONE (VALIDATE) | 32607d7 | Backend sets program_start_date on switch. Date-keyed storage prevents historical data collision. |
 | #56 | Profile: sex and activity not showing | DONE | | Register response includes sex/act, admin column mapping fixed, login fallback profile save |
-| #57 | Program-aware statistics        | REOPENED |       | Currently phase-aware only. Needs to be program-aware (filter by program, not just phase). Further development needed. |
-| #58 | Phase column shows "Aevum" instead of actual phase | DONE | 8471524 | Root cause: migration 0018 left is_program=0 on AEVUM sub-phases, so phasesList was always empty and 0-phase branch returned program ID. Fix: phasesLoaded guard, 0-phase branch guard, re-stamp invalid phases, DB is_program=1, historical data SQL fix. |
+| #57 | Program-aware statistics        | DONE (VALIDATE) | 32607d7 | Trends filter changed from phase to program. Dropdown lists all programs, filters by program_id in day_json. |
+| #58 | Phase column shows "Aevum" instead of actual phase | DONE (VALIDATE) | 8471524 | Root cause: migration 0018 left is_program=0 on AEVUM sub-phases, so phasesList was always empty and 0-phase branch returned program ID. Fix: phasesLoaded guard, 0-phase branch guard, re-stamp invalid phases, DB is_program=1, historical data SQL fix. |
 
 ## In progress
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #26  | Program switch shows wrong phase | OPEN      | Switching to maintenance triggers "loading" instead of maintenance. Phase logic doesn't account for 0-phase programs on switch. |
-| #52  | Program switch disrupts history | OPEN       | New day 1 inserted at top of list. Trends use "day" column instead of "date". Need date-based ordering throughout. |
-| #55  | Program switch upsets data ordering | OPEN    | Day count reset works but breaks historical continuity. Related to #52. |
-| #57  | Program-aware statistics        | OPEN       | Filter by program, not just phase. Needs further development. |
 | #51  | Admin sidebar: reorder menu    | NEEDS INPUT | Deferred — Marco will decide order later. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
@@ -82,6 +78,21 @@
 ## Needs input
 
 (none)
+
+---
+
+## Validation checklist (post-deploy)
+
+Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
+
+| # | Fix | Test | Expected |
+|---|-----|------|----------|
+| #26 | Program switch phase race | Switch program to maintenance, check today's day view | Phase shows "maintenance", not "loading" |
+| #52 | Phase stamped immutably | Log a new day, check phase in day_json. Switch program, revisit old day | Old days keep original phase, no retroactive change |
+| #55 | Program switch resets start_date | Switch to maintenance, check profile shows today as start_date, day=1. Switch back to aevum | Original aevum start_date (2026-09-08) restored from server |
+| #57 | Program-aware stats | Open Trends, use dropdown to filter by program | Filter shows correct days per program. "All programs" shows everything |
+| #58 | Phase column correct | Open any logged day | Phase chip says loading/activation/transition/stabilization/maintenance, never "aevum" |
+| DB | Date-keyed sync | Log a day, force sync (refresh or toggle connection). Check D1: `SELECT user_id, date, day FROM daily_logs ORDER BY date DESC LIMIT 5` | No duplicate rows for same date. Migration v3.1.7-date-key already run. |
 
 ---
 
