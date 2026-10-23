@@ -72,6 +72,10 @@
 | #61  | Admin: edit phase config        | OPEN        | Need UI to edit all phase parameters (calorie_mode, target_mode, food_rule_line, explainer_json, duration, gates, etc.) so program rules can be tuned without touching D1 directly. |
 | #62  | Food tab AI broken              | OPEN        | Macros estimate returns nothing, food check returns "error / Could not check. Try again." Likely related to #59 (sporadic 403) or a different API/routing issue. Needs investigation. |
 | #63  | Remove exercise from Today tab  | OPEN        | Exercise section in "Today" is redundant, already covered in Check-in. Remove it from DayView. |
+| #64  | Trends: 0% on target wrong      | OPEN        | Compliance calc uses fallback thresholds when rules don't load. Loading phase has calorie_mode 'hidden' so target may be wrong/zero. |
+| #65  | Trends: loading bars should not be colored | OPEN | Loading has no calorie limit, bars should be neutral (not red). Depends on #37. |
+| #66  | Trends: over-budget bars not red | OPEN        | Bars exceeding daily budget aren't flagged red. Thresholds fall back to defaults when rules don't load. Depends on #37. |
+| #67  | Trends: bars ignore phase rules for coloring | OPEN | Bars should use green/amber/red bands from `ruleFor()` per phase. `bandClass()` exists but isn't used by CalorieBars. Depends on #37. |
 
 ## Deferred (post-rollout)
 
