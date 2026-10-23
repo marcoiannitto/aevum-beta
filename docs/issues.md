@@ -1,7 +1,7 @@
 # AEVUM Tracker V3 -- Issue Tracker
 
 > Branch: `feat/monorepo-restructure`
-> Last updated: 2026-10-23
+> Last updated: 2026-10-24
 
 ## Status legend
 
@@ -56,6 +56,7 @@
 | #55 | Program switch resets day count | DONE (VALIDATE) | 32607d7 | Backend sets program_start_date on switch. Date-keyed storage prevents historical data collision. |
 | #56 | Profile: sex and activity not showing | DONE | | Register response includes sex/act, admin column mapping fixed, login fallback profile save |
 | #57 | Program-aware statistics        | DONE (VALIDATE) | 32607d7 | Trends filter changed from phase to program. Dropdown lists all programs, filters by program_id in day_json. |
+| #57a| Trends program filter selects wrong data | OPEN | | Selecting AEVUM includes maintenance days, selecting maintenance shows none. Filter likely matches on phase name instead of program_id in day_json. |
 | #58 | Phase column shows "Aevum" instead of actual phase | DONE (VALIDATE) | 8471524 | Root cause: migration 0018 left is_program=0 on AEVUM sub-phases, so phasesList was always empty and 0-phase branch returned program ID. Fix: phasesLoaded guard, 0-phase branch guard, re-stamp invalid phases, DB is_program=1, historical data SQL fix. |
 
 ## In progress
