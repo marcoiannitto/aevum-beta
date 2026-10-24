@@ -18,10 +18,11 @@
 	import AdminPrograms from '$lib/components/admin/AdminPrograms.svelte';
 	import AdminProgramDetail from '$lib/components/admin/AdminProgramDetail.svelte';
 	import AdminPhaseEditor from '$lib/components/admin/AdminPhaseEditor.svelte';
+	import AdminCalorieTuning from '$lib/components/admin/AdminCalorieTuning.svelte';
 
 	// View state
 	let activeTable = $state('rules');
-	let view = $state<'table' | 'users' | 'user_detail' | 'intakes' | 'intake_detail' | 'intake_form' | 'mealplan' | 'body_scans' | 'programs' | 'program_detail' | 'phase_editor'>('table');
+	let view = $state<'table' | 'users' | 'user_detail' | 'intakes' | 'intake_detail' | 'intake_form' | 'mealplan' | 'body_scans' | 'programs' | 'program_detail' | 'phase_editor' | 'calorie_tuning'>('table');
 	let selectedUserId = $state<number>(0);
 	let selectedIntakeId = $state<number>(0);
 	let editingIntake = $state<Record<string, unknown> | null>(null);
@@ -50,6 +51,10 @@
 		const tableDef = TABLES[key];
 
 		// Special views by key or mode
+		if (key === 'calorie_tuning') {
+			view = 'calorie_tuning';
+			return;
+		}
 		if (key === 'programs') {
 			view = 'programs';
 			return;
@@ -244,6 +249,8 @@
 			<MealPlanBuilder userId={selectedUserId} profile={userProfile} />
 		{:else if view === 'body_scans'}
 			<BodyScans userId={selectedUserId} />
+		{:else if view === 'calorie_tuning'}
+			<AdminCalorieTuning />
 		{:else if view === 'programs'}
 			<AdminPrograms onSelectProgram={handleSelectProgram} />
 		{:else if view === 'program_detail'}

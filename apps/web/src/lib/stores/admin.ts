@@ -240,6 +240,7 @@ export const SIDEBAR_SECTIONS = [
 		items: [
 			{ key: 'programs', label: 'Programs' },
 			{ key: 'phases', label: 'Phases' },
+			{ key: 'calorie_tuning', label: 'Calorie Tuning' },
 			{ key: 'rules', label: 'Rules' },
 			{ key: 'foods', label: 'Foods' },
 			{ key: 'policy', label: 'Policy' },
