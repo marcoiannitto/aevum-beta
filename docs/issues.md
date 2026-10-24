@@ -76,6 +76,71 @@
 | #65  | Trends: loading bars should not be colored | OPEN | Loading has no calorie limit, bars should be neutral (not red). Depends on #37. |
 | #66  | Trends: over-budget bars not red | OPEN        | Bars exceeding daily budget aren't flagged red. Thresholds fall back to defaults when rules don't load. Depends on #37. |
 | #67  | Trends: bars ignore phase rules for coloring | OPEN | Bars should use green/amber/red bands from `ruleFor()` per phase. `bandClass()` exists but isn't used by CalorieBars. Depends on #37. |
+| #68  | Admin: phase parameter tuning UI | OPEN | See spec below. Quick-edit phase params (calorie_cut, bank_window, clamps, tolerance) without opening the full phase editor. |
+| #69  | Admin: client calorie dashboard | OPEN | See spec below. Per-user read-only view: TDEE, program, phase, base target, bank adjustment, effective target, weekly verdict. |
+
+---
+
+### #68 Admin: phase parameter tuning UI
+
+**Problem:** To adjust calorie strategy (e.g. change calorie_cut from 0.85 to 0.90, or widen bank_window), Marco must open Programs > drill into program > click phase > scroll through full editor. Too many clicks for a common operation.
+
+**Solution:** Add a "Calorie Tuning" section to admin sidebar (under Programs). Single-page view:
+
+| Column | Source |
+|---|---|
+| Phase key | phases.key |
+| Program | phases.program_id |
+| Mode | phases.target_mode |
+| Cut | phases.calorie_cut |
+| Bank | phases.calorie_bank (toggle) |
+| Window | phases.bank_window |
+| Clamp lo / hi | phases.bank_clamp_lo / bank_clamp_hi |
+| Grace days | phases.bank_grace_days |
+| Tolerance | phases.weekly_tolerance |
+
+All cells inline-editable. Save button per row. No modal, no drill-down.
+
+**API:** Reuses existing `admin_phase_save`. No new endpoints.
+
+**Effort:** Small (one new component, no backend).
+
+---
+
+### #69 Admin: client calorie dashboard
+
+**Problem:** Marco cannot see what the calorie engine is computing for each user. Bank state, effective target, and weekly verdict are client-side derived values with no admin visibility.
+
+**Solution:** New admin view "Client Calories" (sidebar section under Users). Table of all active users showing live engine state:
+
+| Column | Source |
+|---|---|
+| User | users.name |
+| Program | day_json.program_id (latest log) |
+| Phase | day_json.phase (latest log) |
+| TDEE | Computed from rolling weight (last 7 logs with weight) |
+| Base target | From phase config + TDEE |
+| Bank adj | computeBank() from shared package, using last N days of logs |
+| Effective target | base + bank, clamped |
+| Weekly verdict | weeklyVerdict() from shared package |
+| Last log date | latest daily_log date |
+
+**Implementation approach:**
+1. New API endpoint `admin_client_calories` that:
+   - Fetches all active users
+   - For each user: last 14 daily_logs (covers bank_window + verdict), latest profile (for TDEE inputs)
+   - Runs shared pure functions server-side (computeBank, clampTarget, weeklyVerdict)
+   - Returns pre-computed rows
+2. New `AdminClientCalories.svelte` component: read-only table, refresh button, click user to drill into UserDetail
+3. Optional: click a user row to expand and see day-by-day breakdown (date, intake, base target, bank delta)
+
+**Why server-side:** Bank is currently client-only (localStorage). For admin visibility, compute from D1 data using the same shared functions. This also validates that client and server agree.
+
+**Dependencies:** Steps 6-8 should be done first (ramp_then_hold, verdict, bank UI), so the engine is feature-complete before building a monitoring dashboard for it.
+
+**Effort:** Medium (new API endpoint with multi-user query + shared function calls, one new component).
+
+---
 
 ## Deferred (post-rollout)
 
