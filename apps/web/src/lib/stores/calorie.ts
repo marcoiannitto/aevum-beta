@@ -1,4 +1,4 @@
-// v.3.2.0 2026-10-24 — #37c calorie bank: baseTarget + bankAdjustment + ramp_then_hold
+// v.3.3.0 2026-10-24 — #37c steps 7-8: weekly verdict badge + bank display
 /**
  * Calorie / TDEE helpers
  * Uses @aevum/shared for core TDEE calculation (single source of truth).

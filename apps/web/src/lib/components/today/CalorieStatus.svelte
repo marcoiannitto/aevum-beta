@@ -8,7 +8,7 @@
 	import { currentDay, dayData, totals as calcTotals } from '$lib/stores/day';
 	import { phases, phaseFor, phReg, ruleParent } from '$lib/stores/phases';
 	import { ruleFor, bandClass, actMacros } from '$lib/stores/rules';
-	import { effectiveTarget, mifflin } from '$lib/stores/calorie';
+	import { effectiveTarget, bankAdjustment, mifflin } from '$lib/stores/calorie';
 	import MacroGates from './MacroGates.svelte';
 	import FoodBuckets from './FoodBuckets.svelte';
 
@@ -30,6 +30,7 @@
 	});
 
 	let hasBank = $derived(!!(reg && +(reg.bank_window || 0)));
+	let bankAdj = $derived(hasBank ? bankAdjustment($currentDay) : 0);
 
 	let target = $derived.by(() => {
 		void $phases; // track phase registry updates (fix #35b)
@@ -67,6 +68,11 @@
 			<div class="calbar-label">
 				<span>
 					{t.kcal.toLocaleString()} / {target.toLocaleString()} kcal
+					{#if hasBank && bankAdj !== 0}
+						<span class="bank-delta {bankAdj > 0 ? 'pos' : 'neg'}">
+							bank {bankAdj > 0 ? '+' : ''}{bankAdj}
+						</span>
+					{/if}
 					{#if hasBank}
 						<button class="cb-info" onclick={() => showExplainer = !showExplainer}>ⓘ</button>
 					{/if}
@@ -75,7 +81,11 @@
 			</div>
 			{#if hasBank && showExplainer}
 				<div class="cb-explainer">
-					Your target adjusts based on the last few days, so one big meal or a light day won't throw you off. Focus on today.
+					{#if bankAdj !== 0}
+						Your target is adjusted by {bankAdj > 0 ? '+' : ''}{bankAdj} kcal based on the last few days. {bankAdj > 0 ? 'You ate less recently, so you have room today.' : 'You ate more recently, so today is a bit tighter.'}
+					{:else}
+						Your target adjusts based on the last few days. Right now the bank is neutral. Focus on today.
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -97,6 +107,9 @@
 	.calbar.warn > span { background: var(--warn); }
 	.calbar.over > span { background: var(--over); }
 	.calbar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; }
+	.bank-delta { font-size: 11px; font-weight: 500; padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
+	.bank-delta.pos { background: #e8f5e9; color: var(--green, #2d6a4f); }
+	.bank-delta.neg { background: #fce4e4; color: var(--red, #A13024); }
 	.cb-info { font-size: 13px; color: var(--muted); cursor: pointer; margin-left: 4px; opacity: 0.6; }
 	.cb-explainer { font-size: 12px; line-height: 1.5; color: var(--muted); background: var(--card-soft, #f5f0e8); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
 	.cal-disclaimer { margin-top: 10px; font-size: 11px; color: var(--muted, #938c7d); text-align: center; line-height: 1.4; }

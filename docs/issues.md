@@ -65,8 +65,8 @@
 |------|--------------------------------|-------------|-------|
 | #51  | Admin sidebar: reorder menu    | NEEDS INPUT | Deferred — Marco will decide order later. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
-| #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
-| #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
+| #37b | ramp_then_hold target mode     | DONE        | Already in calorie.ts baseTarget() |
+| #37c | Calorie bank redesign          | DONE        | Steps 7-8: weekly verdict badges in Trends + bank display in CalorieStatus |
 | #59  | AI worker sporadic 403         | OPEN        | Anthropic API rate-limits cause sporadic "ai http 403". Fix: add 1-retry with 1s backoff in `callAI` for 403/429 responses. |
 | #60  | Admin: add/edit programs        | DONE        | AdminPrograms list + AdminProgramDetail drill-down. Create/toggle/edit programs. |
 | #61  | Admin: edit phase config        | DONE        | AdminPhaseEditor modal with grouped fieldsets (identity, duration, calorie strategy, bank config, weight goal, rules, display). Key locked on existing phases. |
@@ -174,6 +174,7 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 - V3 calorie engine: baseTarget() + bankAdjustment() + effectiveTarget(). Supports `fixed` and `tdee_mult` modes. Bank logic in `packages/shared/src/calorie-bank.ts` (29 tests).
 - Bank adjustment active when phase has calorie_bank=1. Asymmetric: overspend 1:1, underspend capped 200 kcal/day. Safety clamps: floor 60% TDEE, ceiling 130% base target.
 - Current APP_VERSION: v3.1.6
+- calorie.ts v3.3.0: weekly verdict + bank display (steps 7-8 of #37c)
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)
 - Shallow clone stop hook falsely reports unpushed commits. Fix each time: `git update-ref refs/remotes/origin/feat/monorepo-restructure HEAD`

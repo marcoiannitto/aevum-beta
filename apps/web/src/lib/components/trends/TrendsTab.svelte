@@ -8,9 +8,11 @@
 	import { K } from '$lib/stores/auth';
 	import { phases, phaseFor, phReg } from '$lib/stores/phases';
 	import { totals, type DayData } from '$lib/stores/day';
-	import { effectiveTarget } from '$lib/stores/calorie';
+	import { effectiveTarget, baseTarget } from '$lib/stores/calorie';
 	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
 	import { dateStr, programDayNum } from '$lib/helpers/date';
+	import { weeklyVerdict } from '@aevum/shared';
+	import type { DayRecord } from '@aevum/shared';
 	import { programs, currentProgramId } from '$lib/stores/programs';
 
 	// Touch $phases to track phase registry updates for reactivity (fix #35)
@@ -200,6 +202,64 @@
 		return Math.round((within / c.length) * 100);
 	});
 
+	// Weekly verdict: compute per ISO week (Mon-Sun)
+	interface WeekVerdict { label: string; verdict: 'surplus' | 'deficit' | 'on_target' | null }
+
+	const weekVerdicts = $derived.by((): WeekVerdict[] => {
+		const id = get(pid);
+		if (!id) return [];
+
+		const { start, end } = dateRange();
+		const history: DayRecord[] = [];
+
+		// Build history from localStorage
+		for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+			try {
+				const ds = dateStr(dt);
+				const raw = localStorage.getItem(K(id, `day_${ds}`));
+				if (!raw) continue;
+				const dd = JSON.parse(raw) as DayData;
+
+				if (selectedProgram !== 'all') {
+					const dayProgram = dd.program_id || 'aevum';
+					if (dayProgram !== selectedProgram) continue;
+				}
+
+				const dayNum = programDayNum(dt);
+				const kcal = (dd.meals || []).reduce((s: number, m: Record<string, unknown>) => s + (+(m.kcal || 0)), 0);
+				if (kcal <= 0) continue;
+
+				history.push({
+					date: ds,
+					intake: kcal,
+					baseTarget: baseTarget(dayNum),
+					phase: dd.phase || '',
+					programId: dd.program_id || 'aevum',
+				});
+			} catch { continue; }
+		}
+
+		if (!history.length) return [];
+
+		// Find all Mondays in range
+		const mondays: string[] = [];
+		const d = new Date(start);
+		// Advance to first Monday
+		while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+		const today = new Date();
+		while (d <= today) {
+			mondays.push(dateStr(d));
+			d.setDate(d.getDate() + 7);
+		}
+
+		return mondays.map(mon => {
+			const v = weeklyVerdict(history, mon);
+			const monDate = new Date(mon + 'T00:00:00');
+			const label = `${monDate.getDate()}/${monDate.getMonth() + 1}`;
+			return { label, verdict: v };
+		}).filter(w => w.verdict !== null);
+	});
+
 	// CSV export — date-keyed iteration
 	function exportCSV() {
 		const id = get(pid);
@@ -273,6 +333,15 @@
 			{/if}
 		</h3>
 		<CalorieBars data={series.calories} />
+		{#if weekVerdicts.length}
+			<div class="verdicts">
+				{#each weekVerdicts as wv}
+					<span class="verdict-badge {wv.verdict}">
+						{wv.label}: {wv.verdict === 'on_target' ? 'On track' : wv.verdict === 'surplus' ? 'Over' : 'Under'}
+					</span>
+				{/each}
+			</div>
+		{/if}
 	</section>
 
 	<!-- Export -->
@@ -322,6 +391,16 @@
 		border: 1px solid var(--line);
 		border-radius: 14px;
 	}
+	.verdicts {
+		display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+	}
+	.verdict-badge {
+		font-size: 11px; font-weight: 500; padding: 2px 8px;
+		border-radius: 6px; white-space: nowrap;
+	}
+	.verdict-badge.on_target { background: #e8f5e9; color: var(--green, #2d6a4f); }
+	.verdict-badge.surplus { background: #fce4e4; color: var(--red, #A13024); }
+	.verdict-badge.deficit { background: #fff3e0; color: #e65100; }
 	.phase-filter label {
 		font-size: 13px; font-weight: 600; color: var(--muted);
 		white-space: nowrap;
