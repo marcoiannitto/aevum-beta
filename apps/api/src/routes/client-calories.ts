@@ -30,13 +30,7 @@ export async function adminClientCalories(db: D1Database): Promise<{
        ORDER BY name`
     ).all<any>(),
 
-    db.prepare(
-      `SELECT key, program_id, target_mode, calorie_mode, calorie_cut,
-              calorie_bank, bank_window, bank_clamp_lo, bank_clamp_hi,
-              bank_grace_days, weekly_tolerance, ramp_from, ramp_days,
-              target_fixed_lo, target_fixed_hi
-       FROM phases`
-    ).all<any>(),
+    db.prepare(`SELECT * FROM phases`).all<any>(),
 
     // Last 14 days of logs for all users (covers bank window + rolling weight)
     db.prepare(
