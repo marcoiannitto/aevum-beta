@@ -50,7 +50,7 @@ aevum-app-v3/
 │       │   ├── lib/
 │       │   │   ├── api/client.ts       # API client (POST with Bearer auth)
 │       │   │   ├── components/
-│       │   │   │   └── admin/UserDetail, AdminPrograms, AdminProgramDetail, AdminPhaseEditor
+│       │   │   │   └── admin/UserDetail, AdminPrograms, AdminProgramDetail, AdminPhaseEditor, AdminCalorieTuning, AdminClientCalories
 │       │   │   └── stores/
 │       │   │       ├── auth.ts          # Auth store (pid, profile, isProgram)
 │       │   │       ├── day.ts           # Day store (loadDay, saveDay, syncDay)
@@ -67,6 +67,7 @@ aevum-app-v3/
 │           ├── constants.ts    # PH_FIXED, PHASE_KEYS, PhaseMode, ME, ALC_WORDS
 │           ├── phases.ts       # phaseFor(), phaseBands(), activationDays()
 │           ├── calories.ts     # mifflinTDEE(), dobToAge(), num(), isTruthy()
+│           ├── client-calories.ts # computeClientCalories() server-side per-user calorie status
 │           ├── compliance.ts   # Compliance checking
 │           └── types.ts        # Shared TypeScript types
 ├── docs/                       # Technical documentation (this folder)
@@ -196,6 +197,7 @@ aevum-beta/
 | `admin_scan_save` / `admin_scan_list` / `admin_scan_delete` | admin | Body scans |
 | `admin_programs` (sub: list/create/update) | admin | Program CRUD |
 | `admin_phase_save` / `admin_phase_delete` | admin | Phase upsert (INSERT OR REPLACE) and delete |
+| `admin_client_calories` | admin | Per-user calorie dashboard (TDEE, target, bank, verdict) |
 
 ### Public Intake Routes (REST-style)
 | Method | Path | Purpose |

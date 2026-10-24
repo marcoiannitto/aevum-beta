@@ -63,6 +63,15 @@ export {
 } from './calorie-bank.js';
 export type { DayRecord, BankOpts } from './calorie-bank.js';
 
+// Client calorie status (server-side computation)
+export { computeClientCalories } from './client-calories.js';
+export type {
+  CalorieProfile,
+  CalorieLog,
+  CaloriePhaseConfig,
+  ClientCalorieStatus,
+} from './client-calories.js';
+
 // Compliance engine
 export {
   findRule,

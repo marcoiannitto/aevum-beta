@@ -44,6 +44,7 @@ import {
   adminPhaseSave, adminPhaseDelete,
 } from './routes/programs.js';
 import { adminScanSave, adminScanList, adminScanDelete } from './routes/scans.js';
+import { adminClientCalories } from './routes/client-calories.js';
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -196,6 +197,8 @@ app.post('/', async (c) => {
         return c.json(await adminPhaseSave(body, db));
       case 'admin_phase_delete':
         return c.json(await adminPhaseDelete(body, db));
+      case 'admin_client_calories':
+        return c.json(await adminClientCalories(db));
       case 'admin_mealplan': {
         const targetId = String(body.user_id || '');
         if (!targetId) return c.json({ error: 'user_id required' }, 400);

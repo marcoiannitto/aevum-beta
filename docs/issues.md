@@ -76,8 +76,8 @@
 | #65  | Trends: loading bars should not be colored | OPEN | Loading has no calorie limit, bars should be neutral (not red). Depends on #37. |
 | #66  | Trends: over-budget bars not red | OPEN        | Bars exceeding daily budget aren't flagged red. Thresholds fall back to defaults when rules don't load. Depends on #37. |
 | #67  | Trends: bars ignore phase rules for coloring | OPEN | Bars should use green/amber/red bands from `ruleFor()` per phase. `bandClass()` exists but isn't used by CalorieBars. Depends on #37. |
-| #68  | Admin: phase parameter tuning UI | OPEN | See spec below. Quick-edit phase params (calorie_cut, bank_window, clamps, tolerance) without opening the full phase editor. |
-| #69  | Admin: client calorie dashboard | OPEN | See spec below. Per-user read-only view: TDEE, program, phase, base target, bank adjustment, effective target, weekly verdict. |
+| #68  | Admin: phase parameter tuning UI | DONE | AdminCalorieTuning.svelte. Flat table of all phase calorie params, inline-editable, save per row. |
+| #69  | Admin: client calorie dashboard | DONE | computeClientCalories() in @aevum/shared + admin_client_calories endpoint + AdminClientCalories.svelte. Server-side per-user calorie status. |
 
 ---
 

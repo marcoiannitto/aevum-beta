@@ -226,7 +226,8 @@ export const SIDEBAR_SECTIONS = [
 	{
 		title: 'People',
 		items: [
-			{ key: 'users', label: 'Users' }
+			{ key: 'users', label: 'Users' },
+			{ key: 'client_calories', label: 'Client Calories' }
 		]
 	},
 	{
