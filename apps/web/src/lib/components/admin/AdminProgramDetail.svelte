@@ -169,7 +169,7 @@
 							<td class="center">{ph.calorie_bank ? 'Yes' : '-'}</td>
 							<td class="center">{ph.duration_default || '-'}</td>
 							<td>
-								<button class="del-btn" onclick|stopPropagation={() => deletePhase(ph.key)} title="Delete phase">
+								<button class="del-btn" onclick={(e) => { e.stopPropagation(); deletePhase(ph.key); }} title="Delete phase">
 									&times;
 								</button>
 							</td>

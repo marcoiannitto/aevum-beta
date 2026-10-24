@@ -148,7 +148,7 @@
 							<button
 								class="toggle"
 								class:on={!!prog.is_active}
-								onclick|stopPropagation={() => toggleActive(prog)}
+								onclick={(e) => { e.stopPropagation(); toggleActive(prog); }}
 							>{prog.is_active ? 'ON' : 'OFF'}</button>
 						</td>
 					</tr>

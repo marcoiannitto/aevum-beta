@@ -116,7 +116,7 @@
 </script>
 
 <div class="editor-overlay" onclick={onCancel}>
-	<div class="editor" onclick|stopPropagation>
+	<div class="editor" onclick={(e) => e.stopPropagation()}>
 		<div class="editor-header">
 			<h2>{isNew ? 'New Phase' : `Edit: ${phase?.key}`}</h2>
 			<button class="close-btn" onclick={onCancel}>&times;</button>
