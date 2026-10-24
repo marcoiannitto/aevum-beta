@@ -8,7 +8,7 @@
 	import { currentDay, dayData, totals as calcTotals } from '$lib/stores/day';
 	import { phases, phaseFor, phReg, ruleParent } from '$lib/stores/phases';
 	import { ruleFor, bandClass, actMacros } from '$lib/stores/rules';
-	import { effectiveTarget, calorieBank, mifflin } from '$lib/stores/calorie';
+	import { effectiveTarget, mifflin } from '$lib/stores/calorie';
 	import MacroGates from './MacroGates.svelte';
 	import FoodBuckets from './FoodBuckets.svelte';
 
@@ -37,12 +37,7 @@
 			const kr = ruleFor('activation', 'kcal');
 			return (kr && kr.target) ? kr.target : 650;
 		}
-		let tgt = effectiveTarget($currentDay, $profile);
-		if (hasBank) {
-			const bank = calorieBank($currentDay);
-			if (bank !== 0) tgt = Math.max(0, tgt + bank);
-		}
-		return tgt;
+		return effectiveTarget($currentDay, $profile);
 	});
 
 	let barPct = $derived(target > 0 ? Math.min(100, t.kcal / target * 100) : 0);

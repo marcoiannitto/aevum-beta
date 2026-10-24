@@ -238,6 +238,7 @@ export const SIDEBAR_SECTIONS = [
 	{
 		title: 'Reference tables',
 		items: [
+			{ key: 'programs', label: 'Programs' },
 			{ key: 'phases', label: 'Phases' },
 			{ key: 'rules', label: 'Rules' },
 			{ key: 'foods', label: 'Foods' },

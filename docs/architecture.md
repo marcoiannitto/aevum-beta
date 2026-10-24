@@ -1,6 +1,6 @@
 # AEVUM Architecture
 
-> Single source of truth for developers. Updated 2026-10-20.
+> Single source of truth for developers. Updated 2026-10-24.
 > Business docs (brand, compliance, briefs, copy) live in the Claude project.
 
 ---
@@ -50,7 +50,7 @@ aevum-app-v3/
 │       │   ├── lib/
 │       │   │   ├── api/client.ts       # API client (POST with Bearer auth)
 │       │   │   ├── components/
-│       │   │   │   └── admin/UserDetail.svelte
+│       │   │   │   └── admin/UserDetail, AdminPrograms, AdminProgramDetail, AdminPhaseEditor
 │       │   │   └── stores/
 │       │   │       ├── auth.ts          # Auth store (pid, profile, isProgram)
 │       │   │       ├── day.ts           # Day store (loadDay, saveDay, syncDay)
@@ -84,7 +84,7 @@ aevum-beta/
 │   └── backup-d1.yml           # Daily D1 backup (2am UTC)
 ├── v2-api/
 │   ├── src/index.js            # Entire backend (single Worker file)
-│   ├── migrations/             # D1 migration files (0001-0017)
+│   ├── migrations/             # D1 migration files (0001-0020)
 │   └── wrangler.toml           # Worker config + D1 binding
 ├── meal-planner/               # Standalone recipe scaler (local JSON, no API)
 ├── fitness/                    # Exercise demo videos (.mp4)
@@ -118,7 +118,7 @@ aevum-beta/
 | `meal_plans` | per-user | user_id, day, meal, recipe, kcal, protein, fat, carbs, meal_type, meal_slot, components_json |
 | `body_scans` | per-user | id, user_id, scan_date, scan_type, body_fat_pct, fat_mass, smm, reference_json |
 | `intake_tokens` | intake | token (PK), client_name, prefill_json, response_json, status |
-| `phases` | reference | key (PK), name, color, sort_order, duration_default, duration_col, is_program, calorie_cut, calorie_bank, inherits_rules_from, use_buckets, calorie_mode |
+| `phases` | reference | key (PK), program_id, name, color, sort_order, duration_default, duration_col, is_program, inherits_rules_from, calorie_mode, target_mode, calorie_cut, target_fixed_lo, target_fixed_hi, ramp_from, ramp_days, ramp_pct, calorie_bank, bank_window, bank_clamp_lo, bank_clamp_hi, bank_grace_days, weekly_tolerance, weight_goal, weight_goal_rate, drift_enabled, drift_review_days, drift_step_kcal, drift_band_kg, drift_floor_kcal, use_buckets, gate_fat, gate_carb, requires_serum, has_fasting, show_in_phase_bar, show_in_recipe_chips, food_rule_line, fitness_intro, explainer_json |
 | `rules` | reference | phase, model, metric, basis, value, green_lo, green_hi, amber_lo, amber_hi, gated, unit |
 | `foods` | reference | phase, category, subcategory, item, verdict, cap_g |
 | `policy` | reference | phase, rules_text |
@@ -151,6 +151,9 @@ aevum-beta/
 | `0015_orders.sql` | Orders table | Applied |
 | `0016_user_config.sql` | Per-user config overrides | Applied |
 | `0017_water_rules_all_phases.sql` | Seed flat 2.5L water rules for all phases (recomp already has 0.04 L/kg) | Pending |
+| `0018_programs.sql` | programs table (id, name, description, color, sort_order, is_active) | Applied |
+| `0019_fix_phases.sql` | Dedup phases, assign program_id to existing phases | Applied |
+| `0020_calorie_bank_columns.sql` | Add calorie engine columns to phases: target_mode, target_fixed_lo/hi, ramp_from, ramp_days, ramp_pct, bank_window, bank_clamp_lo/hi, bank_grace_days, weekly_tolerance, weight_goal, weight_goal_rate, drift_*, gate_fat, gate_carb | Applied |
 
 ---
 
@@ -191,6 +194,8 @@ aevum-beta/
 | `admin_intake_*` | admin | Intake management |
 | `admin_user_create` / `admin_user_delete` | admin | User CRUD |
 | `admin_scan_save` / `admin_scan_list` / `admin_scan_delete` | admin | Body scans |
+| `admin_programs` (sub: list/create/update) | admin | Program CRUD |
+| `admin_phase_save` / `admin_phase_delete` | admin | Phase upsert (INSERT OR REPLACE) and delete |
 
 ### Public Intake Routes (REST-style)
 | Method | Path | Purpose |

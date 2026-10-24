@@ -44,6 +44,10 @@ export interface PhaseConfig {
 	drift_step_kcal: number | null;
 	drift_band_kg: number | null;
 	drift_floor_kcal: number | null;
+	bank_grace_days: number | null;
+	weekly_tolerance: number | null;
+	weight_goal: string | null;
+	weight_goal_rate: number | null;
 	inherits_rules_from: string | null;
 	food_rule_line: string | null;
 	fitness_intro: string | null;
@@ -61,7 +65,7 @@ export const phasesLoaded = writable(false);
 
 const CACHE_KEY = 'aevum_phases_cache';
 const CACHE_VER_KEY = 'aevum_phases_cache_v';
-const CACHE_VERSION = 2; // bump when phases schema changes (fix #32)
+const CACHE_VERSION = 3; // bump when phases schema changes (#37c bank columns)
 
 function applyPhases(arr: PhaseConfig[], programId?: string) {
 	const map: Record<string, PhaseConfig> = {};

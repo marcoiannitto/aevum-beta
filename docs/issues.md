@@ -68,8 +68,8 @@
 | #37b | ramp_then_hold target mode     | OPEN        | Depends on #37e |
 | #37c | Calorie bank redesign          | OPEN        | Depends on #37e |
 | #59  | AI worker sporadic 403         | OPEN        | Anthropic API rate-limits cause sporadic "ai http 403". Fix: add 1-retry with 1s backoff in `callAI` for 403/429 responses. |
-| #60  | Admin: add/edit programs        | OPEN        | No admin UI for creating programs. Currently requires raw SQL in D1 across `programs` + `phases` tables. Need a form that creates both rows with validation so nothing is missed. |
-| #61  | Admin: edit phase config        | OPEN        | Need UI to edit all phase parameters (calorie_mode, target_mode, food_rule_line, explainer_json, duration, gates, etc.) so program rules can be tuned without touching D1 directly. |
+| #60  | Admin: add/edit programs        | DONE        | AdminPrograms list + AdminProgramDetail drill-down. Create/toggle/edit programs. |
+| #61  | Admin: edit phase config        | DONE        | AdminPhaseEditor modal with grouped fieldsets (identity, duration, calorie strategy, bank config, weight goal, rules, display). Key locked on existing phases. |
 | #62  | Food tab AI broken              | OPEN        | Macros estimate returns nothing, food check returns "error / Could not check. Try again." Likely related to #59 (sporadic 403) or a different API/routing issue. Needs investigation. |
 | #63  | Remove exercise from Today tab  | OPEN        | Exercise section in "Today" is redundant, already covered in Check-in. Remove it from DayView. |
 | #64  | Trends: 0% on target wrong      | OPEN        | Compliance calc uses fallback thresholds when rules don't load. Loading phase has calorie_mode 'hidden' so target may be wrong/zero. |
@@ -106,8 +106,8 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 
 - AI worker source saved at `ai-worker/src/index.js` (v1.13.0, with #25 fix)
 - Deploy only from local machine (cloud container blocked from Cloudflare API)
-- V3 calorie engine simplified: effectiveTarget() supports `fixed` and `tdee_mult` modes, everything else falls back to liveTDEE
-- calorieBank() returns 0 (disabled until #37c)
+- V3 calorie engine: baseTarget() + bankAdjustment() + effectiveTarget(). Supports `fixed` and `tdee_mult` modes. Bank logic in `packages/shared/src/calorie-bank.ts` (29 tests).
+- Bank adjustment active when phase has calorie_bank=1. Asymmetric: overspend 1:1, underspend capped 200 kcal/day. Safety clamps: floor 60% TDEE, ceiling 130% base target.
 - Current APP_VERSION: v3.1.6
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)

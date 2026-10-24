@@ -15,13 +15,21 @@
 	import IntakeForm from '$lib/components/admin/IntakeForm.svelte';
 	import MealPlanBuilder from '$lib/components/admin/MealPlanBuilder.svelte';
 	import BodyScans from '$lib/components/admin/BodyScans.svelte';
+	import AdminPrograms from '$lib/components/admin/AdminPrograms.svelte';
+	import AdminProgramDetail from '$lib/components/admin/AdminProgramDetail.svelte';
+	import AdminPhaseEditor from '$lib/components/admin/AdminPhaseEditor.svelte';
 
 	// View state
 	let activeTable = $state('rules');
-	let view = $state<'table' | 'users' | 'user_detail' | 'intakes' | 'intake_detail' | 'intake_form' | 'mealplan' | 'body_scans'>('table');
+	let view = $state<'table' | 'users' | 'user_detail' | 'intakes' | 'intake_detail' | 'intake_form' | 'mealplan' | 'body_scans' | 'programs' | 'program_detail' | 'phase_editor'>('table');
 	let selectedUserId = $state<number>(0);
 	let selectedIntakeId = $state<number>(0);
 	let editingIntake = $state<Record<string, unknown> | null>(null);
+
+	// Programs
+	let selectedProgramId = $state('');
+	let editingPhase = $state<Record<string, unknown> | null>(null);
+	let editorProgramId = $state('');
 
 	// Users
 	let users = $state<Record<string, unknown>[]>([]);
@@ -42,6 +50,10 @@
 		const tableDef = TABLES[key];
 
 		// Special views by key or mode
+		if (key === 'programs') {
+			view = 'programs';
+			return;
+		}
 		if (key === 'users' || tableDef?.mode === 'users') {
 			view = 'users';
 			await loadUsers();
@@ -113,6 +125,22 @@
 	function openBodyScans(userId: number) {
 		selectedUserId = userId;
 		view = 'body_scans';
+	}
+
+	// Programs
+	function handleSelectProgram(programId: string) {
+		selectedProgramId = programId;
+		view = 'program_detail';
+	}
+
+	function handleEditPhase(phase: Record<string, unknown> | null, programId: string) {
+		editingPhase = phase;
+		editorProgramId = programId;
+		view = 'phase_editor';
+	}
+
+	function handlePhaseEditorDone() {
+		view = 'program_detail';
 	}
 
 	// Table editing
@@ -216,6 +244,12 @@
 			<MealPlanBuilder userId={selectedUserId} profile={userProfile} />
 		{:else if view === 'body_scans'}
 			<BodyScans userId={selectedUserId} />
+		{:else if view === 'programs'}
+			<AdminPrograms onSelectProgram={handleSelectProgram} />
+		{:else if view === 'program_detail'}
+			<AdminProgramDetail programId={selectedProgramId} onBack={() => view = 'programs'} onEditPhase={handleEditPhase} />
+		{:else if view === 'phase_editor'}
+			<AdminPhaseEditor phase={editingPhase} programId={editorProgramId} onDone={handlePhaseEditorDone} onCancel={() => view = 'program_detail'} />
 		{/if}
 	</main>
 </div>

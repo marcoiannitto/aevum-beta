@@ -10,9 +10,8 @@
 	const t = $derived($dayData ? calcTotals($dayData) : { kcal: 0, protein: 0, fat: 0, carbs: 0, exKcal: 0 });
 	const target = $derived(($phases, effectiveTarget($currentDay, $profile)));
 	const bank = $derived(reg?.calorie_bank ? calorieBank($currentDay) : 0);
-	const adjusted = $derived(target + bank);
-	const pct = $derived(adjusted > 0 ? Math.min(t.kcal / adjusted, 1.5) : 0);
-	const remaining = $derived(Math.max(0, adjusted - t.kcal));
+	const pct = $derived(target > 0 ? Math.min(t.kcal / target, 1.5) : 0);
+	const remaining = $derived(Math.max(0, target - t.kcal));
 
 	// Ring SVG params
 	const R = 70;
@@ -41,7 +40,7 @@
 	</svg>
 	<div class="ring-inner">
 		<span class="cal-eaten">{t.kcal}</span>
-		<span class="cal-label">of {adjusted} kcal</span>
+		<span class="cal-label">of {target} kcal</span>
 		{#if remaining > 0}
 			<span class="cal-remain">{remaining} left</span>
 		{:else}
@@ -53,7 +52,6 @@
 {#if bank !== 0}
 	<p class="bank-note">
 		Bank: {bank > 0 ? '+' : ''}{bank} kcal
-		(target {target} {bank > 0 ? '+' : ''}{bank} = {adjusted})
 	</p>
 {/if}
 

@@ -8,7 +8,7 @@
 	import { K } from '$lib/stores/auth';
 	import { phases, phaseFor, phReg } from '$lib/stores/phases';
 	import { totals, type DayData } from '$lib/stores/day';
-	import { effectiveTarget, calorieBank } from '$lib/stores/calorie';
+	import { effectiveTarget } from '$lib/stores/calorie';
 	import { totalDays, phaseLens, phasesList } from '$lib/stores/phases';
 	import { dateStr, programDayNum } from '$lib/helpers/date';
 	import { programs, currentProgramId } from '$lib/stores/programs';
@@ -110,9 +110,7 @@
 				const t = totals(dd);
 				if (t.kcal > 0) {
 					const target = effectiveTarget(dayNum);
-					const reg = phReg(phaseFor(dayNum, $profile).key);
-					const bankAdj = reg?.calorie_bank ? calorieBank(dayNum) : 0;
-					calories.push({ day: dayNum, kcal: t.kcal, target: target + bankAdj });
+					calories.push({ day: dayNum, kcal: t.kcal, target });
 				}
 			} catch { continue; }
 		}

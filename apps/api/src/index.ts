@@ -41,6 +41,7 @@ import {
 } from './routes/admin.js';
 import {
   getPrograms, setProgram, adminPrograms, adminProgramTransitions,
+  adminPhaseSave, adminPhaseDelete,
 } from './routes/programs.js';
 import { adminScanSave, adminScanList, adminScanDelete } from './routes/scans.js';
 
@@ -191,6 +192,10 @@ app.post('/', async (c) => {
         return c.json(await adminPrograms(body, db));
       case 'admin_program_transitions':
         return c.json(await adminProgramTransitions(body, db));
+      case 'admin_phase_save':
+        return c.json(await adminPhaseSave(body, db));
+      case 'admin_phase_delete':
+        return c.json(await adminPhaseDelete(body, db));
       case 'admin_mealplan': {
         const targetId = String(body.user_id || '');
         if (!targetId) return c.json({ error: 'user_id required' }, 400);

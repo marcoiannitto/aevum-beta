@@ -135,3 +135,71 @@ export async function adminProgramTransitions(body: any, db: D1Database) {
 
   return { transitions: rows.results };
 }
+
+// ─── Admin: phase upsert (INSERT OR REPLACE) ─────────────
+
+const PHASE_COLUMNS = [
+  'key', 'name', 'sort_order', 'color', 'duration_default', 'duration_col',
+  'is_program', 'gate_fat', 'gate_carb', 'use_buckets', 'requires_serum',
+  'has_fasting', 'calorie_bank', 'show_in_phase_bar', 'show_in_recipe_chips',
+  'drift_enabled', 'target_mode', 'calorie_mode', 'calorie_cut',
+  'ramp_from', 'ramp_days', 'ramp_pct', 'bank_window', 'bank_clamp_lo',
+  'bank_clamp_hi', 'drift_review_days', 'drift_step_kcal', 'drift_band_kg',
+  'drift_floor_kcal', 'bank_grace_days', 'weekly_tolerance', 'weight_goal',
+  'weight_goal_rate', 'inherits_rules_from', 'food_rule_line', 'fitness_intro',
+  'program_id', 'explainer_json',
+] as const;
+
+export async function adminPhaseSave(body: any, db: D1Database) {
+  const key = String(body.key || '').trim();
+  if (!key) return { error: 'key required' };
+  const name = String(body.name || '').trim();
+  if (!name) return { error: 'name required' };
+
+  // Check if phase already exists
+  const existing = await db.prepare('SELECT key FROM phases WHERE key = ?').bind(key).first<any>();
+
+  // If updating, reject key changes (key is PK, stamped in day_json)
+  if (body._original_key && body._original_key !== key) {
+    return { error: 'Cannot rename phase key. Keys are stamped in historical data.' };
+  }
+
+  // Build column list from provided fields
+  const cols: string[] = [];
+  const vals: any[] = [];
+  for (const col of PHASE_COLUMNS) {
+    if (body[col] !== undefined) {
+      cols.push(col);
+      vals.push(body[col]);
+    }
+  }
+
+  if (!cols.includes('key')) { cols.unshift('key'); vals.unshift(key); }
+  if (!cols.includes('name')) { cols.unshift('name'); vals.unshift(name); }
+
+  const placeholders = cols.map(() => '?').join(', ');
+  await db.prepare(
+    `INSERT OR REPLACE INTO phases (${cols.join(', ')}) VALUES (${placeholders})`
+  ).bind(...vals).run();
+
+  return { ok: true, key, created: !existing };
+}
+
+// ─── Admin: phase delete ──────────────────────────────────
+
+export async function adminPhaseDelete(body: any, db: D1Database) {
+  const key = String(body.key || '').trim();
+  if (!key) return { error: 'key required' };
+
+  // Check if any daily_logs reference this phase
+  const refs = await db.prepare(
+    "SELECT COUNT(*) as cnt FROM daily_logs WHERE day_json LIKE ?"
+  ).bind(`%"phase":"${key}"%`).first<any>();
+
+  if (refs && refs.cnt > 0) {
+    return { error: `Cannot delete phase "${key}": ${refs.cnt} daily log(s) reference it.` };
+  }
+
+  await db.prepare('DELETE FROM phases WHERE key = ?').bind(key).run();
+  return { ok: true };
+}

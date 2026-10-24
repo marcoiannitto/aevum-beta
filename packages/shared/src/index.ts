@@ -53,6 +53,16 @@ export type { PhaseProfile, PhaseBand } from './phases.js';
 // Calorie / utility functions
 export { mifflinTDEE, dobToAge, num, isTruthy } from './calories.js';
 
+// Calorie bank
+export {
+  computeBank,
+  clampTarget,
+  bankActive,
+  weeklyVerdict,
+  BANK_DEFAULTS,
+} from './calorie-bank.js';
+export type { DayRecord, BankOpts } from './calorie-bank.js';
+
 // Compliance engine
 export {
   findRule,
