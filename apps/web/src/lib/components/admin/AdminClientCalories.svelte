@@ -1,4 +1,4 @@
-<!-- v.1.0.0 2026-10-24 -- #69 Client calorie dashboard -->
+<!-- v.1.1.0 2026-10-25 -- #69 fix daysAgo negative, show debug fields, kcal null handling -->
 <script lang="ts">
 	import { adminApi, toast } from '$lib/stores/admin';
 	import type { ClientCalorieStatus } from '@aevum/shared';
@@ -37,7 +37,7 @@
 				case 'name': cmp = a.name.localeCompare(b.name); break;
 				case 'phase': cmp = a.phase.localeCompare(b.phase); break;
 				case 'effectiveTarget': cmp = a.effectiveTarget - b.effectiveTarget; break;
-				case 'lastIntake': cmp = (a.lastIntake ?? 0) - (b.lastIntake ?? 0); break;
+				case 'lastIntake': cmp = (a.lastIntake ?? -1) - (b.lastIntake ?? -1); break;
 				case 'verdict': cmp = (a.verdict || '').localeCompare(b.verdict || ''); break;
 			}
 			return sortAsc ? cmp : -cmp;
@@ -80,6 +80,7 @@
 		const t = new Date(today + 'T00:00:00Z').getTime();
 		const d = new Date(dateStr + 'T00:00:00Z').getTime();
 		const diff = Math.floor((t - d) / 86_400_000);
+		if (diff < 0) return 'Today'; // future date = timezone edge, treat as today
 		if (diff === 0) return 'Today';
 		if (diff === 1) return '1d ago';
 		return diff + 'd ago';
@@ -94,7 +95,7 @@
 <div class="cal-dash">
 	<div class="list-header">
 		<h2>Client Calories</h2>
-		<span class="hint">{today} | {clients.length} active client{clients.length !== 1 ? 's' : ''}</span>
+		<span class="hint">{today} (SGT) | {clients.length} active client{clients.length !== 1 ? 's' : ''}</span>
 		<button class="btn-xs btn-outline" onclick={load} style="margin-left:auto">Refresh</button>
 	</div>
 
@@ -112,6 +113,7 @@
 						<th>Day</th>
 						<th>TDEE</th>
 						<th class="sortable" onclick={() => toggleSort('effectiveTarget')}>Target{sortArrow('effectiveTarget')}</th>
+						<th>Mode</th>
 						<th>Bank</th>
 						<th class="sortable" onclick={() => toggleSort('lastIntake')}>Last intake{sortArrow('lastIntake')}</th>
 						<th>Delta</th>
@@ -136,6 +138,9 @@
 										{c.bankAdj > 0 ? '+' : ''}{c.bankAdj}
 									</span>
 								{/if}
+							</td>
+							<td>
+								<span class="mode-badge">{c._targetMode || '--'}</span>
 							</td>
 							<td>
 								{#if c.isBankActive}
@@ -203,6 +208,13 @@
 		padding: 2px 8px; border-radius: 6px;
 		background: #f0ece4; color: var(--ink-soft);
 		text-transform: capitalize;
+	}
+
+	.mode-badge {
+		font-size: 10px; font-weight: 500;
+		padding: 2px 6px; border-radius: 4px;
+		background: #eee8dd; color: var(--ink-soft);
+		font-family: monospace;
 	}
 
 	.bank-adj { font-size: 10px; display: block; }

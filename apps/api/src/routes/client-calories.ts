@@ -1,4 +1,4 @@
-// v.1.0.0 2026-10-24 -- #69 admin client calorie dashboard endpoint
+// v.1.0.1 2026-10-25 -- #69 fix timezone (SGT), preserve kcal null, add debug fields
 /**
  * Queries all active users' profiles, recent logs, and phase configs,
  * then computes per-user calorie status via @aevum/shared.
@@ -12,11 +12,16 @@ import {
   type ClientCalorieStatus,
 } from '@aevum/shared';
 
+/** Get today's date in Asia/Singapore timezone */
+function todaySGT(): string {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Singapore' });
+}
+
 export async function adminClientCalories(db: D1Database): Promise<{
   clients: ClientCalorieStatus[];
   today: string;
 }> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todaySGT();
 
   // Fetch all active program users, all phase configs, and recent logs in parallel
   const [usersRes, phasesRes, logsRes] = await Promise.all([
@@ -44,7 +49,7 @@ export async function adminClientCalories(db: D1Database): Promise<{
   const users = (usersRes.results || []) as CalorieProfile[];
   const phases = (phasesRes.results || []) as CaloriePhaseConfig[];
 
-  // Group logs by user_id
+  // Group logs by user_id, preserve kcal null
   const logsByUser = new Map<string, CalorieLog[]>();
   for (const row of (logsRes.results || [])) {
     const uid = row.user_id as string;
@@ -54,7 +59,7 @@ export async function adminClientCalories(db: D1Database): Promise<{
       date: row.date,
       phase: row.phase,
       weight: row.weight,
-      kcal: row.kcal ?? 0,
+      kcal: row.kcal,
       day_json: row.day_json,
     });
   }

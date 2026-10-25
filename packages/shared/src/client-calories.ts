@@ -1,4 +1,4 @@
-// v.1.0.0 2026-10-24 -- #69 server-side per-user calorie status
+// v.1.1.0 2026-10-25 -- #69 fix kcal null, bank history baseTarget, verdict per-day target, add debug fields
 /**
  * Pure function to compute a single user's calorie status from raw DB data.
  * No Svelte, no localStorage, no browser APIs.
@@ -37,7 +37,7 @@ export interface CalorieLog {
   date: string;
   phase: string | null;
   weight: number | null;
-  kcal: number;
+  kcal: number | null;  // null = no log, 0 = logged zero
   day_json: string | null;
 }
 
@@ -76,6 +76,9 @@ export interface ClientCalorieStatus {
   loggedDays: number;
   verdict: 'surplus' | 'deficit' | 'on_target' | null;
   isBankActive: boolean;
+  // Debug fields (temporary, to diagnose phase config issues)
+  _targetMode: string | null;
+  _phaseConfigKey: string | null;
 }
 
 // ── Helpers ──
@@ -89,7 +92,6 @@ function programDayNum(startDate: string, today: string): number {
 
 /** Rolling average weight from recent logs, fallback to start_weight */
 function rollingWeight(logs: CalorieLog[], windowDays: number, startWeight: number): number {
-  // Use the most recent N logs that have weight
   const withWeight = logs
     .filter(l => l.weight != null && l.weight > 0)
     .sort((a, b) => b.day - a.day)
@@ -149,7 +151,7 @@ function computeBase(
     return holdTarget;
   }
 
-  // Fallback
+  // Fallback: no target_mode set, use TDEE
   return Math.round(tdee);
 }
 
@@ -175,7 +177,7 @@ export function computeClientCalories(
     ? phaseFor(dayNum, profile as PhaseProfile)
     : (profile.phase_mode || 'loading');
 
-  // Find matching phase config
+  // Find matching phase config (program-specific first, then fallback)
   const phaseConfig = phases.find(p => p.key === phase && (
     p.program_id === profile.program_id || p.program_id == null
   )) ?? phases.find(p => p.key === phase) ?? null;
@@ -206,12 +208,13 @@ export function computeClientCalories(
     );
 
     if (bankIsActive) {
-      // Build DayRecord history from logs
+      // Build DayRecord history from logs (exclude today)
+      // Use each log's own baseTarget via computeBase with that log's day number
       const history: DayRecord[] = logs
         .filter(l => l.date && l.date < today)
         .map(l => ({
           date: l.date,
-          intake: l.kcal || 0,
+          intake: l.kcal ?? 0,
           baseTarget: computeBase(l.day, tdee, profile, phaseConfig),
           phase: l.phase || phase,
           programId: profile.program_id || 'aevum',
@@ -239,28 +242,31 @@ export function computeClientCalories(
       )
     : baseTarget;
 
-  // Last intake
+  // Last intake: find most recent log with actual kcal data
   const sorted = [...logs].sort((a, b) => b.day - a.day);
   const lastLog = sorted[0] ?? null;
+  // Show actual kcal if present, null if no log or kcal is null
+  const lastIntake = lastLog && lastLog.kcal != null ? lastLog.kcal : null;
 
   // Weekly verdict (last 7 days)
+  // Use per-day baseTarget via computeBase for each log
   const mondayOffset = new Date(today + 'T00:00:00Z').getUTCDay();
   const mondayDate = new Date(today + 'T00:00:00Z');
   mondayDate.setUTCDate(mondayDate.getUTCDate() - ((mondayOffset + 6) % 7));
   const weekStart = mondayDate.toISOString().slice(0, 10);
 
-  const history: DayRecord[] = logs
-    .filter(l => l.date)
+  const verdictHistory: DayRecord[] = logs
+    .filter(l => l.date && l.kcal != null)
     .map(l => ({
       date: l.date,
-      intake: l.kcal || 0,
-      baseTarget,
+      intake: l.kcal!,
+      baseTarget: computeBase(l.day, tdee, profile, phaseConfig),
       phase: l.phase || phase,
       programId: profile.program_id || 'aevum',
     }));
 
   const tolerance = phaseConfig?.weekly_tolerance ?? 0.10;
-  const verdict = weeklyVerdict(history, weekStart, tolerance);
+  const verdict = weeklyVerdict(verdictHistory, weekStart, tolerance);
 
   return {
     userId: profile.id,
@@ -272,10 +278,12 @@ export function computeClientCalories(
     baseTarget,
     bankAdj,
     effectiveTarget,
-    lastIntake: lastLog ? (lastLog.kcal || 0) : null,
+    lastIntake,
     lastLogDate: lastLog?.date ?? null,
-    loggedDays: logs.length,
+    loggedDays: logs.filter(l => l.kcal != null).length,
     verdict,
     isBankActive: bankIsActive,
+    _targetMode: phaseConfig?.target_mode ?? null,
+    _phaseConfigKey: phaseConfig?.key ?? null,
   };
 }
