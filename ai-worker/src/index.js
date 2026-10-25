@@ -1,4 +1,7 @@
-/* AEVUM Backend — Cloudflare Worker v1.13.0
+/* AEVUM Backend — Cloudflare Worker v1.13.1
+   Changes from v1.13.0:
+     - FIX: photo estimate broken; frontend sends raw base64 (no data-URI
+       prefix) but worker regex required the prefix. Now handles both.
    Changes from v1.12.0:
      - ESTIMATE NOW USES POLICY TAB: estimate route accepts body.policy
        (same as foodcheck/mealbuilder). When present, replaces the
@@ -184,8 +187,14 @@ export default {
           "Keep items concise so the JSON stays complete.";
         const content = [];
         if (body.image) {
-          const m = String(body.image).match(/^data:(image\/\w+);base64,(.*)$/);
-          if (m) content.push({ type: "image", source: { type: "base64", media_type: m[1], data: m[2] } });
+          const raw = String(body.image);
+          const m = raw.match(/^data:(image\/\w+);base64,(.*)$/);
+          if (m) {
+            content.push({ type: "image", source: { type: "base64", media_type: m[1], data: m[2] } });
+          } else if (raw.length > 100) {
+            // Raw base64 without data-URI prefix (frontend strips it)
+            content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: raw } });
+          }
         }
         content.push({ type: "text", text: "Meal: " + (body.description || "(see photo)") });
         const pr = await aiJSON(sys, content, 1800, MODEL_SMART);
