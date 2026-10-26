@@ -1,5 +1,7 @@
-<!-- v2.0.0 2026-10-26 — #37f: premium redesign. This-week bars + avg/delta. Past trend line chart. -->
+<!-- v3.0.0 2026-10-26 — #37f: dot-grid compliance view. Colored dots per day, week rows, DB rules. -->
 <script lang="ts">
+	import { ruleFor } from '$lib/stores/rules';
+
 	interface CalDay {
 		date: string;
 		kcal: number;
@@ -24,200 +26,169 @@
 		return d.toISOString().slice(0, 10);
 	}
 
-	/** Bar color: green = within 10%, gold = under >10%, red = over >10% */
-	function barColor(d: CalDay): string {
-		if (isLoading(d.phase)) return 'var(--muted)';
-		if (d.target <= 0) return 'var(--muted)';
+	/** Dot color from DB rules: green/gold/red based on phase bands */
+	function dotColor(d: CalDay): string {
+		if (isLoading(d.phase)) return 'var(--muted, #ccc)';
+		if (d.target <= 0) return 'var(--muted, #ccc)';
 		const pct = (d.kcal / d.target) * 100;
-		if (pct > 110) return 'var(--over, #A13024)';
-		if (pct < 90) return 'var(--gold, #C8973A)';
-		return 'var(--green, #2d6a4f)';
+		const rule = ruleFor(d.phase, 'kcal');
+		const gLo = rule?.green_lo ?? 90;
+		const gHi = rule?.green_hi ?? 105;
+		const aLo = rule?.amber_lo ?? 75;
+		const aHi = rule?.amber_hi ?? 115;
+		if (pct >= gLo && pct <= gHi) return 'var(--green, #2d6a4f)';
+		if (pct >= aLo && pct <= aHi) return 'var(--gold, #C8973A)';
+		return 'var(--over, #A13024)';
 	}
 
-	const todayMon = monday(new Date().toISOString().slice(0, 10));
+	/** Short label for the week's verdict */
+	function weekVerdict(days: CalDay[]): { text: string; color: string } {
+		const valid = days.filter(d => !isLoading(d.phase) && d.target > 0);
+		if (!valid.length) return { text: '', color: 'var(--muted)' };
+		const avgPct = valid.reduce((s, d) => s + (d.kcal / d.target) * 100, 0) / valid.length;
+		const rule = ruleFor(valid[0].phase, 'kcal');
+		const gLo = rule?.green_lo ?? 90;
+		const gHi = rule?.green_hi ?? 105;
+		const aHi = rule?.amber_hi ?? 115;
 
-	// Current week data (Mon-Sun slots)
-	const currentWeek = $derived.by(() => {
-		const slots: (CalDay | null)[] = Array(7).fill(null);
-		for (const d of data) {
-			if (monday(d.date) !== todayMon) continue;
-			const dt = new Date(d.date + 'T00:00:00');
-			const dow = dt.getDay();
-			slots[dow === 0 ? 6 : dow - 1] = d;
-		}
-		return slots;
-	});
+		const avgDelta = Math.round(valid.reduce((s, d) => s + d.kcal - d.target, 0) / valid.length);
+		const sign = avgDelta >= 0 ? '+' : '';
+		const deltaStr = `${sign}${avgDelta.toLocaleString()}`;
 
-	// Current week summary
-	const cwSummary = $derived.by(() => {
-		const days = currentWeek.filter((d): d is CalDay => d !== null && !isLoading(d.phase));
-		if (!days.length) return null;
-		const avgKcal = Math.round(days.reduce((s, d) => s + d.kcal, 0) / days.length);
-		const avgTarget = Math.round(days.reduce((s, d) => s + d.target, 0) / days.length);
-		const delta = avgKcal - avgTarget;
-		return { avgKcal, avgTarget, delta, count: days.length };
-	});
+		if (avgPct >= gLo && avgPct <= gHi) return { text: `On track (${deltaStr})`, color: 'var(--green, #2d6a4f)' };
+		if (avgPct < gLo) return { text: `Under (${deltaStr})`, color: avgPct < (rule?.amber_lo ?? 75) ? 'var(--over, #A13024)' : 'var(--gold, #C8973A)' };
+		return { text: `Over (${deltaStr})`, color: avgPct > aHi ? 'var(--over, #A13024)' : 'var(--gold, #C8973A)' };
+	}
 
-	// Weekly averages for trend line (past 12 weeks, oldest first)
-	interface WeekAvg { mon: string; avg: number; avgTarget: number; label: string }
-	const weeklyAvgs = $derived.by((): WeekAvg[] => {
+	const todayStr = new Date().toISOString().slice(0, 10);
+	const todayMon = monday(todayStr);
+
+	// Group data by week (Mon date as key)
+	interface WeekRow { mon: string; label: string; slots: (CalDay | null)[]; isCurrent: boolean }
+	const weeks = $derived.by((): WeekRow[] => {
 		const weekMap = new Map<string, CalDay[]>();
 		for (const d of data) {
-			if (isLoading(d.phase)) continue;
 			const mon = monday(d.date);
-			if (mon === todayMon) continue; // exclude current week
 			if (!weekMap.has(mon)) weekMap.set(mon, []);
 			weekMap.get(mon)!.push(d);
 		}
 
 		const sorted = [...weekMap.entries()]
-			.sort((a, b) => a[0].localeCompare(b[0])) // oldest first
-			.slice(-12);
+			.sort((a, b) => b[0].localeCompare(a[0])); // newest first
 
-		return sorted.map(([mon, days]) => {
-			const avg = Math.round(days.reduce((s, d) => s + d.kcal, 0) / days.length);
-			const avgTarget = Math.round(days.reduce((s, d) => s + d.target, 0) / days.length);
+		return sorted.slice(0, 12).map(([mon, days]) => {
+			const slots: (CalDay | null)[] = Array(7).fill(null);
+			for (const d of days) {
+				const dt = new Date(d.date + 'T00:00:00');
+				const dow = dt.getDay();
+				slots[dow === 0 ? 6 : dow - 1] = d;
+			}
 			const d = new Date(mon + 'T00:00:00');
 			const label = `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}`;
-			return { mon, avg, avgTarget, label };
+			return { mon, label, slots, isCurrent: mon === todayMon };
 		});
 	});
-
-	// SVG trend chart dimensions
-	const TW = 320;
-	const TH = 100;
-	const tPad = { l: 0, r: 0, t: 8, b: 20 };
-	const chartW = TW - tPad.l - tPad.r;
-	const chartH = TH - tPad.t - tPad.b;
-
-	const trendMinMax = $derived.by(() => {
-		if (!weeklyAvgs.length) return { min: 0, max: 100 };
-		const allVals = weeklyAvgs.flatMap(w => [w.avg, w.avgTarget]);
-		const min = Math.min(...allVals);
-		const max = Math.max(...allVals);
-		const pad = (max - min) * 0.15 || 100;
-		return { min: min - pad, max: max + pad };
-	});
-
-	function tX(i: number): number {
-		if (weeklyAvgs.length <= 1) return tPad.l + chartW / 2;
-		return tPad.l + (i / (weeklyAvgs.length - 1)) * chartW;
-	}
-
-	function tY(val: number): number {
-		const { min, max } = trendMinMax;
-		const range = max - min || 1;
-		return tPad.t + chartH - ((val - min) / range) * chartH;
-	}
-
-	// SVG polyline points
-	const avgLine = $derived(weeklyAvgs.map((w, i) => `${tX(i)},${tY(w.avg)}`).join(' '));
-	const targetY = $derived(weeklyAvgs.length ? tY(weeklyAvgs[0].avgTarget) : tPad.t + chartH / 2);
 </script>
-
-<!-- Current week: bars + summary -->
-<div class="card">
-	<div class="card-head">
-		<span class="card-title">This week</span>
-		{#if cwSummary}
-			<span class="avg-line">
-				Avg {cwSummary.avgKcal.toLocaleString()}
-				<span class="delta {cwSummary.delta > 0 ? 'over' : 'under'}">
-					{cwSummary.delta > 0 ? '↑' : '↓'}{Math.abs(cwSummary.delta).toLocaleString()}
-				</span>
-			</span>
-		{/if}
-	</div>
-	<div class="bars-row">
-		{#each currentWeek as d, i}
-			<div class="bar-col">
-				{#if d}
-					{@const maxVal = Math.max(...currentWeek.filter(Boolean).map((x: CalDay) => Math.max(x.kcal, x.target)))}
-					{@const maxH = 72}
-					{@const kcalH = maxVal > 0 ? (d.kcal / maxVal) * maxH : 0}
-					{@const targetH = maxVal > 0 ? (d.target / maxVal) * maxH : 0}
-					<div class="bar-area" style="height:{maxH}px">
-						<div class="target-line" style="bottom:{targetH}px"></div>
-						<div class="bar" style="height:{kcalH}px;background:{barColor(d)}"></div>
-					</div>
-				{:else}
-					<div class="bar-area empty" style="height:72px">
-						<div class="bar ghost"></div>
-					</div>
-				{/if}
-				<span class="dow">{DOW[i]}</span>
-			</div>
-		{/each}
-	</div>
-</div>
-
-<!-- Trend: weekly averages line chart -->
-{#if weeklyAvgs.length >= 2}
-	<div class="card trend-card">
-		<span class="card-title">Weekly trend</span>
-		<svg viewBox="0 0 {TW} {TH}" width="100%" preserveAspectRatio="xMidYMid meet" class="trend-svg">
-			<!-- Target reference line -->
-			<line x1={tPad.l} y1={targetY} x2={TW - tPad.r} y2={targetY}
-				stroke="var(--muted, #aaa)" stroke-width="1" stroke-dasharray="4 3" opacity="0.4" />
-			<text x={TW - tPad.r} y={targetY - 4} font-size="8" fill="var(--muted)" text-anchor="end" font-family="system-ui">target</text>
-
-			<!-- Average intake line -->
-			<polyline points={avgLine} fill="none" stroke="var(--green, #2d6a4f)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-
-			<!-- Dots -->
-			{#each weeklyAvgs as w, i}
-				<circle cx={tX(i)} cy={tY(w.avg)} r="3" fill="var(--green, #2d6a4f)" />
-			{/each}
-
-			<!-- X labels (first, middle, last) -->
-			{#each [0, Math.floor(weeklyAvgs.length / 2), weeklyAvgs.length - 1].filter((v, i, a) => a.indexOf(v) === i) as idx}
-				<text x={tX(idx)} y={TH - 4} font-size="8" fill="var(--muted)" text-anchor="middle" font-family="system-ui">{weeklyAvgs[idx].label}</text>
-			{/each}
-		</svg>
-	</div>
-{/if}
 
 {#if !data.length}
 	<div class="no-data">No calorie data yet</div>
+{:else}
+	<!-- DOW header -->
+	<div class="grid-head">
+		<span class="week-label"></span>
+		{#each DOW as d}
+			<span class="dow">{d}</span>
+		{/each}
+		<span class="verdict-col"></span>
+	</div>
+
+	<!-- Week rows -->
+	{#each weeks as week}
+		{@const validDays = week.slots.filter((d): d is CalDay => d !== null)}
+		{@const verdict = weekVerdict(validDays)}
+		<div class="week-row" class:current={week.isCurrent}>
+			<span class="week-label">{week.isCurrent ? 'Now' : week.label}</span>
+			<div class="dots">
+				{#each week.slots as d, i}
+					{#if d}
+						<span class="dot" style="background:{dotColor(d)}" title="{d.kcal} / {d.target} kcal"></span>
+					{:else}
+						<span class="dot empty"></span>
+					{/if}
+				{/each}
+			</div>
+			{#if verdict.text}
+				<span class="verdict" style="color:{verdict.color}">{verdict.text}</span>
+			{/if}
+		</div>
+	{/each}
+
+	<!-- Legend -->
+	<div class="legend">
+		<span class="leg-item"><span class="leg-dot" style="background:var(--green, #2d6a4f)"></span>On track</span>
+		<span class="leg-item"><span class="leg-dot" style="background:var(--gold, #C8973A)"></span>Off</span>
+		<span class="leg-item"><span class="leg-dot" style="background:var(--over, #A13024)"></span>Way off</span>
+	</div>
 {/if}
 
 <style>
-	.card {
-		background: var(--card); border: 1px solid var(--line);
-		border-radius: 14px; padding: 14px;
-		margin-bottom: 8px;
+	.grid-head {
+		display: flex; align-items: center; gap: 0;
+		padding: 0 0 6px;
 	}
-	.card-head {
-		display: flex; justify-content: space-between; align-items: center;
-		margin-bottom: 12px;
+	.grid-head .dow {
+		flex: 0 0 28px; text-align: center;
+		font-size: 10px; color: var(--muted); font-weight: 500;
 	}
-	.card-title { font-size: 13px; font-weight: 600; }
+	.grid-head .week-label { flex: 0 0 40px; }
+	.grid-head .verdict-col { flex: 1; }
 
-	.avg-line { font-size: 12px; color: var(--muted); }
-	.delta { font-weight: 600; margin-left: 4px; }
-	.delta.over { color: var(--over, #A13024); }
-	.delta.under { color: var(--green, #2d6a4f); }
+	.week-row {
+		display: flex; align-items: center; gap: 0;
+		padding: 4px 0;
+	}
+	.week-row.current { font-weight: 600; }
 
-	.bars-row { display: flex; gap: 6px; justify-content: space-between; }
-	.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-	.bar-area { position: relative; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-	.bar {
-		width: 70%; max-width: 24px; border-radius: 4px 4px 2px 2px;
-		transition: height 0.3s ease;
+	.week-label {
+		flex: 0 0 40px;
+		font-size: 10px; color: var(--muted);
+		white-space: nowrap; overflow: hidden;
 	}
-	.bar.ghost {
-		width: 70%; max-width: 24px; height: 8px;
-		background: var(--line-soft, #eee); border-radius: 4px; opacity: 0.4;
-	}
-	.target-line {
-		position: absolute; left: 10%; right: 10%;
-		height: 1.5px; background: var(--muted); opacity: 0.35;
-	}
-	.dow { font-size: 10px; color: var(--muted); }
 
-	.trend-card { padding: 14px 14px 8px; }
-	.trend-card .card-title { display: block; margin-bottom: 8px; }
-	.trend-svg { display: block; }
+	.dots {
+		display: flex; gap: 0;
+	}
+
+	.dot {
+		width: 20px; height: 20px;
+		border-radius: 5px;
+		margin: 0 4px;
+		transition: background 0.2s;
+	}
+	.dot.empty {
+		background: var(--line-soft, #eee);
+		opacity: 0.3;
+	}
+
+	.verdict {
+		flex: 1;
+		font-size: 11px; font-weight: 500;
+		margin-left: 8px;
+		white-space: nowrap;
+	}
+
+	.legend {
+		display: flex; gap: 14px; justify-content: center;
+		padding: 10px 0 2px;
+	}
+	.leg-item {
+		display: flex; align-items: center; gap: 4px;
+		font-size: 10px; color: var(--muted);
+	}
+	.leg-dot {
+		width: 10px; height: 10px; border-radius: 3px;
+		display: inline-block;
+	}
 
 	.no-data { text-align: center; color: var(--muted); font-size: 13px; padding: 30px; }
 </style>
