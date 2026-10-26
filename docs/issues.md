@@ -63,19 +63,22 @@
 
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
-| #51  | Admin sidebar: reorder menu    | NEEDS INPUT | Deferred — Marco will decide order later. |
+| #51  | Admin sidebar: reorder menu    | DONE        | Marco decided the order. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | DONE        | Already in calorie.ts baseTarget() |
 | #37c | Calorie bank redesign          | DONE        | Steps 7-8: weekly verdict badges in Trends + bank display in CalorieStatus |
-| #59  | AI worker sporadic 403         | OPEN        | Anthropic API rate-limits cause sporadic "ai http 403". Fix: add 1-retry with 1s backoff in `callAI` for 403/429 responses. |
+| #59  | AI worker sporadic 403         | DONE        | Added 1-retry with 1s backoff in `callAI` for 403/429. v1.13.2. Needs deploy via CF dashboard. |
 | #60  | Admin: add/edit programs        | DONE        | AdminPrograms list + AdminProgramDetail drill-down. Create/toggle/edit programs. |
 | #61  | Admin: edit phase config        | DONE        | AdminPhaseEditor modal with grouped fieldsets (identity, duration, calorie strategy, bank config, weight goal, rules, display). Key locked on existing phases. |
-| #62  | Food tab AI broken              | OPEN        | Macros estimate returns nothing, food check returns "error / Could not check. Try again." Likely related to #59 (sporadic 403) or a different API/routing issue. Needs investigation. |
-| #63  | Remove exercise from Today tab  | OPEN        | Exercise section in "Today" is redundant, already covered in Check-in. Remove it from DayView. |
-| #64  | Trends: 0% on target wrong      | OPEN        | Compliance calc uses fallback thresholds when rules don't load. Loading phase has calorie_mode 'hidden' so target may be wrong/zero. |
-| #65  | Trends: loading bars should not be colored | OPEN | Loading has no calorie limit, bars should be neutral (not red). Depends on #37. |
-| #66  | Trends: over-budget bars not red | OPEN        | Bars exceeding daily budget aren't flagged red. Thresholds fall back to defaults when rules don't load. Depends on #37. |
-| #67  | Trends: bars ignore phase rules for coloring | OPEN | Bars should use green/amber/red bands from `ruleFor()` per phase. `bandClass()` exists but isn't used by CalorieBars. Depends on #37. |
+| #62a | Food hub: Check tab              | CLOSED      | Works fine. Anthropic key valid (2xx confirmed). Any prior failures were transient. |
+| #62b | Food hub: Macros tab silent fail | DONE       | Catch block was swallowing errors silently. Now shows "Could not estimate. Try again." Underlying 4xx is #59 (AI worker sporadic 403 from Anthropic). |
+| #63  | Remove exercise from Today tab  | DONE        | Removed ExerciseTracker from Today tab. Exercise tracked in Check-in only. |
+| #64  | Trends: 0% on target wrong      | DONE        | Fixed: compliance now excludes loading phase days. |
+| #65  | Trends: loading bars should not be colored | DONE | WeeklyCalories renders loading phase bars as neutral (var(--muted)). Part of #37f. |
+| #66  | Trends: over-budget bars not red | DONE        | WeeklyCalories uses ruleFor() per phase for bar coloring. Part of #37f. |
+| #67  | Trends: bars ignore phase rules for coloring | DONE | WeeklyCalories uses ruleFor() with phase-specific thresholds. Part of #37f. |
+| #37f | Calorie UI redesign             | DONE        | CalorieStatus: remaining kcal hero, silent bank, tap-to-explain. Trends: WeeklyCalories replaces flat bars + verdict chips. Current week big, past weeks scrollable. Loading days excluded from compliance. |
+| #70  | Photo meal estimate broken      | DONE        | Frontend strips data-URI prefix, AI worker regex required it. Fixed: fallback for raw base64. v1.13.1, deployed. |
 | #68  | Admin: phase parameter tuning UI | DONE | AdminCalorieTuning.svelte. Flat table of all phase calorie params, inline-editable, save per row. |
 | #69  | Admin: client calorie dashboard | DONE | computeClientCalories() in @aevum/shared + admin_client_calories endpoint + AdminClientCalories.svelte. Server-side per-user calorie status. |
 
@@ -142,6 +145,32 @@ All cells inline-editable. Save button per row. No modal, no drill-down.
 
 ---
 
+### #62a/b Food hub AI: root cause
+
+**Check tab**: Works. Calls Anthropic Haiku directly from `aevum-api-v2`. Key is valid (2xx confirmed via CF dashboard).
+
+**Macros tab**: Two issues:
+1. (DONE) Silent error: catch block swallowed errors, showed nothing. Fixed: now shows error message.
+2. (OPEN, = #59) Underlying failure: `estimateMeal()` in `apps/api/src/routes/ai.ts` proxies to AI worker (`sweet-fire`), which calls Anthropic. AI worker gets sporadic 403 from Anthropic. No retry in either hop. Fix belongs in #59 (add retry to AI worker `callAI`).
+
+---
+
+### #37f Calorie UI redesign
+
+**Problem:** The bank display and weekly verdicts are confusing:
+1. CalorieStatus shows `0 / 2,152 kcal  bank -448` but 2,152 IS the adjusted target. No way to see the base target, so "bank -448" is meaningless.
+2. Weekly verdict chips ("14/9: On track", "21/9: Under"...) are a wall of text. Hard to see patterns.
+3. Bar coloring ignores phase rules (#65, #66, #67).
+
+**Solution:**
+1. **CalorieStatus:** Show base target and adjustment clearly: `Target 2,600  →  2,152 (bank -448)` or similar.
+2. **Trends:** Replace verdict chip list with weekly summary bars (grouped by week, target line overlay). Each week's compliance is visible at a glance.
+3. **Bar coloring:** Use `ruleFor()` per phase for green/amber/red bands. Loading phase bars neutral.
+
+**Effort:** Medium (CalorieStatus rework + CalorieBars/TrendsTab refactor).
+
+---
+
 ## Deferred (post-rollout)
 
 | #    | Title                          | Why deferred |
@@ -169,7 +198,7 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 
 ## Other notes
 
-- AI worker source saved at `ai-worker/src/index.js` (v1.13.0, with #25 fix)
+- AI worker source saved at `ai-worker/src/index.js` (v1.13.2, with #25 + #70 + #59 fix)
 - Deploy only from local machine (cloud container blocked from Cloudflare API)
 - V3 calorie engine: baseTarget() + bankAdjustment() + effectiveTarget(). Supports `fixed` and `tdee_mult` modes. Bank logic in `packages/shared/src/calorie-bank.ts` (29 tests).
 - Bank adjustment active when phase has calorie_bank=1. Asymmetric: overspend 1:1, underspend capped 200 kcal/day. Safety clamps: floor 60% TDEE, ceiling 130% base target.

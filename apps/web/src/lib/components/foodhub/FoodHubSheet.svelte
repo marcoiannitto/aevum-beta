@@ -109,6 +109,7 @@
 	// ── Calc ──
 	let calcInput = $state('');
 	let calcResult = $state<{ kcal: number; protein: number; fat: number; carbs: number } | null>(null);
+	let calcError = $state('');
 	let calcLoading = $state(false);
 
 	async function doCalc() {
@@ -116,6 +117,7 @@
 		if (!desc) return;
 		calcLoading = true;
 		calcResult = null;
+		calcError = '';
 		try {
 			const d = await api<{ kcal: number; protein: number; fat: number; carbs: number }>(
 				'estimate',
@@ -124,6 +126,7 @@
 			calcResult = d;
 		} catch {
 			calcResult = null;
+			calcError = 'Could not estimate. Try again.';
 		}
 		calcLoading = false;
 	}
@@ -203,7 +206,11 @@
 				{calcLoading ? 'Estimating…' : 'Calculate macros'}
 			</button>
 
-			{#if calcResult}
+			{#if calcError}
+				<div class="calc-error">
+					<span>❓</span> {calcError}
+				</div>
+			{:else if calcResult}
 				<div class="calc-result">
 					<div class="cr-cell"><span class="cr-v">{Math.round(calcResult.kcal)}</span><span class="cr-k">kcal</span></div>
 					<div class="cr-cell"><span class="cr-v">{Math.round(calcResult.protein)}</span><span class="cr-k">protein</span></div>
@@ -361,6 +368,18 @@
 		color: var(--muted);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
+	}
+	.calc-error {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 12px 14px;
+		margin-top: 12px;
+		border-radius: 10px;
+		background: var(--over-bg, #fef2f2);
+		border: 1px solid var(--over, #c44);
+		font-size: 0.88rem;
+		color: var(--over, #c44);
 	}
 	.disclaimer {
 		font-size: 0.75rem;

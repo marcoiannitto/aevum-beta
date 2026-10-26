@@ -1,4 +1,6 @@
-/* AEVUM Backend — Cloudflare Worker v1.13.1
+/* AEVUM Backend — Cloudflare Worker v1.13.2
+   Changes from v1.13.1:
+     - FIX #59: callAI retries once after 1s on 403/429 (Anthropic rate-limit).
    Changes from v1.13.0:
      - FIX: photo estimate broken; frontend sends raw base64 (no data-URI
        prefix) but worker regex required the prefix. Now handles both.
@@ -95,7 +97,7 @@ export default {
 
     // Call the model with a hard timeout so the Worker never hangs indefinitely.
     // `model` defaults to the cheap model; pass MODEL_SMART for macro-critical calls.
-    const callAI = async (system, userContent, maxTokens, model) => {
+    const callAI = async (system, userContent, maxTokens, model, _retry = 0) => {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), 25000);
       try {
@@ -110,6 +112,12 @@ export default {
           signal: ctl.signal,
         });
         if (!res.ok) {
+          // Retry once on 403/429 (Anthropic rate-limit) after 1s
+          if (_retry < 1 && (res.status === 403 || res.status === 429)) {
+            clearTimeout(t);
+            await new Promise(r => setTimeout(r, 1000));
+            return callAI(system, userContent, maxTokens, model, _retry + 1);
+          }
           let detail = "";
           try { detail = await res.text(); } catch {}
           return { error: "ai http " + res.status, detail };

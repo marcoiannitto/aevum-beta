@@ -23,7 +23,7 @@
 	import Timeline from '$lib/components/today/Timeline.svelte';
 	import WaterTracker from '$lib/components/today/WaterTracker.svelte';
 	import LogMealButton from '$lib/components/today/LogMealButton.svelte';
-	import ExerciseTracker from '$lib/components/today/ExerciseTracker.svelte';
+
 	import SerumBlock from '$lib/components/today/SerumBlock.svelte';
 	import CheckinTab from '$lib/components/checkin/CheckinTab.svelte';
 	import TrendsTab from '$lib/components/trends/TrendsTab.svelte';
@@ -187,7 +187,6 @@
 					<WaterTracker />
 					<LogMealButton onclick={() => { mealEditIndex = -1; mealLogOpen = true; }} />
 					<Timeline />
-					<ExerciseTracker />
 				</div>
 			{:else if activeTab === 'daily'}
 				<div class="tabpage">
