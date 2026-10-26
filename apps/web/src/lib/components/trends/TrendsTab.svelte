@@ -15,8 +15,6 @@
 
 	// Touch $phases to track phase registry updates for reactivity (fix #35)
 	$effect(() => { void $phases; });
-	import { ruleFor } from '$lib/stores/rules';
-
 	import LineChart from './LineChart.svelte';
 	import StatRow from './StatRow.svelte';
 	import WeeklyCalories from './WeeklyCalories.svelte';
@@ -186,16 +184,11 @@
 		];
 	});
 
-	// Calorie compliance — green_lo/green_hi are percentages (e.g. 90, 105), not ratios
-	const compliance = $derived.by(() => {
+	// Calorie average (replaces compliance badge)
+	const calAvg = $derived.by(() => {
 		const c = series.calories.filter(d => d.phase.toLowerCase() !== 'loading' && d.phase.toLowerCase() !== 'load');
 		if (!c.length) return null;
-		const within = c.filter(d => {
-			const rule = ruleFor(d.phase, 'kcal');
-			const pct = d.target > 0 ? (d.kcal / d.target) * 100 : 100;
-			return pct >= (rule?.green_lo ?? 90) && pct <= (rule?.green_hi ?? 110);
-		}).length;
-		return Math.round((within / c.length) * 100);
+		return Math.round(c.reduce((s, d) => s + d.kcal, 0) / c.length);
 	});
 
 
@@ -267,8 +260,8 @@
 	<section class="chart-section">
 		<h3>
 			Calories
-			{#if compliance != null}
-				<span class="compliance">{compliance}% on target</span>
+			{#if calAvg != null}
+				<span class="compliance">Avg {calAvg.toLocaleString()} kcal/day</span>
 			{/if}
 		</h3>
 		<WeeklyCalories data={series.calories} />

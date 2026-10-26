@@ -1,7 +1,5 @@
-<!-- v1.1.0 2026-10-26 — #37f: fix on-target calc (pct not ratio), simplify past weeks to text rows -->
+<!-- v2.0.0 2026-10-26 — #37f: premium redesign. This-week bars + avg/delta. Past trend line chart. -->
 <script lang="ts">
-	import { ruleFor } from '$lib/stores/rules';
-
 	interface CalDay {
 		date: string;
 		kcal: number;
@@ -9,26 +7,15 @@
 		phase: string;
 	}
 
-	interface WeekGroup {
-		label: string;
-		isCurrent: boolean;
-		days: (CalDay | null)[];   // Mon-Sun, null = no data
-		onTarget: number;
-		total: number;
-		net: number;               // sum(kcal - target)
-	}
-
 	let { data = [] }: { data: CalDay[] } = $props();
 
 	const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-	/** Is a phase a "loading" phase (no calorie limit)? */
 	function isLoading(phase: string): boolean {
 		const p = phase.toLowerCase();
 		return p === 'loading' || p === 'load';
 	}
 
-	/** Get Monday of the ISO week for a date string */
 	function monday(ds: string): string {
 		const d = new Date(ds + 'T00:00:00');
 		const dow = d.getDay();
@@ -37,162 +24,183 @@
 		return d.toISOString().slice(0, 10);
 	}
 
-	/** Format week label */
-	function weekLabel(mon: string, isCurrent: boolean): string {
-		if (isCurrent) return 'This week';
-		const d = new Date(mon + 'T00:00:00');
-		const sun = new Date(d);
-		sun.setDate(sun.getDate() + 6);
-		const fmt = (dt: Date) => `${dt.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]}`;
-		return `${fmt(d)} – ${fmt(sun)}`;
-	}
-
-	/** Percentage of target (100 = exactly on target) */
-	function pctOfTarget(d: CalDay): number {
-		return d.target > 0 ? (d.kcal / d.target) * 100 : 100;
-	}
-
-	/** Is this day within the green band? */
-	function isOnTarget(d: CalDay): boolean {
-		if (isLoading(d.phase)) return false;
-		const rule = ruleFor(d.phase, 'kcal');
-		const p = pctOfTarget(d);
-		return p >= (rule?.green_lo ?? 90) && p <= (rule?.green_hi ?? 110);
+	/** Bar color: green = within 10%, gold = under >10%, red = over >10% */
+	function barColor(d: CalDay): string {
+		if (isLoading(d.phase)) return 'var(--muted)';
+		if (d.target <= 0) return 'var(--muted)';
+		const pct = (d.kcal / d.target) * 100;
+		if (pct > 110) return 'var(--over, #A13024)';
+		if (pct < 90) return 'var(--gold, #C8973A)';
+		return 'var(--green, #2d6a4f)';
 	}
 
 	const todayMon = monday(new Date().toISOString().slice(0, 10));
 
-	// Group data by week
-	const weeks = $derived.by((): WeekGroup[] => {
-		if (!data.length) return [];
-
-		const weekMap = new Map<string, (CalDay | null)[]>();
+	// Current week data (Mon-Sun slots)
+	const currentWeek = $derived.by(() => {
+		const slots: (CalDay | null)[] = Array(7).fill(null);
 		for (const d of data) {
-			const mon = monday(d.date);
-			if (!weekMap.has(mon)) weekMap.set(mon, Array(7).fill(null));
+			if (monday(d.date) !== todayMon) continue;
 			const dt = new Date(d.date + 'T00:00:00');
 			const dow = dt.getDay();
-			const idx = dow === 0 ? 6 : dow - 1;
-			weekMap.get(mon)![idx] = d;
+			slots[dow === 0 ? 6 : dow - 1] = d;
+		}
+		return slots;
+	});
+
+	// Current week summary
+	const cwSummary = $derived.by(() => {
+		const days = currentWeek.filter((d): d is CalDay => d !== null && !isLoading(d.phase));
+		if (!days.length) return null;
+		const avgKcal = Math.round(days.reduce((s, d) => s + d.kcal, 0) / days.length);
+		const avgTarget = Math.round(days.reduce((s, d) => s + d.target, 0) / days.length);
+		const delta = avgKcal - avgTarget;
+		return { avgKcal, avgTarget, delta, count: days.length };
+	});
+
+	// Weekly averages for trend line (past 12 weeks, oldest first)
+	interface WeekAvg { mon: string; avg: number; avgTarget: number; label: string }
+	const weeklyAvgs = $derived.by((): WeekAvg[] => {
+		const weekMap = new Map<string, CalDay[]>();
+		for (const d of data) {
+			if (isLoading(d.phase)) continue;
+			const mon = monday(d.date);
+			if (mon === todayMon) continue; // exclude current week
+			if (!weekMap.has(mon)) weekMap.set(mon, []);
+			weekMap.get(mon)!.push(d);
 		}
 
-		const sorted = [...weekMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+		const sorted = [...weekMap.entries()]
+			.sort((a, b) => a[0].localeCompare(b[0])) // oldest first
+			.slice(-12);
 
 		return sorted.map(([mon, days]) => {
-			const isCurrent = mon === todayMon;
-			let onTarget = 0;
-			let total = 0;
-			let net = 0;
-
-			for (const d of days) {
-				if (!d || isLoading(d.phase)) continue;
-				total++;
-				net += d.kcal - d.target;
-				if (isOnTarget(d)) onTarget++;
-			}
-
-			return { label: weekLabel(mon, isCurrent), isCurrent, days, onTarget, total, net };
+			const avg = Math.round(days.reduce((s, d) => s + d.kcal, 0) / days.length);
+			const avgTarget = Math.round(days.reduce((s, d) => s + d.target, 0) / days.length);
+			const d = new Date(mon + 'T00:00:00');
+			const label = `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}`;
+			return { mon, avg, avgTarget, label };
 		});
 	});
 
-	// Bar color for a day
-	function barColor(d: CalDay): string {
-		if (isLoading(d.phase)) return 'var(--muted)';
-		const rule = ruleFor(d.phase, 'kcal');
-		const p = pctOfTarget(d);
-		const over = p > (rule?.amber_hi ?? 115);
-		const under = p < (rule?.amber_lo ?? 75);
-		return over ? 'var(--over, #A13024)' : under ? 'var(--gold)' : 'var(--green, #2d6a4f)';
+	// SVG trend chart dimensions
+	const TW = 320;
+	const TH = 100;
+	const tPad = { l: 0, r: 0, t: 8, b: 20 };
+	const chartW = TW - tPad.l - tPad.r;
+	const chartH = TH - tPad.t - tPad.b;
+
+	const trendMinMax = $derived.by(() => {
+		if (!weeklyAvgs.length) return { min: 0, max: 100 };
+		const allVals = weeklyAvgs.flatMap(w => [w.avg, w.avgTarget]);
+		const min = Math.min(...allVals);
+		const max = Math.max(...allVals);
+		const pad = (max - min) * 0.15 || 100;
+		return { min: min - pad, max: max + pad };
+	});
+
+	function tX(i: number): number {
+		if (weeklyAvgs.length <= 1) return tPad.l + chartW / 2;
+		return tPad.l + (i / (weeklyAvgs.length - 1)) * chartW;
 	}
 
-	function verdictClass(w: WeekGroup): string {
-		if (w.total === 0) return '';
-		const p = w.onTarget / w.total;
-		return p >= 0.7 ? 'good' : p >= 0.4 ? 'ok' : 'poor';
+	function tY(val: number): number {
+		const { min, max } = trendMinMax;
+		const range = max - min || 1;
+		return tPad.t + chartH - ((val - min) / range) * chartH;
 	}
+
+	// SVG polyline points
+	const avgLine = $derived(weeklyAvgs.map((w, i) => `${tX(i)},${tY(w.avg)}`).join(' '));
+	const targetY = $derived(weeklyAvgs.length ? tY(weeklyAvgs[0].avgTarget) : tPad.t + chartH / 2);
 </script>
 
-{#if weeks.length}
-	<!-- Current week (bars) -->
-	{#if weeks[0]}
-		{@const cw = weeks[0]}
-		<div class="week current">
-			<div class="week-head">
-				<span class="week-label">{cw.label}</span>
-				{#if cw.total > 0}
-					<span class="verdict {verdictClass(cw)}">{cw.onTarget} of {cw.total} on target</span>
-				{/if}
-			</div>
-			<div class="bars-row">
-				{#each cw.days as d, i}
-					<div class="bar-col">
-						{#if d}
-							{@const maxH = 80}
-							{@const maxVal = Math.max(...cw.days.filter(Boolean).map((x: CalDay) => Math.max(x.kcal, x.target)))}
-							{@const kcalH = maxVal > 0 ? (d.kcal / maxVal) * maxH : 0}
-							{@const targetH = maxVal > 0 ? (d.target / maxVal) * maxH : 0}
-							<div class="bar-area" style="height:{maxH}px">
-								<div class="target-line" style="bottom:{targetH}px"></div>
-								<div class="bar" style="height:{kcalH}px;background:{barColor(d)}"></div>
-							</div>
-						{:else}
-							<div class="bar-area empty" style="height:80px">
-								<div class="bar ghost"></div>
-							</div>
-						{/if}
-						<span class="dow">{DOW[i]}</span>
+<!-- Current week: bars + summary -->
+<div class="card">
+	<div class="card-head">
+		<span class="card-title">This week</span>
+		{#if cwSummary}
+			<span class="avg-line">
+				Avg {cwSummary.avgKcal.toLocaleString()}
+				<span class="delta {cwSummary.delta > 0 ? 'over' : 'under'}">
+					{cwSummary.delta > 0 ? '↑' : '↓'}{Math.abs(cwSummary.delta).toLocaleString()}
+				</span>
+			</span>
+		{/if}
+	</div>
+	<div class="bars-row">
+		{#each currentWeek as d, i}
+			<div class="bar-col">
+				{#if d}
+					{@const maxVal = Math.max(...currentWeek.filter(Boolean).map((x: CalDay) => Math.max(x.kcal, x.target)))}
+					{@const maxH = 72}
+					{@const kcalH = maxVal > 0 ? (d.kcal / maxVal) * maxH : 0}
+					{@const targetH = maxVal > 0 ? (d.target / maxVal) * maxH : 0}
+					<div class="bar-area" style="height:{maxH}px">
+						<div class="target-line" style="bottom:{targetH}px"></div>
+						<div class="bar" style="height:{kcalH}px;background:{barColor(d)}"></div>
 					</div>
-				{/each}
+				{:else}
+					<div class="bar-area empty" style="height:72px">
+						<div class="bar ghost"></div>
+					</div>
+				{/if}
+				<span class="dow">{DOW[i]}</span>
 			</div>
-		</div>
-	{/if}
+		{/each}
+	</div>
+</div>
 
-	<!-- Past weeks (simple text rows) -->
-	{#if weeks.length > 1}
-		<div class="past-weeks">
-			{#each weeks.slice(1) as pw}
-				<div class="past-row">
-					<span class="past-label">{pw.label}</span>
-					{#if pw.total > 0}
-						<span class="verdict {verdictClass(pw)}">{pw.onTarget} of {pw.total} on target</span>
-					{:else}
-						<span class="verdict">No data</span>
-					{/if}
-				</div>
+<!-- Trend: weekly averages line chart -->
+{#if weeklyAvgs.length >= 2}
+	<div class="card trend-card">
+		<span class="card-title">Weekly trend</span>
+		<svg viewBox="0 0 {TW} {TH}" width="100%" preserveAspectRatio="xMidYMid meet" class="trend-svg">
+			<!-- Target reference line -->
+			<line x1={tPad.l} y1={targetY} x2={TW - tPad.r} y2={targetY}
+				stroke="var(--muted, #aaa)" stroke-width="1" stroke-dasharray="4 3" opacity="0.4" />
+			<text x={TW - tPad.r} y={targetY - 4} font-size="8" fill="var(--muted)" text-anchor="end" font-family="system-ui">target</text>
+
+			<!-- Average intake line -->
+			<polyline points={avgLine} fill="none" stroke="var(--green, #2d6a4f)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+			<!-- Dots -->
+			{#each weeklyAvgs as w, i}
+				<circle cx={tX(i)} cy={tY(w.avg)} r="3" fill="var(--green, #2d6a4f)" />
 			{/each}
-		</div>
-	{/if}
-{:else}
+
+			<!-- X labels (first, middle, last) -->
+			{#each [0, Math.floor(weeklyAvgs.length / 2), weeklyAvgs.length - 1].filter((v, i, a) => a.indexOf(v) === i) as idx}
+				<text x={tX(idx)} y={TH - 4} font-size="8" fill="var(--muted)" text-anchor="middle" font-family="system-ui">{weeklyAvgs[idx].label}</text>
+			{/each}
+		</svg>
+	</div>
+{/if}
+
+{#if !data.length}
 	<div class="no-data">No calorie data yet</div>
 {/if}
 
 <style>
-	.week {
+	.card {
 		background: var(--card); border: 1px solid var(--line);
 		border-radius: 14px; padding: 14px;
+		margin-bottom: 8px;
 	}
-	.week-head {
+	.card-head {
 		display: flex; justify-content: space-between; align-items: center;
 		margin-bottom: 12px;
 	}
-	.week-label { font-size: 13px; font-weight: 600; }
-	.verdict {
-		font-size: 11px; font-weight: 500;
-		padding: 2px 8px; border-radius: 6px;
-	}
-	.verdict.good { background: #e8f5e9; color: var(--green, #2d6a4f); }
-	.verdict.ok { background: #fff3e0; color: #e65100; }
-	.verdict.poor { background: #fce4e4; color: var(--over, #A13024); }
+	.card-title { font-size: 13px; font-weight: 600; }
 
-	.bars-row {
-		display: flex; gap: 6px; justify-content: space-between;
-	}
-	.bar-col {
-		flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-	}
-	.bar-area {
-		position: relative; width: 100%; display: flex; align-items: flex-end; justify-content: center;
-	}
+	.avg-line { font-size: 12px; color: var(--muted); }
+	.delta { font-weight: 600; margin-left: 4px; }
+	.delta.over { color: var(--over, #A13024); }
+	.delta.under { color: var(--green, #2d6a4f); }
+
+	.bars-row { display: flex; gap: 6px; justify-content: space-between; }
+	.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+	.bar-area { position: relative; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
 	.bar {
 		width: 70%; max-width: 24px; border-radius: 4px 4px 2px 2px;
 		transition: height 0.3s ease;
@@ -203,24 +211,13 @@
 	}
 	.target-line {
 		position: absolute; left: 10%; right: 10%;
-		height: 1.5px; background: var(--muted);
-		opacity: 0.35;
+		height: 1.5px; background: var(--muted); opacity: 0.35;
 	}
 	.dow { font-size: 10px; color: var(--muted); }
 
-	/* Past weeks: simple list */
-	.past-weeks {
-		display: flex; flex-direction: column; gap: 0;
-		margin-top: 8px;
-		background: var(--card); border: 1px solid var(--line);
-		border-radius: 14px; overflow: hidden;
-	}
-	.past-row {
-		display: flex; justify-content: space-between; align-items: center;
-		padding: 10px 14px;
-	}
-	.past-row + .past-row { border-top: 1px solid var(--line); }
-	.past-label { font-size: 13px; color: var(--ink); }
+	.trend-card { padding: 14px 14px 8px; }
+	.trend-card .card-title { display: block; margin-bottom: 8px; }
+	.trend-svg { display: block; }
 
 	.no-data { text-align: center; color: var(--muted); font-size: 13px; padding: 30px; }
 </style>
