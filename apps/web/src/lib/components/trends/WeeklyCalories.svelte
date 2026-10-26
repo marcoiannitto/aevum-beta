@@ -1,8 +1,6 @@
-<!-- v1.0.0 2026-10-26 — #37f: weekly calorie view, replaces flat bars + verdict chips -->
+<!-- v1.1.0 2026-10-26 — #37f: fix on-target calc (pct not ratio), simplify past weeks to text rows -->
 <script lang="ts">
-	import { phaseFor } from '$lib/stores/phases';
 	import { ruleFor } from '$lib/stores/rules';
-	import { profile } from '$lib/stores/auth';
 
 	interface CalDay {
 		date: string;
@@ -22,14 +20,19 @@
 
 	let { data = [] }: { data: CalDay[] } = $props();
 
-	// Day of week labels
 	const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+	/** Is a phase a "loading" phase (no calorie limit)? */
+	function isLoading(phase: string): boolean {
+		const p = phase.toLowerCase();
+		return p === 'loading' || p === 'load';
+	}
 
 	/** Get Monday of the ISO week for a date string */
 	function monday(ds: string): string {
 		const d = new Date(ds + 'T00:00:00');
 		const dow = d.getDay();
-		const diff = dow === 0 ? -6 : 1 - dow; // Monday = 1
+		const diff = dow === 0 ? -6 : 1 - dow;
 		d.setDate(d.getDate() + diff);
 		return d.toISOString().slice(0, 10);
 	}
@@ -40,38 +43,39 @@
 		const d = new Date(mon + 'T00:00:00');
 		const sun = new Date(d);
 		sun.setDate(sun.getDate() + 6);
-		const fmtD = (dt: Date) => `${dt.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]}`;
-		return `${fmtD(d)} – ${fmtD(sun)}`;
+		const fmt = (dt: Date) => `${dt.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]}`;
+		return `${fmt(d)} – ${fmt(sun)}`;
 	}
 
-	/** Is a phase a "loading" phase (no calorie limit)? */
-	function isLoading(phase: string): boolean {
-		return phase === 'loading' || phase === 'load';
+	/** Percentage of target (100 = exactly on target) */
+	function pctOfTarget(d: CalDay): number {
+		return d.target > 0 ? (d.kcal / d.target) * 100 : 100;
 	}
 
-	// Current week's Monday
+	/** Is this day within the green band? */
+	function isOnTarget(d: CalDay): boolean {
+		if (isLoading(d.phase)) return false;
+		const rule = ruleFor(d.phase, 'kcal');
+		const p = pctOfTarget(d);
+		return p >= (rule?.green_lo ?? 90) && p <= (rule?.green_hi ?? 110);
+	}
+
 	const todayMon = monday(new Date().toISOString().slice(0, 10));
 
 	// Group data by week
 	const weeks = $derived.by((): WeekGroup[] => {
 		if (!data.length) return [];
 
-		// Index by date
-		const byDate = new Map<string, CalDay>();
-		for (const d of data) byDate.set(d.date, d);
-
-		// Collect all weeks
 		const weekMap = new Map<string, (CalDay | null)[]>();
 		for (const d of data) {
 			const mon = monday(d.date);
 			if (!weekMap.has(mon)) weekMap.set(mon, Array(7).fill(null));
 			const dt = new Date(d.date + 'T00:00:00');
 			const dow = dt.getDay();
-			const idx = dow === 0 ? 6 : dow - 1; // Mon=0, Sun=6
+			const idx = dow === 0 ? 6 : dow - 1;
 			weekMap.get(mon)![idx] = d;
 		}
 
-		// Sort weeks descending (current first)
 		const sorted = [...weekMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
 
 		return sorted.map(([mon, days]) => {
@@ -84,21 +88,10 @@
 				if (!d || isLoading(d.phase)) continue;
 				total++;
 				net += d.kcal - d.target;
-				// Check if within green band
-				const rule = ruleFor(d.phase, 'kcal');
-				const lo = d.target * (rule?.green_lo ?? 0.9);
-				const hi = d.target * (rule?.green_hi ?? 1.1);
-				if (d.kcal >= lo && d.kcal <= hi) onTarget++;
+				if (isOnTarget(d)) onTarget++;
 			}
 
-			return {
-				label: weekLabel(mon, isCurrent),
-				isCurrent,
-				days,
-				onTarget,
-				total,
-				net
-			};
+			return { label: weekLabel(mon, isCurrent), isCurrent, days, onTarget, total, net };
 		});
 	});
 
@@ -106,33 +99,29 @@
 	function barColor(d: CalDay): string {
 		if (isLoading(d.phase)) return 'var(--muted)';
 		const rule = ruleFor(d.phase, 'kcal');
-		const ratio = d.target > 0 ? d.kcal / d.target : 1;
-		const overBudget = ratio > (rule?.amber_hi ?? 1.1);
-		const underBudget = ratio < (rule?.amber_lo ?? 0.85);
-		return overBudget ? 'var(--over, #A13024)' : underBudget ? 'var(--gold)' : 'var(--green, #2d6a4f)';
-	}
-
-	// Verdict text
-	function verdictText(w: WeekGroup): string {
-		if (w.total === 0) return 'No data';
-		return `${w.onTarget} of ${w.total} on target`;
+		const p = pctOfTarget(d);
+		const over = p > (rule?.amber_hi ?? 115);
+		const under = p < (rule?.amber_lo ?? 75);
+		return over ? 'var(--over, #A13024)' : under ? 'var(--gold)' : 'var(--green, #2d6a4f)';
 	}
 
 	function verdictClass(w: WeekGroup): string {
 		if (w.total === 0) return '';
-		const pct = w.onTarget / w.total;
-		return pct >= 0.7 ? 'good' : pct >= 0.4 ? 'ok' : 'poor';
+		const p = w.onTarget / w.total;
+		return p >= 0.7 ? 'good' : p >= 0.4 ? 'ok' : 'poor';
 	}
 </script>
 
 {#if weeks.length}
-	<!-- Current week (big) -->
+	<!-- Current week (bars) -->
 	{#if weeks[0]}
 		{@const cw = weeks[0]}
 		<div class="week current">
 			<div class="week-head">
 				<span class="week-label">{cw.label}</span>
-				<span class="verdict {verdictClass(cw)}">{verdictText(cw)}</span>
+				{#if cw.total > 0}
+					<span class="verdict {verdictClass(cw)}">{cw.onTarget} of {cw.total} on target</span>
+				{/if}
 			</div>
 			<div class="bars-row">
 				{#each cw.days as d, i}
@@ -158,35 +147,17 @@
 		</div>
 	{/if}
 
-	<!-- Past weeks (compact, scrollable) -->
+	<!-- Past weeks (simple text rows) -->
 	{#if weeks.length > 1}
-		<div class="past-scroll">
+		<div class="past-weeks">
 			{#each weeks.slice(1) as pw}
-				<div class="week past">
-					<div class="week-head">
-						<span class="week-label">{pw.label}</span>
-						<span class="verdict {verdictClass(pw)}">{verdictText(pw)}</span>
-					</div>
-					<div class="bars-row mini">
-						{#each pw.days as d, i}
-							<div class="bar-col">
-								{#if d}
-									{@const maxVal = Math.max(...pw.days.filter(Boolean).map((x: CalDay) => Math.max(x.kcal, x.target)))}
-									{@const kcalH = maxVal > 0 ? (d.kcal / maxVal) * 48 : 0}
-									{@const targetH = maxVal > 0 ? (d.target / maxVal) * 48 : 0}
-									<div class="bar-area" style="height:48px">
-										<div class="target-line" style="bottom:{targetH}px"></div>
-										<div class="bar" style="height:{kcalH}px;background:{barColor(d)}"></div>
-									</div>
-								{:else}
-									<div class="bar-area empty" style="height:48px">
-										<div class="bar ghost"></div>
-									</div>
-								{/if}
-								<span class="dow">{DOW[i]}</span>
-							</div>
-						{/each}
-					</div>
+				<div class="past-row">
+					<span class="past-label">{pw.label}</span>
+					{#if pw.total > 0}
+						<span class="verdict {verdictClass(pw)}">{pw.onTarget} of {pw.total} on target</span>
+					{:else}
+						<span class="verdict">No data</span>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -200,7 +171,6 @@
 		background: var(--card); border: 1px solid var(--line);
 		border-radius: 14px; padding: 14px;
 	}
-	.week.current { margin-bottom: 10px; }
 	.week-head {
 		display: flex; justify-content: space-between; align-items: center;
 		margin-bottom: 12px;
@@ -238,20 +208,19 @@
 	}
 	.dow { font-size: 10px; color: var(--muted); }
 
-	.bars-row.mini .bar { max-width: 16px; }
-	.bars-row.mini .dow { font-size: 9px; }
-
-	.past-scroll {
-		display: flex; gap: 10px; overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		padding-bottom: 4px;
-		scroll-snap-type: x mandatory;
+	/* Past weeks: simple list */
+	.past-weeks {
+		display: flex; flex-direction: column; gap: 0;
+		margin-top: 8px;
+		background: var(--card); border: 1px solid var(--line);
+		border-radius: 14px; overflow: hidden;
 	}
-	.past-scroll::-webkit-scrollbar { display: none; }
-	.week.past {
-		min-width: 260px; flex-shrink: 0;
-		scroll-snap-align: start;
+	.past-row {
+		display: flex; justify-content: space-between; align-items: center;
+		padding: 10px 14px;
 	}
+	.past-row + .past-row { border-top: 1px solid var(--line); }
+	.past-label { font-size: 13px; color: var(--ink); }
 
 	.no-data { text-align: center; color: var(--muted); font-size: 13px; padding: 30px; }
 </style>

@@ -186,16 +186,14 @@
 		];
 	});
 
-	// Calorie compliance
+	// Calorie compliance — green_lo/green_hi are percentages (e.g. 90, 105), not ratios
 	const compliance = $derived.by(() => {
-		// Exclude loading phase days from compliance (#37f)
-		const c = series.calories.filter(d => d.phase !== 'loading' && d.phase !== 'load');
+		const c = series.calories.filter(d => d.phase.toLowerCase() !== 'loading' && d.phase.toLowerCase() !== 'load');
 		if (!c.length) return null;
 		const within = c.filter(d => {
 			const rule = ruleFor(d.phase, 'kcal');
-			const lo = d.target * (rule?.green_lo ?? 0.9);
-			const hi = d.target * (rule?.green_hi ?? 1.1);
-			return d.kcal >= lo && d.kcal <= hi;
+			const pct = d.target > 0 ? (d.kcal / d.target) * 100 : 100;
+			return pct >= (rule?.green_lo ?? 90) && pct <= (rule?.green_hi ?? 110);
 		}).length;
 		return Math.round((within / c.length) * 100);
 	});
