@@ -21,7 +21,7 @@ export async function getPhases(db: D1Database) {
 
 export async function getPhaseTransitions(userId: string, db: D1Database) {
   const rows = await db.prepare(
-    'SELECT from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY day'
+    'SELECT from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY date'
   ).bind(userId).all<any>();
   return { transitions: rows.results };
 }

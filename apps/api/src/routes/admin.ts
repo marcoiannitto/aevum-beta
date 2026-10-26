@@ -9,7 +9,7 @@ export async function adminUsers(db: D1Database) {
   const rows = await db.prepare(
     `SELECT u.id, u.name, u.email, u.program, u.created_at, u.current_target_kcal, u.start_weight,
       (SELECT COUNT(*) FROM daily_logs WHERE user_id = u.id) as log_count,
-      (SELECT MAX(day) FROM daily_logs WHERE user_id = u.id) as last_day
+      (SELECT MAX(date) FROM daily_logs WHERE user_id = u.id) as last_date
     FROM users u ORDER BY u.created_at DESC`
   ).all<any>();
   return { users: rows.results };
@@ -18,9 +18,22 @@ export async function adminUsers(db: D1Database) {
 export async function adminExport(body: any, db: D1Database) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const logs = await db.prepare('SELECT * FROM daily_logs WHERE user_id = ? ORDER BY day').bind(targetId).all<any>();
+  const logs = await db.prepare('SELECT * FROM daily_logs WHERE user_id = ? ORDER BY date').bind(targetId).all<any>();
   const plans = await db.prepare('SELECT * FROM meal_plans WHERE user_id = ? ORDER BY day').bind(targetId).all<any>();
   const prof = await getProfile(targetId, db);
+
+  // F-4: derive day number server-side from date + program_start_date
+  const startDate = (prof.profile as any)?.start_date || (prof.profile as any)?.program_start_date;
+  if (startDate) {
+    const sd = new Date(startDate + 'T00:00:00Z');
+    for (const log of logs.results as any[]) {
+      if (log.date) {
+        const ld = new Date(log.date + 'T00:00:00Z');
+        log.day = Math.round((ld.getTime() - sd.getTime()) / 86400000) + 1;
+      }
+    }
+  }
+
   return { profile: prof.profile, logs: logs.results, meal_plans: plans.results };
 }
 

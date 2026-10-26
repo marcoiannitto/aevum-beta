@@ -308,6 +308,12 @@ export function syncDay(): void {
 	const num = get(currentDay);
 	if (!id || !day) return;
 
+	// F-2: never sync a blank day (no meals, no weight, no water)
+	const hasMeals = day.meals && day.meals.length > 0;
+	const hasWeight = day.weight && +day.weight > 0;
+	const hasWater = day.water && +day.water > 0;
+	if (!hasMeals && !hasWeight && !hasWater) return;
+
 	// Ensure date is set
 	if (!day.date) day.date = dateStr(get(currentDate));
 

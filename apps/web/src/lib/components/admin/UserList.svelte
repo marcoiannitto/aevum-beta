@@ -112,7 +112,7 @@
 				<th>Type</th>
 				<th>Start wt</th>
 				<th>Logs</th>
-				<th>Last Day</th>
+				<th>Last Date</th>
 				<th>Created</th>
 			</tr>
 		</thead>
@@ -130,7 +130,7 @@
 					</td>
 					<td>{user.start_weight ?? '–'}</td>
 					<td>{user.log_count ?? '–'}</td>
-					<td>{user.last_day ?? '–'}</td>
+					<td>{user.last_date ?? '–'}</td>
 					<td>{user.created_at ? String(user.created_at).slice(0, 10) : '–'}</td>
 				</tr>
 			{/each}

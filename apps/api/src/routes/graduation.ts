@@ -29,7 +29,7 @@ export async function graduation(
     const rulesResp = await getRules(targetId, db);
 
     const logRows = await db.prepare(
-      'SELECT * FROM daily_logs WHERE user_id = ? ORDER BY day'
+      'SELECT * FROM daily_logs WHERE user_id = ? ORDER BY date'
     ).bind(targetId).all<any>();
 
     let data: any[] = logRows.results.map((r: any) => ({

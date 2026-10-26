@@ -64,6 +64,7 @@
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
 | #51  | Admin sidebar: reorder menu    | DONE        | Marco decided the order. |
+| #71  | Admin: edit rules bands per metric | OPEN   | Phase editor has no UI for per-metric green_lo/hi, amber_lo/hi (protein, fat, carbs, kcal). Currently requires D1 direct edit. Add inline-editable rules table to admin. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | DONE        | Already in calorie.ts baseTarget() |
 | #37c | Calorie bank redesign          | DONE        | Steps 7-8: weekly verdict badges in Trends + bank display in CalorieStatus |
@@ -81,6 +82,9 @@
 | #70  | Photo meal estimate broken      | DONE        | Frontend strips data-URI prefix, AI worker regex required it. Fixed: fallback for raw base64. v1.13.1, deployed. |
 | #68  | Admin: phase parameter tuning UI | DONE | AdminCalorieTuning.svelte. Flat table of all phase calorie params, inline-editable, save per row. |
 | #69  | Admin: client calorie dashboard | DONE | computeClientCalories() in @aevum/shared + admin_client_calories endpoint + AdminClientCalories.svelte. Server-side per-user calorie status. |
+| #72  | Data integrity: boot race condition | DONE | F-1: handleVisibility + handleBeforeUnload guarded with `booted` flag. Prevents blank data overwriting D1 during async boot. |
+| #73  | Data integrity: blank day sync | DONE | F-2: syncDay() skips if no meals, no weight, no water. Safety net against syncing empty days. |
+| #74  | Data integrity: ORDER BY date everywhere | DONE | F-3: All backend queries ORDER BY date instead of day. Admin users list shows last_date. F-4: adminExport derives day number server-side from date + program_start_date. |
 
 ---
 

@@ -130,6 +130,7 @@
 	}
 
 	function handleVisibility() {
+		if (!booted) return;                // F-1: never save/sync before boot finishes
 		if (document.visibilityState === 'hidden') {
 			saveDay();
 			syncDay();
@@ -144,6 +145,7 @@
 	}
 
 	function handleBeforeUnload() {
+		if (!booted) return;                // F-1: guard unload too
 		saveDay();
 		syncDay();
 	}
