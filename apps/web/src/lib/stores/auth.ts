@@ -64,6 +64,7 @@ export interface UserProfile {
 	notes?: string;
 	start_weight?: number;
 	activation_model?: string;
+	program_start_date?: string;
 }
 
 export const profile = writable<UserProfile | null>(null);

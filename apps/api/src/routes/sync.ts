@@ -3,6 +3,9 @@
  */
 
 export async function syncRow(userId: string, body: any, db: D1Database) {
+  // Reject syncs without a date (V3 always sends one; prevents ghost rows)
+  if (!body.date) return { ok: false, error: 'date required' };
+
   // Use client's epoch-ms timestamp so all devices compare on the same basis
   const clientTs = body.updated_at ? Number(body.updated_at) : Date.now();
 

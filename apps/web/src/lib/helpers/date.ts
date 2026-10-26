@@ -18,11 +18,6 @@ export function effToday(): Date {
 	return now;
 }
 
-export function effTodayISO(): string {
-	const d = effToday();
-	return d.toISOString().slice(0, 10);
-}
-
 /** Convert day number to Date using profile.start_date */
 export function dayToDate(dayNum: number): Date | null {
 	const p = get(profile);
