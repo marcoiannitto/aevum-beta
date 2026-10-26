@@ -77,7 +77,7 @@
 | #65  | Trends: loading bars should not be colored | DONE | WeeklyCalories renders loading phase bars as neutral (var(--muted)). Part of #37f. |
 | #66  | Trends: over-budget bars not red | DONE        | WeeklyCalories uses ruleFor() per phase for bar coloring. Part of #37f. |
 | #67  | Trends: bars ignore phase rules for coloring | DONE | WeeklyCalories uses ruleFor() with phase-specific thresholds. Part of #37f. |
-| #37f | Calorie UI redesign             | DONE        | CalorieStatus: remaining kcal hero, silent bank, tap-to-explain. Trends: WeeklyCalories replaces flat bars + verdict chips. Current week big, past weeks scrollable. Loading days excluded from compliance. |
+| #37f | Calorie UI redesign             | DONE        | CalorieStatus: remaining kcal hero, silent bank, tap-to-explain. Trends: WeeklyCalories v1.1.0 fixes on-target calc (green_lo/green_hi are %-not-ratio), past weeks simplified to text rows. |
 | #70  | Photo meal estimate broken      | DONE        | Frontend strips data-URI prefix, AI worker regex required it. Fixed: fallback for raw base64. v1.13.1, deployed. |
 | #68  | Admin: phase parameter tuning UI | DONE | AdminCalorieTuning.svelte. Flat table of all phase calorie params, inline-editable, save per row. |
 | #69  | Admin: client calorie dashboard | DONE | computeClientCalories() in @aevum/shared + admin_client_calories endpoint + AdminClientCalories.svelte. Server-side per-user calorie status. |
