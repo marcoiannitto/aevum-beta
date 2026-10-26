@@ -1,7 +1,7 @@
 # AEVUM Tracker V3 -- Issue Tracker
 
 > Branch: `feat/monorepo-restructure`
-> Last updated: 2026-10-24
+> Last updated: 2026-10-26
 
 ## Status legend
 
@@ -85,6 +85,9 @@
 | #72  | Data integrity: boot race condition | DONE | F-1: handleVisibility + handleBeforeUnload guarded with `booted` flag. Prevents blank data overwriting D1 during async boot. |
 | #73  | Data integrity: blank day sync | DONE | F-2: syncDay() skips if no meals, no weight, no water. Safety net against syncing empty days. |
 | #74  | Data integrity: ORDER BY date everywhere | DONE | F-3: All backend queries ORDER BY date instead of day. Admin users list shows last_date. F-4: adminExport derives day number server-side from date + program_start_date. |
+| #75  | V3 hardening: reject empty-date syncs | DONE | 08262ee | syncRow() rejects calls without date. Blocks V2-style syncs after retirement. |
+| #76  | V3 hardening: remove dead effTodayISO() | DONE | 08262ee | Had UTC bug (.toISOString), zero callers. Removed to prevent future misuse. |
+| #77  | V3 hardening: UserProfile type safety | DONE | 08262ee | Added program_start_date to UserProfile interface (was accessed via unsafe casts). |
 
 ---
 
@@ -206,10 +209,13 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 - Deploy only from local machine (cloud container blocked from Cloudflare API)
 - V3 calorie engine: baseTarget() + bankAdjustment() + effectiveTarget(). Supports `fixed` and `tdee_mult` modes. Bank logic in `packages/shared/src/calorie-bank.ts` (29 tests).
 - Bank adjustment active when phase has calorie_bank=1. Asymmetric: overspend 1:1, underspend capped 200 kcal/day. Safety clamps: floor 60% TDEE, ceiling 130% base target.
-- Current APP_VERSION: v3.1.6
+- Current APP_VERSION: v3.1.7
 - calorie.ts v3.3.0: weekly verdict + bank display (steps 7-8 of #37c)
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)
 - Shallow clone stop hook falsely reports unpushed commits. Fix each time: `git update-ref refs/remotes/origin/feat/monorepo-restructure HEAD`
 - **DB harmonization (2026-10-23):** Backfilled `program_id` in `day_json` for all legacy rows using phase→program mapping from `phases` table. Normalized all `phase` values to lowercase. Marco's Oct 9–18 manually corrected to maintenance. Admin UserDetail.svelte phase column now reads stored `log.phase` with fallback to computed (commit 6a7b23f).
-- **Bug to investigate:** Marco's Oct 9–18 data kept reverting to recomposition despite manual DB fixes. Root cause unknown — may be a sync/hydration issue writing stale localStorage back to D1.
+- **Bug to investigate:** Marco's Oct 9–18 data kept reverting to recomposition despite manual DB fixes. Root cause unknown, may be a sync/hydration issue writing stale localStorage back to D1.
+- **V2 retirement (2026-10-26):** Decision to stop investigating V2 data integrity issues. V3 is stable; all V2 users to be migrated to V3. After migration, V2 frontend decommissioned.
+- **Data integrity investigation (2026-10-26):** Jane/Emilio/Gabriella showed wrong day numbers and out-of-order dates. Root cause: V2 client sync issues (duplicate dates for different day numbers in D1 backup). V3 pipeline is clean (date is primary key, always sent by client, rejected if empty). Fixes F-1 through F-4 deployed (48d42b8), V3 hardening deployed (08262ee).
+- **Migration v3.1.7-date-key.sql status:** CONFIRM WHETHER APPLIED TO PROD D1. If not, `ON CONFLICT(user_id, date)` in sync.ts doesn't match the actual unique constraint `(user_id, day)`, which could cause silent duplicate rows.
