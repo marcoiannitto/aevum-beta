@@ -1,7 +1,7 @@
 # AEVUM Tracker V3 -- Issue Tracker
 
-> Branch: `feat/monorepo-restructure`
-> Last updated: 2026-10-26
+> Branch: `main`
+> Last updated: 2026-10-27
 
 ## Status legend
 
@@ -194,7 +194,7 @@ All cells inline-editable. Save button per row. No modal, no drill-down.
 
 ## Validation checklist (post-deploy)
 
-Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
+Pull `main` and run `deploy.ps1`, then test:
 
 | # | Fix | Test | Expected |
 |---|-----|------|----------|
@@ -213,9 +213,9 @@ Pull `feat/monorepo-restructure` and run `deploy.ps1`, then test:
 - calorie.ts v3.3.0: weekly verdict + bank display (steps 7-8 of #37c)
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)
-- Shallow clone stop hook falsely reports unpushed commits. Fix each time: `git update-ref refs/remotes/origin/feat/monorepo-restructure HEAD`
+- Shallow clone stop hook falsely reports unpushed commits. Fix each time: `git update-ref refs/remotes/origin/main HEAD`
 - **DB harmonization (2026-10-23):** Backfilled `program_id` in `day_json` for all legacy rows using phase→program mapping from `phases` table. Normalized all `phase` values to lowercase. Marco's Oct 9–18 manually corrected to maintenance. Admin UserDetail.svelte phase column now reads stored `log.phase` with fallback to computed (commit 6a7b23f).
 - **Bug to investigate:** Marco's Oct 9–18 data kept reverting to recomposition despite manual DB fixes. Root cause unknown, may be a sync/hydration issue writing stale localStorage back to D1.
-- **V2 retirement (2026-10-26):** Decision to stop investigating V2 data integrity issues. V3 is stable; all V2 users to be migrated to V3. After migration, V2 frontend decommissioned.
+- **V2 retirement (2026-10-27):** V2 frontend decommissioned. DNS switched to Cloudflare Pages. GitHub Pages disabled. Branch `feat/monorepo-restructure` merged into `main`. V3 now serves `app.niramaya.sg`.
 - **Data integrity investigation (2026-10-26):** Jane/Emilio/Gabriella showed wrong day numbers and out-of-order dates. Root cause: V2 client sync issues (duplicate dates for different day numbers in D1 backup). V3 pipeline is clean (date is primary key, always sent by client, rejected if empty). Fixes F-1 through F-4 deployed (48d42b8), V3 hardening deployed (08262ee).
-- **Migration v3.1.7-date-key.sql status:** CONFIRM WHETHER APPLIED TO PROD D1. If not, `ON CONFLICT(user_id, date)` in sync.ts doesn't match the actual unique constraint `(user_id, day)`, which could cause silent duplicate rows.
+- **Migration v3.1.7-date-key.sql status:** ✅ CONFIRMED APPLIED TO PROD D1 (2026-10-27). UNIQUE constraint is `(user_id, date)`. `ON CONFLICT(user_id, date)` in sync.ts matches correctly.

@@ -1,27 +1,23 @@
 # AEVUM Architecture
 
-> Single source of truth for developers. Updated 2026-10-26.
+> Single source of truth for developers. Updated 2026-10-27.
 > Business docs (brand, compliance, briefs, copy) live in the Claude project.
 
 ---
 
 ## Deployments
 
-Three deployments exist. V2 is being retired; V3 is the target for all users.
+Two deployments exist. V2 has been retired (2026-10-27). V3 is the sole active frontend.
 
-| | V1 Live | V2 Beta (retiring) | V3 Monorepo (primary) |
-|---|---|---|---|
-| Frontend repo | `aevum-app` (main) | `aevum-beta` (main) | `aevum-beta` (`feat/monorepo-restructure`) |
-| Domain | `app.niramaya.sg` | `app.niramaya.sg` | `aevum-web-d75.pages.dev` |
-| API | GAS via Proxy Worker | `aevum-api-v2` Worker | Same `aevum-api-v2` Worker |
-| Data store | Google Sheet | D1 `aevum-db` | Same D1 `aevum-db` |
-| Deploy | GitHub Pages (auto) | GitHub Pages (auto) | `deploy.ps1` from local machine |
+| | V1 Live (legacy) | V3 (primary) |
+|---|---|---|
+| Frontend repo | `aevum-app` (main) | `aevum-beta` (`main`) |
+| Domain | `app.niramaya.sg` (V1 tracker only) | `app.niramaya.sg` (via Cloudflare Pages) |
+| API | GAS via Proxy Worker | `aevum-api-v2` Worker |
+| Data store | Google Sheet | D1 `aevum-db` |
+| Deploy | GitHub Pages (auto) | `deploy.ps1` from local machine |
 
-**CRITICAL: V1 at `app.niramaya.sg` must NEVER be modified by beta work. Separate repos, workers, data stores.**
-
-V2 and V3 share the SAME backend API worker (`aevum-api-v2`) and SAME D1 database (`aevum-db`). V2 is being retired. V3 sync now rejects empty-date payloads (commit 08262ee), which blocks V2-style syncs without a date field.
-
-**Migration plan:** All V2 users to be migrated to V3. After migration, V2 frontend can be decommissioned.
+**V2 retirement (2026-10-27):** V2 frontend decommissioned. DNS CNAME for `app.niramaya.sg` switched from GitHub Pages to Cloudflare Pages (`aevum-web-d75.pages.dev`). GitHub Pages disabled. Branch `feat/monorepo-restructure` merged into `main`. Migration `v3.1.7-date-key.sql` confirmed applied (UNIQUE(user_id, date)). V3 sync rejects empty-date payloads (commit 08262ee).
 
 ---
 
@@ -43,7 +39,7 @@ V2 and V3 share the SAME backend API worker (`aevum-api-v2`) and SAME D1 databas
 
 ## Repo Structure
 
-### V3 (`feat/monorepo-restructure`)
+### V3 (`main`)
 ```
 aevum-app-v3/
 ├── apps/
@@ -79,24 +75,12 @@ aevum-app-v3/
 └── package.json
 ```
 
-### V2 (`main` branch)
+### V2 (retired, files remain in repo for reference)
 ```
-aevum-beta/
-├── .github/workflows/
-│   ├── deploy-worker.yml       # Auto-deploy worker + D1 migrations on push
-│   └── backup-d1.yml           # Daily D1 backup (2am UTC)
-├── v2-api/
-│   ├── src/index.js            # Entire backend (single Worker file)
-│   ├── migrations/             # D1 migration files (0001-0020)
-│   └── wrangler.toml           # Worker config + D1 binding
-├── meal-planner/               # Standalone recipe scaler (local JSON, no API)
-├── fitness/                    # Exercise demo videos (.mp4)
-├── index.html                  # Main tracker (v1.46.0)
-├── admin.html                  # Admin panel (v1.3)
-├── calculator.html             # Food quantity calculator (admin-only)
-├── intake.html                 # Client onboarding form
-├── seed.js / seed-meal-plan.js # DB seed scripts
-└── backups/                    # Daily D1 snapshots (last 30)
+v2-api/                         # Backend Worker (still in use, shared with V3)
+├── src/index.js                # Entire backend (single Worker file)
+├── migrations/                 # D1 migration files (0001-0020)
+└── wrangler.toml               # Worker config + D1 binding
 ```
 
 ### V3 Key Files and V2 Equivalents
@@ -257,16 +241,13 @@ V2 (legacy): `aevum_<user_id>_day_<number>`. V3 includes `migrateToDateKeys()` f
 Cloud container cannot deploy (proxy blocks `sparrow.cloudflare.com:443`).
 
 **`deploy.ps1` (PowerShell):**
-1. `git pull origin feat/monorepo-restructure`
+1. `git pull origin main`
 2. `pnpm build`
 3. `npx wrangler pages deploy .svelte-kit/cloudflare --project-name=aevum-web`
 
 **Git workflow:** Claude commits + pushes from cloud > Marco pulls locally > runs `deploy.ps1`
 
-### V2 (automatic)
-- **Frontend:** Push to `main` auto-deploys to GitHub Pages
-- **Backend + migrations:** `.github/workflows/deploy-worker.yml` deploys Worker + applies D1 migrations on push (when `v2-api/**` changes)
-- Requires GitHub secret `CLOUDFLARE_API_TOKEN`
+**Cloudflare Pages:** Custom domain `app.niramaya.sg` configured. Automatic deployments disabled (manual deploy via `deploy.ps1` only).
 
 ### D1 Access
 - **Console:** Cloudflare Dashboard > D1 > `aevum-db`
@@ -313,7 +294,7 @@ Known tech debt: dashboard, report, reset report, meal-builder still have raw GA
 ## Google OAuth
 
 - Console project configured
-- Authorized origins: `https://app.niramaya.sg`, `http://localhost:8080`
+- Authorized origins: `https://app.niramaya.sg`, `https://aevum-web-d75.pages.dev`, `http://localhost:8080`
 - Consent screen in TESTING MODE
 
 ---
