@@ -22,6 +22,39 @@
 	let colWidths = $state<Record<string, number>>({});
 	let resizing = $state<{ key: string; startX: number; startW: number } | null>(null);
 
+	// Sorting
+	let sortKey = $state<string | null>(null);
+	let sortDir = $state<'asc' | 'desc'>('asc');
+
+	function toggleSort(key: string) {
+		if (sortKey === key) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortKey = key;
+			sortDir = 'asc';
+		}
+	}
+
+	function sortedRows(): Record<string, unknown>[] {
+		if (!sortKey) return rows;
+		const k = sortKey;
+		const dir = sortDir === 'asc' ? 1 : -1;
+		return [...rows].sort((a, b) => {
+			const va = a[k] ?? '';
+			const vb = b[k] ?? '';
+			if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+			return String(va).localeCompare(String(vb)) * dir;
+		});
+	}
+
+	// Map sorted index back to original index for callbacks
+	function originalIndex(sortedIdx: number): number {
+		if (!sortKey) return sortedIdx;
+		const sorted = sortedRows();
+		const row = sorted[sortedIdx];
+		return rows.indexOf(row);
+	}
+
 	function startResize(e: MouseEvent, key: string, thEl: HTMLElement) {
 		e.preventDefault();
 		const startW = thEl.offsetWidth;
@@ -68,13 +101,20 @@
 						{@const isSticky = stickyCol && ci === 0}
 						<th
 							class:sticky-col={isSticky}
+							class:sortable={true}
+							class:sorted={sortKey === col.key}
 							style={colStyle(col)}
+							onclick={() => toggleSort(col.key)}
 						>
 							{col.label}
+							{#if sortKey === col.key}
+								<span class="sort-arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>
+							{/if}
 							<!-- svelte-ignore a11y_no_static_element_interactions -->
 							<span
 								class="col-resize"
 								onmousedown={(e) => {
+									e.stopPropagation();
 									const th = (e.target as HTMLElement).parentElement;
 									if (th) startResize(e, col.key, th);
 								}}
@@ -85,7 +125,8 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each rows as row, ri}
+				{#each sortedRows() as row, si}
+					{@const ri = originalIndex(si)}
 					<tr>
 						{#each cols as col, ci}
 							{@const isSticky = stickyCol && ci === 0}
@@ -111,13 +152,13 @@
 	.table-wrap {
 		padding: 20px 28px;
 		flex: 1;
-		overflow: auto;
 	}
 	.table-actions {
 		margin-bottom: 12px;
 	}
 	.scroll-x {
-		overflow-x: auto;
+		overflow: auto;
+		max-height: calc(100vh - 120px);
 	}
 	table {
 		width: 100%;
@@ -208,6 +249,21 @@
 	}
 	th {
 		position: relative;
+	}
+	th.sortable {
+		cursor: pointer;
+		user-select: none;
+	}
+	th.sortable:hover {
+		background: #ebe7df;
+	}
+	th.sorted {
+		color: var(--ink);
+	}
+	.sort-arrow {
+		font-size: 9px;
+		margin-left: 4px;
+		opacity: 0.6;
 	}
 	.btn {
 		padding: 8px 16px;

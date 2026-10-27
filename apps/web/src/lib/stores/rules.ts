@@ -54,16 +54,35 @@ export function ruleFor(phaseKey: string, metric: string, model?: string): RuleE
 	return found;
 }
 
-/** Determine band class from value vs rule thresholds */
+/** Determine band class from value vs rule thresholds.
+ *  Supports one-sided bounds: if green_hi is null, any value >= green_lo is ok
+ *  (lower-bound-only metric, e.g. fat in recomposition). Vice versa for upper-only. */
 export function bandClass(value: number, rule: RuleEntry): string {
-	if (rule.green_lo != null && rule.green_hi != null) {
-		if (value >= rule.green_lo && value <= rule.green_hi) return 'ok';
+	// --- green check (supports one-sided bounds) ---
+	const hasLo = rule.green_lo != null;
+	const hasHi = rule.green_hi != null;
+	if (hasLo && hasHi) {
+		if (value >= rule.green_lo! && value <= rule.green_hi!) return 'ok';
+	} else if (hasLo && !hasHi) {
+		if (value >= rule.green_lo!) return 'ok';   // lower-bound only
+	} else if (!hasLo && hasHi) {
+		if (value <= rule.green_hi!) return 'ok';   // upper-bound only
 	}
-	if (rule.amber_lo != null && rule.amber_hi != null) {
-		if (value >= rule.amber_lo && value <= rule.amber_hi) return 'warn';
+
+	// --- amber check (supports one-sided bounds) ---
+	const hasALo = rule.amber_lo != null;
+	const hasAHi = rule.amber_hi != null;
+	if (hasALo && hasAHi) {
+		if (value >= rule.amber_lo! && value <= rule.amber_hi!) return 'warn';
+	} else if (hasALo && !hasAHi) {
+		if (value >= rule.amber_lo!) return 'warn';
+	} else if (!hasALo && hasAHi) {
+		if (value <= rule.amber_hi!) return 'warn';
 	}
-	if (rule.green_hi != null && value > rule.green_hi) return 'over';
-	if (rule.green_lo != null && value < rule.green_lo) return 'over';
+
+	// --- over (beyond green bounds) ---
+	if (hasHi && value > rule.green_hi!) return 'over';
+	if (hasLo && value < rule.green_lo!) return 'over';
 	return '';
 }
 

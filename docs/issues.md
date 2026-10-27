@@ -64,7 +64,9 @@
 | #    | Title                          | Status      | Notes |
 |------|--------------------------------|-------------|-------|
 | #51  | Admin sidebar: reorder menu    | DONE        | Marco decided the order. |
-| #71  | Admin: edit rules bands per metric | OPEN   | Phase editor has no UI for per-metric green_lo/hi, amber_lo/hi (protein, fat, carbs, kcal). Currently requires D1 direct edit. Add inline-editable rules table to admin. |
+| #71  | Admin: edit rules bands per metric | CLOSED | Rules DataTable already supports inline editing of green_lo/hi, amber_lo/hi. Was always there, just hard to find. |
+| #78  | bandClass() ignores one-sided bounds | DONE | bandClass() required both green_lo AND green_hi to return 'ok'. Now supports null bounds (e.g. fat with no upper limit). v3.1.7. |
+| #79  | Admin DataTable: sortable columns | DONE | Click any header to sort asc/desc. Sort indicator shown. Edits map back to original row index. v3.1.7. |
 | #37e | Calorie engine tests           | OPEN        | Write tests before building #37b/c. Shared calorie functions already tested. Frontend calorie store functions need mocking (localStorage, Svelte stores). |
 | #37b | ramp_then_hold target mode     | DONE        | Already in calorie.ts baseTarget() |
 | #37c | Calorie bank redesign          | DONE        | Steps 7-8: weekly verdict badges in Trends + bank display in CalorieStatus |
