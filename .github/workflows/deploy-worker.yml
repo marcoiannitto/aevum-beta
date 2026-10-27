@@ -2,7 +2,7 @@ name: Deploy Worker
 on:
   push:
     branches: [main]
-    paths: [v2-api/**]
+    paths: [apps/api/**, packages/shared/**]
 
 jobs:
   deploy:
@@ -12,12 +12,12 @@ jobs:
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: v2-api
+          workingDirectory: apps/api
           wranglerVersion: '3.114.17'
       - name: Apply D1 migrations
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: v2-api
+          workingDirectory: apps/api
           wranglerVersion: '3.114.17'
           command: d1 migrations apply aevum-db --remote

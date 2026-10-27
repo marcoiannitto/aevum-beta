@@ -1,0 +1,205 @@
+/**
+ * Program routes: list programs, switch program, admin CRUD, transition history.
+ */
+
+// ─── List active programs ──────────────────────────────────
+
+export async function getPrograms(db: D1Database) {
+  const rows = await db.prepare(
+    'SELECT id, name, description, color, sort_order FROM programs WHERE is_active = 1 ORDER BY sort_order'
+  ).all<any>();
+  return { programs: rows.results };
+}
+
+// ─── Switch user's program ─────────────────────────────────
+
+export async function setProgram(userId: string, body: any, db: D1Database) {
+  const programId = String(body.program_id || '').trim();
+  if (!programId) return { error: 'program_id required' };
+
+  // Validate program exists and is active
+  const prog = await db.prepare(
+    'SELECT id, name FROM programs WHERE id = ? AND is_active = 1'
+  ).bind(programId).first<any>();
+  if (!prog) return { error: 'Program not found or inactive' };
+
+  // Get current program for transition log
+  const user = await db.prepare(
+    'SELECT program_id FROM users WHERE id = ?'
+  ).bind(userId).first<any>();
+  const fromProgram = user?.program_id || null;
+
+  if (fromProgram === programId) {
+    return { ok: true, message: 'Already on this program' };
+  }
+
+  // Get current phase for transition log
+  const fromPhase = user?.phase_mode || null;
+
+  // Find the first phase of the new program
+  const firstPhase = await db.prepare(
+    'SELECT key FROM phases WHERE program_id = ? AND is_program = 1 ORDER BY sort_order LIMIT 1'
+  ).bind(programId).first<any>();
+  const toPhase = firstPhase?.key || null;
+
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10); // YYYY-MM-DD
+
+  // Update user (set program_start_date, never overwrite start_date) + log transition
+  await db.batch([
+    db.prepare('UPDATE users SET program_id = ?, program_start_date = ? WHERE id = ?').bind(programId, today, userId),
+    db.prepare(
+      `INSERT INTO program_transitions (user_id, from_program, to_program, from_phase, to_phase, switched_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(userId, fromProgram, programId, fromPhase, toPhase, now),
+  ]);
+
+  // Return updated profile + phases for new program
+  const phases = await db.prepare(
+    'SELECT * FROM phases WHERE program_id = ? ORDER BY sort_order'
+  ).bind(programId).all<any>();
+
+  return {
+    ok: true,
+    program_id: programId,
+    start_date: today,  // frontend reads this as program_start_date
+    phases: phases.results,
+  };
+}
+
+// ─── Admin: program CRUD ───────────────────────────────────
+
+export async function adminPrograms(body: any, db: D1Database) {
+  const sub = String(body.sub || 'list');
+
+  switch (sub) {
+    case 'list': {
+      const rows = await db.prepare('SELECT * FROM programs ORDER BY sort_order').all<any>();
+      return { programs: rows.results };
+    }
+
+    case 'create': {
+      const id = String(body.id || '').trim().toLowerCase();
+      const name = String(body.name || '').trim();
+      if (!id || !name) return { error: 'id and name required' };
+      await db.prepare(
+        'INSERT INTO programs (id, name, description, color, sort_order) VALUES (?, ?, ?, ?, ?)'
+      ).bind(id, name, body.description || '', body.color || '#3E7A6A', body.sort_order || 50).run();
+      return { ok: true, id };
+    }
+
+    case 'update': {
+      const id = String(body.id || '').trim();
+      if (!id) return { error: 'id required' };
+      const sets: string[] = [];
+      const vals: any[] = [];
+      for (const key of ['name', 'description', 'color', 'sort_order', 'is_active']) {
+        if (body[key] !== undefined) {
+          sets.push(`${key} = ?`);
+          vals.push(body[key]);
+        }
+      }
+      if (!sets.length) return { error: 'nothing to update' };
+      vals.push(id);
+      await db.prepare(`UPDATE programs SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+      return { ok: true };
+    }
+
+    case 'delete': {
+      const id = String(body.id || '').trim();
+      if (!id) return { error: 'id required' };
+      // Soft delete (deactivate)
+      await db.prepare('UPDATE programs SET is_active = 0 WHERE id = ?').bind(id).run();
+      return { ok: true };
+    }
+
+    default:
+      return { error: 'Unknown sub action: ' + sub };
+  }
+}
+
+// ─── Admin: view program transitions for a user ────────────
+
+export async function adminProgramTransitions(body: any, db: D1Database) {
+  const userId = String(body.user_id || '').trim();
+  if (!userId) return { error: 'user_id required' };
+
+  const rows = await db.prepare(
+    `SELECT pt.*, p1.name as from_program_name, p2.name as to_program_name
+     FROM program_transitions pt
+     LEFT JOIN programs p1 ON pt.from_program = p1.id
+     LEFT JOIN programs p2 ON pt.to_program = p2.id
+     WHERE pt.user_id = ?
+     ORDER BY pt.switched_at DESC`
+  ).bind(userId).all<any>();
+
+  return { transitions: rows.results };
+}
+
+// ─── Admin: phase upsert (INSERT OR REPLACE) ─────────────
+
+const PHASE_COLUMNS = [
+  'key', 'name', 'sort_order', 'color', 'duration_default', 'duration_col',
+  'is_program', 'gate_fat', 'gate_carb', 'use_buckets', 'requires_serum',
+  'has_fasting', 'calorie_bank', 'show_in_phase_bar', 'show_in_recipe_chips',
+  'drift_enabled', 'target_mode', 'calorie_mode', 'calorie_cut',
+  'ramp_from', 'ramp_days', 'ramp_pct', 'bank_window', 'bank_clamp_lo',
+  'bank_clamp_hi', 'drift_review_days', 'drift_step_kcal', 'drift_band_kg',
+  'drift_floor_kcal', 'bank_grace_days', 'weekly_tolerance', 'weight_goal',
+  'weight_goal_rate', 'inherits_rules_from', 'food_rule_line', 'fitness_intro',
+  'program_id', 'explainer_json',
+] as const;
+
+export async function adminPhaseSave(body: any, db: D1Database) {
+  const key = String(body.key || '').trim();
+  if (!key) return { error: 'key required' };
+  const name = String(body.name || '').trim();
+  if (!name) return { error: 'name required' };
+
+  // Check if phase already exists
+  const existing = await db.prepare('SELECT key FROM phases WHERE key = ?').bind(key).first<any>();
+
+  // If updating, reject key changes (key is PK, stamped in day_json)
+  if (body._original_key && body._original_key !== key) {
+    return { error: 'Cannot rename phase key. Keys are stamped in historical data.' };
+  }
+
+  // Build column list from provided fields
+  const cols: string[] = [];
+  const vals: any[] = [];
+  for (const col of PHASE_COLUMNS) {
+    if (body[col] !== undefined) {
+      cols.push(col);
+      vals.push(body[col]);
+    }
+  }
+
+  if (!cols.includes('key')) { cols.unshift('key'); vals.unshift(key); }
+  if (!cols.includes('name')) { cols.unshift('name'); vals.unshift(name); }
+
+  const placeholders = cols.map(() => '?').join(', ');
+  await db.prepare(
+    `INSERT OR REPLACE INTO phases (${cols.join(', ')}) VALUES (${placeholders})`
+  ).bind(...vals).run();
+
+  return { ok: true, key, created: !existing };
+}
+
+// ─── Admin: phase delete ──────────────────────────────────
+
+export async function adminPhaseDelete(body: any, db: D1Database) {
+  const key = String(body.key || '').trim();
+  if (!key) return { error: 'key required' };
+
+  // Check if any daily_logs reference this phase
+  const refs = await db.prepare(
+    "SELECT COUNT(*) as cnt FROM daily_logs WHERE day_json LIKE ?"
+  ).bind(`%"phase":"${key}"%`).first<any>();
+
+  if (refs && refs.cnt > 0) {
+    return { error: `Cannot delete phase "${key}": ${refs.cnt} daily log(s) reference it.` };
+  }
+
+  await db.prepare('DELETE FROM phases WHERE key = ?').bind(key).run();
+  return { ok: true };
+}

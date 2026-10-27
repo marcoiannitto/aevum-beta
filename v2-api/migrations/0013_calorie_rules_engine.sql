@@ -11,8 +11,7 @@
 --   'ramp_then_hold' → ramp from ramp_from to TDEE × calorie_cut over ramp_days, then adaptive hold
 ALTER TABLE phases ADD COLUMN target_mode TEXT DEFAULT 'none';
 
--- For tdee_mult / ramp_then_hold: TDEE multiplier (e.g. 0.90 = 90% of TDEE)
-ALTER TABLE phases ADD COLUMN calorie_cut REAL;
+-- calorie_cut already exists from migration 0010 — do NOT re-add it
 
 -- For fixed mode: the green-band edges
 ALTER TABLE phases ADD COLUMN target_fixed_lo REAL;

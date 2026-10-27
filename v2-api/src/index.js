@@ -54,12 +54,15 @@ function rateCheck(ip) {
 }
 
 // ─── CORS ────────────────────────────────────────────────────
+const EXTRA_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080'
+];
 function corsHeaders(origin, allowed) {
   const ok = origin === allowed
-    || origin.endsWith('.aevum-web-d75.pages.dev')
-    || origin === 'https://aevum-web-d75.pages.dev'
-    || origin === 'http://localhost:8080'
-    || origin === 'http://127.0.0.1:8080';
+    || EXTRA_ORIGINS.includes(origin)
+    || (origin.endsWith('.aevum-web-d75.pages.dev') || origin === 'https://aevum-web-d75.pages.dev');
   if (!ok) return null;
   return {
     'Access-Control-Allow-Origin': origin,
@@ -147,6 +150,7 @@ export default {
       if (action === 'register') return json(await doRegister(body, db), cors);
       if (action === 'auth_google') return json(await authGoogle(body, db, env), cors);
       if (action === 'login') return json(await doLogin(body, db), cors);
+      if (action === 'programs') return json(await listPrograms(db), cors);
 
       // Auth check
       const auth = await authenticate(request, db);
@@ -190,6 +194,7 @@ export default {
         case 'rules':      return json(await getRules(userId, db), cors);
         case 'config':     return json(await getConfig(db), cors);
         case 'phases':     return json(await getPhases(db), cors);
+        case 'phase_transitions': return json(await getPhaseTransitions(userId, db), cors);
         case 'messages':   return json(await getMessages(db), cors);
         case 'recipes':    return json(await getRecipes(db), cors);
         case 'fitness':    return json(await getFitness(db), cors);
@@ -203,6 +208,8 @@ export default {
         case 'estimate':   return json(await estimateMeal(userId, body, db, env), cors);
         case 'foodcheck':  return json(await foodCheck(body, db, env), cors);
         case 'shoplist':   return json(await shopList(body, env), cors);
+        case 'set_program': return json(await setProgram(userId, body, db), cors);
+        case 'add_phase_transition': return json(await addPhaseTransition(userId, body, db), cors);
         default: return json({ error: 'Unknown action' }, cors, 400);
       }
     } catch (err) {
@@ -221,6 +228,36 @@ function dobToAge(dob) {
   return (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) ? a - 1 : a;
 }
 
+const ACT_DEFAULTS = {
+  labels: ['sedentary', 'light', 'moderate', 'active', 'extra'],
+  factors: [1.2, 1.375, 1.55, 1.725, 1.9]
+};
+
+/** Resolve activity input to numeric factor.
+ *  Accepts numeric string ("1.725") or label ("moderate").
+ *  Reads act_labels/activity_factors from config DB; falls back to defaults. */
+async function resolveActivity(actInput, db) {
+  const n = parseFloat(actInput);
+  if (!isNaN(n) && n > 0 && n < 10) return n; // already numeric
+
+  // Read label/factor mapping from config
+  let labels = ACT_DEFAULTS.labels;
+  let factors = ACT_DEFAULTS.factors;
+  try {
+    const rows = await db.prepare(
+      "SELECT key, value FROM config WHERE key IN ('act_labels', 'activity_factors')"
+    ).all();
+    for (const r of rows.results || []) {
+      if (r.key === 'act_labels') labels = r.value.split(',').map(s => s.trim().toLowerCase());
+      if (r.key === 'activity_factors') factors = r.value.split(',').map(Number);
+    }
+  } catch { /* use defaults */ }
+
+  const label = String(actInput || '').trim().toLowerCase();
+  const idx = labels.findIndex(l => l === label);
+  return factors[idx >= 0 ? idx : 2] ?? 1.55;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // ROUTE HANDLERS
 // ═══════════════════════════════════════════════════════════════
@@ -235,7 +272,7 @@ async function doRegister(body, db) {
   const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
-  const act = parseFloat(body.act) || 1.55;
+  const act = await resolveActivity(body.act, db);
   const target_kg = parseFloat(body.target_kg) || null;
   if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
@@ -347,7 +384,7 @@ async function completeProfile(userId, body, db) {
   const age = dob ? dobToAge(dob) : (parseInt(body.age) || 0);
   const height = parseFloat(body.height) || 0;
   const weight = parseFloat(body.weight) || 0;
-  const act = parseFloat(body.act) || 1.55;
+  const act = await resolveActivity(body.act, db);
   const target_kg = parseFloat(body.target_kg) || null;
   if (!age || !height || !weight) return { error: 'dob/age, height, weight required' };
 
@@ -377,7 +414,8 @@ async function updateProfile(userId, body, db) {
         sets.push('dob = ?'); vals.push(body.dob);
         sets.push('age = ?'); vals.push(dobToAge(body.dob));
       } else if (key === 'act') {
-        sets.push('activity = ?'); vals.push(parseFloat(body.act));
+        const actFactor = await resolveActivity(body.act, db);
+        sets.push('activity = ?'); vals.push(actFactor);
       } else if (key === 'height') {
         sets.push('height = ?'); vals.push(parseFloat(body.height));
       } else if (key === 'target_kg') {
@@ -386,15 +424,30 @@ async function updateProfile(userId, body, db) {
         sets.push('name = ?'); vals.push(String(body.name).trim());
       } else if (key === 'phase_mode') {
         const pm = String(body.phase_mode).trim();
-        if (['maintenance', 'recomposition'].includes(pm)) {
+        if (['maintenance', 'recomposition', 'tracker', 'keto', 'weight_loss'].includes(pm)) {
           sets.push('phase_mode = ?'); vals.push(pm);
         }
       }
     }
   }
   if (!sets.length) return { error: 'nothing to update' };
+
+  // Read old phase_mode before updating (for transition record)
+  let oldPhaseMode = null;
+  const newPhaseMode = sets.some(s => s.startsWith('phase_mode ')) ? body.phase_mode : null;
+  if (newPhaseMode) {
+    const cur = await db.prepare('SELECT phase_mode FROM users WHERE id = ?').bind(userId).first();
+    oldPhaseMode = cur?.phase_mode || '';
+  }
+
   vals.push(userId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+
+  // Record phase transition if phase_mode changed
+  if (newPhaseMode && oldPhaseMode !== newPhaseMode) {
+    await recordPhaseTransition(userId, oldPhaseMode, newPhaseMode, db);
+  }
+
   // Recompute TDEE only when body-comp fields changed (not phase_mode or name alone)
   const tdeeFields = ['sex', 'dob', 'height', 'target_kg', 'activity'];
   const bodyChanged = sets.some(s => tdeeFields.some(f => s.startsWith(f + ' ')));
@@ -444,9 +497,27 @@ async function getProfile(userId, db) {
       maintenance_diet: row.maintenance_diet || '',
       phase_mode: row.phase_mode || '',
       program: !!row.program,
+      program_id: row.program_id || 'aevum',
       notes: row.notes || ''
     }
   };
+}
+
+// ─── Programs ───────────────────────────────────────────────
+async function listPrograms(db) {
+  const rows = await db.prepare('SELECT * FROM programs WHERE is_active = 1 ORDER BY sort_order').all();
+  return { programs: rows.results || [] };
+}
+
+async function setProgram(userId, body, db) {
+  const programId = String(body.program_id || '').trim();
+  if (!programId) return { error: 'program_id required' };
+  // Verify program exists
+  const prog = await db.prepare('SELECT id FROM programs WHERE id = ? AND is_active = 1').bind(programId).first();
+  if (!prog) return { error: 'invalid program_id' };
+  const startDate = new Date().toISOString().slice(0, 10);
+  await db.prepare('UPDATE users SET program_id = ?, program_start_date = ? WHERE id = ?').bind(programId, startDate, userId).run();
+  return { ok: true, program_id: programId, start_date: startDate };
 }
 
 // ─── Sync (upsert daily log) ─────────────────────────────────
@@ -458,8 +529,8 @@ async function syncRow(userId, body, db) {
       serum_am, serum_pm, kcal, protein, fat, carbs, water_ml,
       exercise, exercise_kcal, energy, hunger, sleep, notes, day_json, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(user_id, day) DO UPDATE SET
-      phase=excluded.phase, date=excluded.date, weight=excluded.weight,
+    ON CONFLICT(user_id, date) DO UPDATE SET
+      day=excluded.day, phase=excluded.phase, weight=excluded.weight,
       waist=excluded.waist, serum_am=excluded.serum_am, serum_pm=excluded.serum_pm,
       kcal=excluded.kcal, protein=excluded.protein, fat=excluded.fat,
       carbs=excluded.carbs, water_ml=excluded.water_ml,
@@ -483,9 +554,9 @@ async function syncRow(userId, body, db) {
 // ─── Get days (restore) ──────────────────────────────────────
 async function getDays(userId, db) {
   const rows = await db.prepare(
-    'SELECT day, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY day'
+    'SELECT day, date, day_json, updated_at, phase FROM daily_logs WHERE user_id = ? ORDER BY date'
   ).bind(userId).all();
-  return { days: rows.results.map(r => ({ day: r.day, day_json: r.day_json || '', updated_at: r.updated_at || '', phase: r.phase || '' })) };
+  return { days: rows.results.map(r => ({ day: r.day, date: r.date || '', day_json: r.day_json || '', updated_at: r.updated_at || '', phase: r.phase || '' })) };
 }
 
 // ─── Meal plan ───────────────────────────────────────────────
@@ -506,6 +577,43 @@ async function getConfig(db) {
 async function getPhases(db) {
   const rows = await db.prepare('SELECT * FROM phases ORDER BY sort_order').all();
   return { phases: rows.results };
+}
+
+async function getPhaseTransitions(userId, db) {
+  const rows = await db.prepare(
+    'SELECT id, from_phase, to_phase, day, date, reason FROM phase_transitions WHERE user_id = ? ORDER BY day ASC'
+  ).bind(userId).all();
+  return { transitions: rows.results };
+}
+
+async function addPhaseTransition(userId, body, db) {
+  const fromPhase = String(body.from_phase || '').trim();
+  const toPhase = String(body.to_phase || '').trim();
+  const day = parseInt(body.day);
+  const date = String(body.date || '').trim();
+  const reason = body.reason ? String(body.reason).trim() : null;
+  if (!fromPhase || !toPhase || !day || !date) return { error: 'from_phase, to_phase, day, date required' };
+  await db.prepare(
+    'INSERT INTO phase_transitions (user_id, from_phase, to_phase, day, date, reason) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(userId, fromPhase, toPhase, day, date, reason).run();
+  return { ok: true };
+}
+
+/** Helper: insert a phase_transition record when phase_mode changes */
+async function recordPhaseTransition(userId, oldMode, newMode, db) {
+  if (!oldMode || !newMode || oldMode === newMode) return;
+  // Compute current day number from start_date
+  const user = await db.prepare('SELECT start_date FROM users WHERE id = ?').bind(userId).first();
+  const startDate = user?.start_date;
+  let day = 1;
+  let date = new Date().toISOString().slice(0, 10);
+  if (startDate) {
+    const diff = Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000);
+    day = Math.max(1, diff + 1);
+  }
+  await db.prepare(
+    'INSERT INTO phase_transitions (user_id, from_phase, to_phase, day, date, reason) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(userId, oldMode, newMode, day, date, 'mode_change').run();
 }
 
 // ─── Messages ────────────────────────────────────────────────
@@ -1086,17 +1194,26 @@ async function estimateMeal(userId, body, db, env) {
   const workerBody = { action: 'estimate', phase, description: body.description || '', policy };
   if (body.image) workerBody.image = body.image;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(workerBody)
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workerBody)
+    });
+  } catch (fetchErr) {
+    return { error: 'AI worker unreachable: ' + String(fetchErr.message || fetchErr) };
+  }
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    return { error: 'AI worker HTTP ' + res.status + (errText ? ': ' + errText.slice(0, 200) : '') };
+  }
   try {
     const data = await res.json();
     if (data.error) return { error: data.error, detail: data.detail || '' };
     return data;
   } catch {
-    return { error: 'worker parse error' };
+    return { error: 'AI worker returned invalid JSON' };
   }
 }
 
@@ -1238,7 +1355,8 @@ async function adminImport(body, db) {
 async function adminUpdateUser(body, db) {
   const targetId = String(body.id || '').toLowerCase();
   if (!targetId) return { error: 'id required' };
-  const allowed = ['program', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name'];
+  const allowed = ['program', 'program_id', 'activation_days', 'loading_days', 'transition_days', 'stabilization_days', 'start_date', 'notes', 'current_target_kcal', 'maintenance_mode', 'maintenance_diet', 'stab_target_weight', 'target_kg', 'sex', 'dob', 'age', 'height', 'start_weight', 'act', 'email', 'name', 'phase_mode'];
+  const validPhaseModes = ['maintenance', 'recomposition', 'tracker', 'keto', 'weight_loss'];
 
   // Auto-set start_date when activating program and no start_date exists
   if (body.program === 1 && !body.start_date) {
@@ -1252,13 +1370,65 @@ async function adminUpdateUser(body, db) {
   const vals = [];
   for (const key of allowed) {
     if (body[key] !== undefined) {
-      sets.push(`${key} = ?`);
-      vals.push(body[key]);
+      if (key === 'sex') {
+        // Normalize: lowercase, validate
+        const s = String(body.sex).toLowerCase();
+        if (s !== 'm' && s !== 'f') continue;
+        sets.push('sex = ?'); vals.push(s);
+      } else if (key === 'dob') {
+        // Write dob and recompute age
+        sets.push('dob = ?'); vals.push(body.dob);
+        sets.push('age = ?'); vals.push(dobToAge(body.dob));
+      } else if (key === 'age') {
+        // Skip standalone age writes (always derived from dob)
+        continue;
+      } else if (key === 'act') {
+        // Resolve label to numeric factor, write to correct column
+        const actFactor = await resolveActivity(body.act, db);
+        sets.push('activity = ?'); vals.push(actFactor);
+      } else if (key === 'phase_mode') {
+        const pm = String(body.phase_mode).trim();
+        if (!validPhaseModes.includes(pm)) continue;
+        sets.push('phase_mode = ?'); vals.push(pm);
+      } else {
+        sets.push(`${key} = ?`);
+        vals.push(body[key]);
+      }
     }
   }
   if (!sets.length) return { error: 'nothing to update' };
+
+  // Read old phase_mode before updating (for transition record)
+  let oldPhaseMode = null;
+  const newPhaseMode = sets.some(s => s.startsWith('phase_mode ')) ? body.phase_mode : null;
+  if (newPhaseMode) {
+    const cur = await db.prepare('SELECT phase_mode FROM users WHERE id = ?').bind(targetId).first();
+    oldPhaseMode = cur?.phase_mode || '';
+  }
+
   vals.push(targetId);
   await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run();
+
+  // Record phase transition if phase_mode changed
+  if (newPhaseMode && oldPhaseMode !== newPhaseMode) {
+    await recordPhaseTransition(targetId, oldPhaseMode, newPhaseMode, db);
+  }
+
+  // Recompute TDEE when body-comp fields changed
+  const tdeeFields = ['sex', 'dob', 'height', 'target_kg', 'activity', 'start_weight'];
+  const bodyChanged = sets.some(s => tdeeFields.some(f => s.startsWith(f + ' ')));
+  if (bodyChanged) {
+    const row = await db.prepare('SELECT * FROM users WHERE id = ?').bind(targetId).first();
+    if (row && row.sex && row.height && (row.dob || row.age) && row.start_weight) {
+      const age = row.dob ? dobToAge(row.dob) : row.age;
+      const act = parseFloat(row.activity) || 1.55;
+      const s = row.sex === 'm' ? 5 : -161;
+      const tw = parseFloat(row.target_kg) || parseFloat(row.start_weight);
+      const tdee = Math.round((10 * tw + 6.25 * row.height - 5 * age + s) * act);
+      await db.prepare('UPDATE users SET current_target_kcal = ? WHERE id = ?').bind(tdee, targetId).run();
+    }
+  }
+
   return { ok: true };
 }
 
