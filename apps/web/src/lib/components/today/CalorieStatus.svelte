@@ -1,4 +1,4 @@
-<!-- v3.4.0 2026-10-26 — #37f: remaining kcal hero, silent bank, tap-to-explain -->
+<!-- v3.5.0 2026-10-27 — #80: eaten kcal hero, target/remaining subtitle -->
 <script lang="ts">
 	import { get } from 'svelte/store';
 	import { profile } from '$lib/stores/auth';
@@ -53,12 +53,15 @@
 
 <div class="status">
 	<div class="hero">
+		<span class="big num">{t.kcal.toLocaleString()}</span>
+		<span class="unit">kcal eaten</span>
+	</div>
+	<div class="hero-sub">
 		{#if overBy > 0}
-			<span class="big num over">{overBy.toLocaleString()}</span>
-			<span class="unit over">kcal over</span>
+			<span class="sub-over">{overBy.toLocaleString()} over</span>
+			<span class="sub-target">({target.toLocaleString()} target)</span>
 		{:else}
-			<span class="big num">{remaining.toLocaleString()}</span>
-			<span class="unit">kcal left</span>
+			<span class="sub-remain">{remaining.toLocaleString()} of {target.toLocaleString()} left</span>
 		{/if}
 	</div>
 
@@ -71,7 +74,7 @@
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span class="target-tap" onclick={() => { if (hasBank) showHint = !showHint; }}>
-					{t.kcal.toLocaleString()} of {target.toLocaleString()} kcal
+					{barPct.toFixed(0)}%
 					{#if hasBank && bankAdj !== 0}
 						<span class="adj-dot {bankAdj > 0 ? 'pos' : 'neg'}"></span>
 					{/if}
@@ -94,7 +97,10 @@
 	.hero { display: flex; align-items: baseline; gap: 8px; }
 	.hero .big { font-family: var(--serif); font-size: 40px; font-weight: 500; line-height: 1; }
 	.hero .unit { font-size: 13px; color: var(--muted); }
-	.hero .over { color: var(--over, #A13024); }
+	.hero-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+	.hero-sub .sub-over { color: var(--over, #A13024); font-weight: 500; }
+	.hero-sub .sub-target { color: var(--muted); margin-left: 4px; }
+	.hero-sub .sub-remain { color: var(--ok, #2d6a4f); }
 	.calbar-wrap { margin-top: 12px; }
 	.calbar { height: 8px; border-radius: 6px; background: var(--line-soft); overflow: hidden; }
 	.calbar > span { display: block; height: 100%; border-radius: 6px; background: var(--gold); transition: width 0.35s ease; }
