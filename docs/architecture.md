@@ -1,6 +1,6 @@
 # AEVUM Architecture
 
-> Single source of truth for developers. Updated 2026-10-27.
+> Single source of truth for developers. Updated 2026-10-29.
 > Business docs (brand, compliance, briefs, copy) live in the Claude project.
 
 ---

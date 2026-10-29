@@ -1,7 +1,7 @@
 # AEVUM Domain Logic
 
 > Single source of truth for phase model, rules engine, calorie logic, compliance, and data shapes.
-> Updated 2026-10-21.
+> Updated 2026-10-29.
 
 ---
 
