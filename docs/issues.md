@@ -93,6 +93,7 @@
 | #77  | V3 hardening: UserProfile type safety | DONE | 08262ee | Added program_start_date to UserProfile interface (was accessed via unsafe casts). |
 | #81  | Calorie bank returns 0 for standalone programs | DONE | 5a3ce27 | phaseFor() fell through to sharedPhaseFor() for recomposition (duration_default=NULL, $list.length=1), returning 'maintenance' instead of 'recomposition'. Fix: standalone is_program phases with no duration treated as indefinite. |
 | #81a | Migration 0020 missed recomposition bank config | DONE | 5a3ce27 | 0020 updated maintenance/tracker bank_window/clamp but skipped recomposition. Fix: migration 0021 sets recomposition to window=7, clamp 0.60/1.30. |
+| #82  | Chrome auto-translate breaks day navigation | DONE | ce0ff91 | Chrome replaces DOM text nodes when translating, breaking Svelte 5 reactivity. Fix: `translate="no"` on all reactive values (dates, numbers, macros). Static labels stay translatable. v3.2.2. |
 
 ---
 
@@ -216,7 +217,7 @@ Pull `main` and run `deploy.ps1`, then test:
 - Deploy only from local machine (cloud container blocked from Cloudflare API)
 - V3 calorie engine: baseTarget() + bankAdjustment() + effectiveTarget(). Supports `fixed` and `tdee_mult` modes. Bank logic in `packages/shared/src/calorie-bank.ts` (29 tests). Debug logging (`[BANK]`) in calorie.ts bankAdjustment() for verification (remove after confirming fix).
 - Bank adjustment active when phase has calorie_bank=1. Asymmetric: overspend 1:1, underspend capped 200 kcal/day. Safety clamps: floor 60% TDEE, ceiling 130% base target.
-- Current APP_VERSION: v3.2.1
+- Current APP_VERSION: v3.2.2
 - calorie.ts v3.3.0: weekly verdict + bank display (steps 7-8 of #37c)
 - Programs table has 4 rows (aevum, maintenance, recomposition, keto), all is_active=1 (confirmed via D1)
 - Migration 0019 fixed 0018's duplicate phase issue (deleted _main variants, assigned program_id to existing phases)
