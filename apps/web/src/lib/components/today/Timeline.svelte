@@ -117,7 +117,7 @@
 			{:else}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="meal-time" onclick={(e) => startEditTime(oi, e)}>{meal.time || (meal.ts ? fmtTime(meal.ts) : '– –')}</div>
+				<div class="meal-time" translate="no" onclick={(e) => startEditTime(oi, e)}>{meal.time || (meal.ts ? fmtTime(meal.ts) : '– –')}</div>
 			{/if}
 				<div class="meal-body" class:open={isOpen} role="button" tabindex="0" onclick={() => toggleExpand(oi)} onkeydown={(e) => e.key === 'Enter' && toggleExpand(oi)}>
 					{#if noMacros}
@@ -130,7 +130,7 @@
 							<span class="meal-name">{meal.name || 'Meal'}</span>
 							<span class="mi-dot {st}"></span>
 						</div>
-						<div class="meal-macros">
+						<div class="meal-macros" translate="no">
 							<b class={kc > MEAL_KCAL ? 'over' : ''}>{kc}</b> kcal
 							<span class="mac">{pv}P</span>
 							<span class="mac" class:over={fv > MEAL_FAT}>{fv}F</span>
@@ -142,8 +142,8 @@
 									{@const f = itemFlag(it)}
 									<div class="mi">
 										<span class="mi-dot {f.cls}"></span>
-										<span class="mi-name">{it.name} {it.grams || 0}g</span>
-										<span class="mi-mac">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
+										<span class="mi-name">{it.name} <span translate="no">{it.grams || 0}g</span></span>
+										<span class="mi-mac" translate="no">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
 										<span class="mi-flag {f.cls}">{f.label}</span>
 									</div>
 								{/each}
@@ -154,7 +154,7 @@
 							{meal.name || 'Meal'}
 							{#if hasItems}<span class="meal-chevron">▶</span>{/if}
 						</div>
-						<div class="meal-macros">
+						<div class="meal-macros" translate="no">
 							<b>{Math.round(meal.kcal || 0)}</b> kcal
 							<span class="sep">·</span>{Math.round(meal.protein || 0)}P
 							<span class="sep">·</span>{Math.round(meal.fat || 0)}F
@@ -164,8 +164,8 @@
 							<div class="mi-list" class:collapsed={!isOpen}>
 								{#each items as it}
 									<div class="mi">
-										<span class="mi-name">{it.name} {it.grams || 0}g</span>
-										<span class="mi-mac">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
+										<span class="mi-name">{it.name} <span translate="no">{it.grams || 0}g</span></span>
+										<span class="mi-mac" translate="no">{Math.round(it.kcal || 0)} · {Math.round(it.protein || 0)}P {Math.round(it.fat || 0)}F {Math.round(it.carbs || 0)}C</span>
 									</div>
 								{/each}
 							</div>

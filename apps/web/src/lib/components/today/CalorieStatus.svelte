@@ -53,15 +53,15 @@
 
 <div class="status">
 	<div class="hero">
-		<span class="big num">{t.kcal.toLocaleString()}</span>
+		<span class="big num" translate="no">{t.kcal.toLocaleString()}</span>
 		<span class="unit">kcal eaten</span>
 	</div>
 	<div class="hero-sub">
 		{#if overBy > 0}
-			<span class="sub-over">{overBy.toLocaleString()} over</span>
-			<span class="sub-target">({target.toLocaleString()} target)</span>
+			<span class="sub-over"><span translate="no">{overBy.toLocaleString()}</span> over</span>
+			<span class="sub-target">(<span translate="no">{target.toLocaleString()}</span> target)</span>
 		{:else}
-			<span class="sub-remain">{remaining.toLocaleString()} of {target.toLocaleString()} left</span>
+			<span class="sub-remain"><span translate="no">{remaining.toLocaleString()}</span> of <span translate="no">{target.toLocaleString()}</span> left</span>
 		{/if}
 	</div>
 
@@ -74,12 +74,12 @@
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span class="target-tap" onclick={() => { if (hasBank) showHint = !showHint; }}>
-					{barPct.toFixed(0)}%
+					<span translate="no">{barPct.toFixed(0)}%</span>
 					{#if hasBank && bankAdj !== 0}
 						<span class="adj-dot {bankAdj > 0 ? 'pos' : 'neg'}"></span>
 					{/if}
 				</span>
-				<span>{t.exKcal > 0 ? `${t.exKcal} exercise` : ''}</span>
+				<span translate="no">{t.exKcal > 0 ? `${t.exKcal} exercise` : ''}</span>
 			</div>
 			{#if showHint}
 				<div class="hint">Your target adapts weekly based on what you ate.</div>

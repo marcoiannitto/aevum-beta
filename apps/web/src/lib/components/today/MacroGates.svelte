@@ -71,7 +71,7 @@
 			<div class="gate {g.plain ? 'protein-target' : ''} {cls === '' && !g.plain ? 'prot-ok' : cls}">
 				<div class="g-top">
 					<span class="g-name">{g.name}</span>
-					<span class="g-val num">
+					<span class="g-val num" translate="no">
 						{g.value}
 						{#if tgt}
 							<em> /{tgt}g</em>

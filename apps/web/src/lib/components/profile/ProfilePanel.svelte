@@ -38,7 +38,7 @@
 		return $programs.find(p => p.id === pid) || null;
 	});
 
-	const APP_VERSION = 'v3.2.1';
+	const APP_VERSION = 'v3.2.2';
 
 	function startEdit() {
 		const p = get(profile);

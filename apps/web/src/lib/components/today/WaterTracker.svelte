@@ -81,11 +81,11 @@
 			</svg>
 		</div>
 		<div class="water-info">
-			<div class="w-amount">
+			<div class="w-amount" translate="no">
 				<span class="num">{fmtLitres(litres)}</span>
 				<span class="w-unit"> / {goalL.toFixed(1)} L</span>
 			</div>
-			<div class="w-glasses">{glasses} of {goalGlasses} glasses</div>
+			<div class="w-glasses" translate="no">{glasses} of {goalGlasses} glasses</div>
 		</div>
 		<div class="water-btns">
 			<button class="w-minus" onclick={removeGlass} disabled={glasses <= 0}>−</button>

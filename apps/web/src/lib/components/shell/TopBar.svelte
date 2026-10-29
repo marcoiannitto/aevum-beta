@@ -56,10 +56,10 @@
 	<div class="daybar">
 		<button class="arrow" onclick={onPrevDay} aria-label="Previous day">‹</button>
 		<div class="center">
-			<div class="dnum">{fmtShort($currentDate)}</div>
+			<div class="dnum" translate="no">{fmtShort($currentDate)}</div>
 			{#if $isProgram && dayNum > 0}
-				<div class="dday">Day {dayNum}</div>
-				<button class="phase tappable" style="color:{phase.color}">{phase.name}</button>
+				<div class="dday">Day <span translate="no">{dayNum}</span></div>
+				<button class="phase tappable" style="color:{phase.color}" translate="no">{phase.name}</button>
 			{/if}
 			{#if !isToday}
 				<button class="today-jump" onclick={onGoToday}>Back to today</button>

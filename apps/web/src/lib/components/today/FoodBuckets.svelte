@@ -122,7 +122,7 @@
 							<div class="pip"><span style="width:{(frac * 100).toFixed(0)}%"></span></div>
 						{/each}
 					</div>
-					<span class="bkt-meals">{mealsFmt(bkt.used)} of {MEALS} meals</span>
+					<span class="bkt-meals" translate="no">{mealsFmt(bkt.used)} of {MEALS} meals</span>
 				</div>
 			{/each}
 		</div>
@@ -160,7 +160,7 @@
 						</div>
 					{/each}
 				{/if}
-				<div class="bkt-totals"><b>{t.kcal}</b> kcal<span class="sep">·</span>{t.protein}P<span class="sep">·</span>{t.fat}F<span class="sep">·</span>{t.carbs}C</div>
+				<div class="bkt-totals" translate="no"><b>{t.kcal}</b> kcal<span class="sep">·</span>{t.protein}P<span class="sep">·</span>{t.fat}F<span class="sep">·</span>{t.carbs}C</div>
 			</div>
 		{:else if hasItems}
 			<div class="bkt-more">Tap for detail</div>
