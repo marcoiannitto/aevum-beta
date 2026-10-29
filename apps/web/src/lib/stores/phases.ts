@@ -200,6 +200,10 @@ export function phaseFor(dayNum: number, prof?: Record<string, unknown> | null):
 				if (dayNum <= cum) {
 					return { key: ph.key, name: ph.name, color: ph.key === 'maintenance' ? MAINT_COLOR : ph.color };
 				}
+			} else if (ph.is_program && $list.length === 1) {
+				// Standalone program (recomposition, maintenance, keto): indefinite duration.
+				// The user stays in this phase forever — return it directly.
+				return { key: ph.key, name: ph.name, color: ph.key === 'maintenance' ? MAINT_COLOR : ph.color };
 			} else {
 				// Post-program: use shared phaseFor with transitions support
 				const key = sharedPhaseFor(dayNum, {

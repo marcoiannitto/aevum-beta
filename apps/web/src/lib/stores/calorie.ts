@@ -185,11 +185,12 @@ function buildHistory(windowDays: number): DayRecord[] {
  *  Returns 0 when bank is not active for the current phase. */
 export function bankAdjustment(dayNum: number): number {
 	const prof = get(profile);
-	if (!prof) return 0;
+	if (!prof) { console.debug('[BANK] no profile'); return 0; }
 
 	const ph = phaseFor(dayNum, prof);
 	const reg = phReg(ph.key);
-	if (!reg) return 0;
+	console.debug('[BANK] dayNum=%d phase=%s reg=%o', dayNum, ph.key, reg ? { calorie_bank: reg.calorie_bank, bank_window: reg.bank_window, bank_grace_days: reg.bank_grace_days, target_mode: reg.target_mode } : null);
+	if (!reg) { console.debug('[BANK] no registry for phase=%s', ph.key); return 0; }
 
 	// Check if bank should be active
 	const progId = currentProgramId();
@@ -203,7 +204,9 @@ export function bankAdjustment(dayNum: number): number {
 	const isRamp = reg.target_mode === 'ramp_then_hold'
 		&& dayInCurrentPhase(dayNum, prof) <= (reg.ramp_days ?? 4);
 
-	if (!bankActive(todayStr, psd, graceDays, !!reg.calorie_bank, isRamp)) {
+	const isActive = bankActive(todayStr, psd, graceDays, !!reg.calorie_bank, isRamp);
+	console.debug('[BANK] bankActive=%s today=%s psd=%s grace=%d hasBank=%s isRamp=%s progId=%s', isActive, todayStr, psd, graceDays, !!reg.calorie_bank, isRamp, progId);
+	if (!isActive) {
 		return 0;
 	}
 
@@ -216,7 +219,10 @@ export function bankAdjustment(dayNum: number): number {
 	};
 
 	const history = buildHistory(windowDays);
-	return computeBank(history, todayStr, ph.key, progId, opts);
+	console.debug('[BANK] history len=%d records=%o', history.length, history.map(r => ({ date: r.date, phase: r.phase, progId: r.programId, intake: r.intake, base: r.baseTarget })));
+	const result = computeBank(history, todayStr, ph.key, progId, opts);
+	console.debug('[BANK] computeBank result=%d (phase=%s, progId=%s)', result, ph.key, progId);
+	return result;
 }
 
 /** Effective target (Layer 1 + Layer 2): base target adjusted by bank.

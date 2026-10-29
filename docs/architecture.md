@@ -79,7 +79,7 @@ aevum-app-v3/
 ```
 v2-api/                         # Backend Worker (still in use, shared with V3)
 ├── src/index.js                # Entire backend (single Worker file)
-├── migrations/                 # D1 migration files (0001-0020)
+├── migrations/                 # D1 migration files (0001-0021)
 └── wrangler.toml               # Worker config + D1 binding
 ```
 
@@ -141,6 +141,7 @@ v2-api/                         # Backend Worker (still in use, shared with V3)
 | `0018_programs.sql` | programs table (id, name, description, color, sort_order, is_active) | Applied |
 | `0019_fix_phases.sql` | Dedup phases, assign program_id to existing phases | Applied |
 | `0020_calorie_bank_columns.sql` | Add calorie engine columns to phases: target_mode, target_fixed_lo/hi, ramp_from, ramp_days, ramp_pct, bank_window, bank_clamp_lo/hi, bank_grace_days, weekly_tolerance, weight_goal, weight_goal_rate, drift_*, gate_fat, gate_carb | Applied |
+| `0021_recomposition_bank_config.sql` | Fix recomposition bank config missed by 0020: bank_window=7, clamp 0.60/1.30 | Pending |
 
 ---
 

@@ -35,6 +35,10 @@ Next 18 days               → stabilization
 Beyond                     → phase_mode (maintenance/recomposition/tracker)
 ```
 
+Standalone programs (maintenance, recomposition, keto) have `is_program=1` and `duration_default=NULL`.
+Frontend `phaseFor()` treats these as indefinite: when `$list` has a single entry with no duration, it
+returns that phase directly instead of falling through to `sharedPhaseFor()`.
+
 Key functions:
 - `phaseFor(dayNum, profile)` returns `{ key, name, color, dayInPhase, totalDaysInPhase }`
 - `phaseBands(profile)` returns array of `{ key, from, to }` for timeline rendering

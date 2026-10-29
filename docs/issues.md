@@ -1,7 +1,7 @@
 # AEVUM Tracker V3 -- Issue Tracker
 
 > Branch: `main`
-> Last updated: 2026-10-27
+> Last updated: 2026-10-29
 
 ## Status legend
 
@@ -91,6 +91,8 @@
 | #75  | V3 hardening: reject empty-date syncs | DONE | 08262ee | syncRow() rejects calls without date. Blocks V2-style syncs after retirement. |
 | #76  | V3 hardening: remove dead effTodayISO() | DONE | 08262ee | Had UTC bug (.toISOString), zero callers. Removed to prevent future misuse. |
 | #77  | V3 hardening: UserProfile type safety | DONE | 08262ee | Added program_start_date to UserProfile interface (was accessed via unsafe casts). |
+| #81  | Calorie bank returns 0 for standalone programs | DONE | | phaseFor() fell through to sharedPhaseFor() for recomposition (duration_default=NULL, $list.length=1), returning 'maintenance' instead of 'recomposition'. Fix: standalone is_program phases with no duration treated as indefinite. |
+| #81a | Migration 0020 missed recomposition bank config | DONE | | 0020 updated maintenance/tracker bank_window/clamp but skipped recomposition. Fix: migration 0021 sets recomposition to window=7, clamp 0.60/1.30. |
 
 ---
 
