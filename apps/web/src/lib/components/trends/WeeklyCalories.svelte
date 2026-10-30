@@ -1,4 +1,4 @@
-<!-- v3.0.0 2026-10-26 — #37f: dot-grid compliance view. Colored dots per day, week rows, DB rules. -->
+<!-- v3.1.0 2026-10-30 — directional dot colors: blue=under, green=on track, red=over. Two severity tiers per side from DB rules. -->
 <script lang="ts">
 	import { ruleFor } from '$lib/stores/rules';
 
@@ -26,7 +26,7 @@
 		return d.toISOString().slice(0, 10);
 	}
 
-	/** Dot color from DB rules: green/gold/red based on phase bands */
+	/** Dot color from DB rules: blue=under, green=on track, red=over. Two tiers per side. */
 	function dotColor(d: CalDay): string {
 		if (isLoading(d.phase)) return 'var(--muted, #ccc)';
 		if (d.target <= 0) return 'var(--muted, #ccc)';
@@ -37,8 +37,8 @@
 		const aLo = rule?.amber_lo ?? 75;
 		const aHi = rule?.amber_hi ?? 115;
 		if (pct >= gLo && pct <= gHi) return 'var(--green, #2d6a4f)';
-		if (pct >= aLo && pct <= aHi) return 'var(--gold, #C8973A)';
-		return 'var(--over, #A13024)';
+		if (pct < gLo) return pct >= aLo ? 'var(--under-mild, #5B93C4)' : 'var(--under-deep, #2C5F8A)';
+		return pct <= aHi ? 'var(--over-mild, #D4874D)' : 'var(--over, #A13024)';
 	}
 
 	/** Short label for the week's verdict */
@@ -56,8 +56,8 @@
 		const deltaStr = `${sign}${avgDelta.toLocaleString()}`;
 
 		if (avgPct >= gLo && avgPct <= gHi) return { text: `On track (${deltaStr})`, color: 'var(--green, #2d6a4f)' };
-		if (avgPct < gLo) return { text: `Under (${deltaStr})`, color: avgPct < (rule?.amber_lo ?? 75) ? 'var(--over, #A13024)' : 'var(--gold, #C8973A)' };
-		return { text: `Over (${deltaStr})`, color: avgPct > aHi ? 'var(--over, #A13024)' : 'var(--gold, #C8973A)' };
+		if (avgPct < gLo) return { text: `Under (${deltaStr})`, color: avgPct < (rule?.amber_lo ?? 75) ? 'var(--under-deep, #2C5F8A)' : 'var(--under-mild, #5B93C4)' };
+		return { text: `Over (${deltaStr})`, color: avgPct > aHi ? 'var(--over, #A13024)' : 'var(--over-mild, #D4874D)' };
 	}
 
 	const todayStr = new Date().toISOString().slice(0, 10);
@@ -125,9 +125,11 @@
 
 	<!-- Legend -->
 	<div class="legend">
+		<span class="leg-item"><span class="leg-dot" style="background:var(--under-deep, #2C5F8A)"></span>Way under</span>
+		<span class="leg-item"><span class="leg-dot" style="background:var(--under-mild, #5B93C4)"></span>Under</span>
 		<span class="leg-item"><span class="leg-dot" style="background:var(--green, #2d6a4f)"></span>On track</span>
-		<span class="leg-item"><span class="leg-dot" style="background:var(--gold, #C8973A)"></span>Off</span>
-		<span class="leg-item"><span class="leg-dot" style="background:var(--over, #A13024)"></span>Way off</span>
+		<span class="leg-item"><span class="leg-dot" style="background:var(--over-mild, #D4874D)"></span>Over</span>
+		<span class="leg-item"><span class="leg-dot" style="background:var(--over, #A13024)"></span>Way over</span>
 	</div>
 {/if}
 
