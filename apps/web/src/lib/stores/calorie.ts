@@ -231,20 +231,22 @@ export function effectiveTarget(dayNum: number, p?: UserProfile | null): number 
 	const base = baseTarget(dayNum, p);
 	const bank = bankAdjustment(dayNum);
 
-	if (bank === 0) return base;
+	if (bank === 0) { console.debug('[ET] bank=0, returning base=%d', base); return base; }
 
 	const prof = p ?? get(profile);
 	const tdee = liveTDEE(dayNum, prof);
 	const ph = phaseFor(dayNum, prof);
 	const reg = phReg(ph.key);
 
-	return clampTarget(
+	const result = clampTarget(
 		base,
 		bank,
 		tdee,
 		reg?.bank_clamp_lo ?? 0.60,
 		reg?.bank_clamp_hi ?? 1.30,
 	);
+	console.debug('[ET] base=%d bank=%d tdee=%d clampLo=%s clampHi=%s result=%d', base, bank, tdee, reg?.bank_clamp_lo, reg?.bank_clamp_hi, result);
+	return result;
 }
 
 /** Calorie bank value for UI display (tooltip, badge).
