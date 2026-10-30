@@ -150,6 +150,7 @@
 
 	<!-- DOW header -->
 	<div class="cal-head">
+		<span class="week-label"></span>
 		{#each DOW as d}
 			<span class="dow">{d}</span>
 		{/each}
@@ -160,7 +161,9 @@
 	{#each calWeeks as week}
 		{@const weekDays = week.cells.filter(c => c.data !== null).map(c => c.data!)}
 		{@const verdict = weekVerdict(weekDays)}
+		{@const monDay = week.cells[0].day}
 		<div class="cal-row">
+			<span class="week-label" translate="no">{monDay}</span>
 			<div class="cal-cells">
 				{#each week.cells as cell}
 					{#if cell.data}
@@ -237,6 +240,15 @@
 	}
 	.cal-head .verdict-col {
 		flex: 0 0 90px;
+	}
+
+	.week-label {
+		flex: 0 0 22px;
+		font-size: 10px;
+		color: var(--muted);
+		text-align: right;
+		padding-right: 4px;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.cal-row {
