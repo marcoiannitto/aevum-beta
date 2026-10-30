@@ -13,7 +13,7 @@ import { currentProgramId } from './programs';
 import { mifflinTDEE, dobToAge, computeBank, clampTarget, bankActive } from '@aevum/shared';
 import type { DayRecord, BankOpts } from '@aevum/shared';
 import { actFactors, actLabels } from './config';
-import { dateStr, programDayNum } from '$lib/helpers/date';
+import { dateStr, programDayNum, effToday } from '$lib/helpers/date';
 
 /** Resolve activity factor from profile: accepts numeric factor or string label */
 function resolveActivityFactor(act: string | number | undefined): number {
@@ -229,6 +229,12 @@ export function bankAdjustment(dayNum: number): number {
  *  Same signature as before so callers don't need changes. */
 export function effectiveTarget(dayNum: number, p?: UserProfile | null): number {
 	const base = baseTarget(dayNum, p);
+
+	// Bank only adjusts today's target, not historical days
+	const viewDate = dateStr(get(currentDate));
+	const todayDate = dateStr(effToday());
+	if (viewDate !== todayDate) return base;
+
 	const bank = bankAdjustment(dayNum);
 
 	if (bank === 0) { console.debug('[ET] bank=0, returning base=%d', base); return base; }
