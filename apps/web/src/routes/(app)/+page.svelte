@@ -7,7 +7,8 @@
 	import { get } from 'svelte/store';
 	import { profile, pid, isProgram, loadStoredProfile, saveProfile, type UserProfile } from '$lib/stores/auth';
 	import { hydrateFromBackend, migrateToDateKeys } from '$lib/stores/day';
-	import { currentDay, currentDate, dayData, loadDay, loadDate, saveDay, syncDay } from '$lib/stores/day';
+	import { currentDay, currentDate, dayData, loadDay, loadDate, saveDay, syncDay, setTargetStamper } from '$lib/stores/day';
+	import { effectiveTarget, baseTarget } from '$lib/stores/calorie';
 	import { phaseFor, loadPhases, totalDays } from '$lib/stores/phases';
 	import { loadConfig, cfg } from '$lib/stores/config';
 	import { loadRules } from '$lib/stores/rules';
@@ -78,6 +79,12 @@
 	// ── Boot sequence (maps to boot() from index.html) ──
 
 	async function boot() {
+		// Register target stamper (avoids circular import day ↔ calorie)
+		setTargetStamper((dayNum) => ({
+			effective: effectiveTarget(dayNum),
+			base: baseTarget(dayNum),
+		}));
+
 		// 1. Start with today's date from the phone
 		const today = effToday();
 		loadDate(today);

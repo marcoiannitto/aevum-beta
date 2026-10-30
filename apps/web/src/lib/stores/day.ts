@@ -179,6 +179,10 @@ export interface DayData {
 	phase?: string;
 	/** Program ID stamped at first save. Immutable once set. */
 	program_id?: string;
+	/** Effective target kcal (base + bank), stamped on every save. */
+	effective_target?: number;
+	/** Base target kcal (pre-bank), stamped on every save. */
+	base_target?: number;
 }
 
 // --- Stores ---
@@ -247,6 +251,12 @@ export function loadDate(date: Date): void {
 	loadDay(dayNum || 1);
 }
 
+/** Optional target stamper. Set by the app shell to avoid circular imports (day ↔ calorie). */
+let _targetStamper: ((dayNum: number) => { effective: number; base: number }) | null = null;
+export function setTargetStamper(fn: (dayNum: number) => { effective: number; base: number }): void {
+	_targetStamper = fn;
+}
+
 export function saveDay(silent = false): void {
 	const id = get(pid);
 	const day = get(dayData);
@@ -268,6 +278,13 @@ export function saveDay(silent = false): void {
 	if (!day.program_id) {
 		const p = get(profile) as Record<string, unknown> | null;
 		day.program_id = (p?.program_id as string) || 'aevum';
+	}
+
+	// Stamp calorie targets on every save (for historical accuracy)
+	if (_targetStamper) {
+		const targets = _targetStamper(num);
+		day.effective_target = targets.effective;
+		day.base_target = targets.base;
 	}
 
 	const ds = day.date;

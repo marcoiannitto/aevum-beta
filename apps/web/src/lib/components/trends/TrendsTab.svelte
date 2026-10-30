@@ -107,7 +107,7 @@
 
 				const t = totals(dd);
 				if (t.kcal > 0) {
-					const target = effectiveTarget(dayNum);
+					const target = dd.effective_target ?? effectiveTarget(dayNum);
 					calories.push({ day: dayNum, date: ds, kcal: t.kcal, target, phase: dd.phase || '' });
 				}
 			} catch { continue; }

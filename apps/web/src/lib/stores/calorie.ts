@@ -6,7 +6,7 @@
  */
 import { get } from 'svelte/store';
 import { profile, pid, K, type UserProfile } from './auth';
-import { type DayData, currentDate } from './day';
+import { type DayData, currentDate, dayData } from './day';
 import { phReg, phaseFor } from './phases';
 import { cfg } from './config';
 import { currentProgramId } from './programs';
@@ -163,10 +163,10 @@ function buildHistory(windowDays: number): DayRecord[] {
 			const dd = JSON.parse(raw) as DayData;
 			const kcal = (dd.meals || []).reduce((s, m) => s + (+(m.kcal || 0)), 0);
 
-			// Compute base target for that day
+			// Use stored base target if available, otherwise recompute
 			const dayNum = programDayNum(d);
 			if (!dayNum) continue;
-			const bt = baseTarget(dayNum);
+			const bt = dd.base_target ?? baseTarget(dayNum);
 
 			records.push({
 				date: ds,
@@ -230,10 +230,14 @@ export function bankAdjustment(dayNum: number): number {
 export function effectiveTarget(dayNum: number, p?: UserProfile | null): number {
 	const base = baseTarget(dayNum, p);
 
-	// Bank only adjusts today's target, not historical days
+	// Past days: use stored target if available
 	const viewDate = dateStr(get(currentDate));
 	const todayDate = dateStr(effToday());
-	if (viewDate !== todayDate) return base;
+	if (viewDate !== todayDate) {
+		const dd = get(dayData);
+		if (dd?.effective_target) return dd.effective_target;
+		return base; // fallback for days saved before target stamping
+	}
 
 	const bank = bankAdjustment(dayNum);
 
