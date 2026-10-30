@@ -145,7 +145,7 @@ const PHASE_COLUMNS = [
   'drift_enabled', 'target_mode', 'calorie_mode', 'calorie_cut',
   'ramp_from', 'ramp_days', 'ramp_pct', 'bank_window', 'bank_clamp_lo',
   'bank_clamp_hi', 'drift_review_days', 'drift_step_kcal', 'drift_band_kg',
-  'drift_floor_kcal', 'bank_grace_days', 'weekly_tolerance', 'weight_goal',
+  'drift_floor_kcal', 'weight_goal',
   'weight_goal_rate', 'inherits_rules_from', 'food_rule_line', 'fitness_intro',
   'program_id', 'explainer_json',
 ] as const;
