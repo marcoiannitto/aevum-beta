@@ -138,15 +138,16 @@ export async function adminProgramTransitions(body: any, db: D1Database) {
 
 // ─── Admin: phase upsert (INSERT OR REPLACE) ─────────────
 
+// Must match D1 phases table exactly (PRAGMA table_info verified 2026-10-30)
 const PHASE_COLUMNS = [
   'key', 'name', 'sort_order', 'color', 'duration_default', 'duration_col',
   'is_program', 'gate_fat', 'gate_carb', 'use_buckets', 'requires_serum',
   'has_fasting', 'calorie_bank', 'show_in_phase_bar', 'show_in_recipe_chips',
   'drift_enabled', 'target_mode', 'calorie_mode', 'calorie_cut',
+  'target_fixed_lo', 'target_fixed_hi', 'macro_rules',
   'ramp_from', 'ramp_days', 'ramp_pct', 'bank_window', 'bank_clamp_lo',
   'bank_clamp_hi', 'drift_review_days', 'drift_step_kcal', 'drift_band_kg',
-  'drift_floor_kcal', 'weight_goal',
-  'weight_goal_rate', 'inherits_rules_from', 'food_rule_line', 'fitness_intro',
+  'drift_floor_kcal', 'inherits_rules_from', 'food_rule_line', 'fitness_intro',
   'program_id', 'explainer_json',
 ] as const;
 
