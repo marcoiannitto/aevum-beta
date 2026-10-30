@@ -1,4 +1,4 @@
-<!-- v3.1.0 2026-10-30 — directional dot colors: blue=under, green=on track, red=over. Two severity tiers per side from DB rules. -->
+<!-- v4.0.0 2026-10-30 — Calendar month view with directional dot colors. Blue=under, green=on track, red=over. -->
 <script lang="ts">
 	import { ruleFor } from '$lib/stores/rules';
 
@@ -12,18 +12,11 @@
 	let { data = [] }: { data: CalDay[] } = $props();
 
 	const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+	const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 	function isLoading(phase: string): boolean {
 		const p = phase.toLowerCase();
 		return p === 'loading' || p === 'load';
-	}
-
-	function monday(ds: string): string {
-		const d = new Date(ds + 'T00:00:00');
-		const dow = d.getDay();
-		const diff = dow === 0 ? -6 : 1 - dow;
-		d.setDate(d.getDate() + diff);
-		return d.toISOString().slice(0, 10);
 	}
 
 	/** Dot color from DB rules: blue=under, green=on track, red=over. Two tiers per side. */
@@ -41,7 +34,7 @@
 		return pct <= aHi ? 'var(--over-mild, #D4874D)' : 'var(--over, #A13024)';
 	}
 
-	/** Short label for the week's verdict */
+	/** Weekly verdict: avg daily delta with direction label */
 	function weekVerdict(days: CalDay[]): { text: string; color: string } {
 		const valid = days.filter(d => !isLoading(d.phase) && d.target > 0);
 		if (!valid.length) return { text: '', color: 'var(--muted)' };
@@ -53,72 +46,138 @@
 
 		const avgDelta = Math.round(valid.reduce((s, d) => s + d.kcal - d.target, 0) / valid.length);
 		const sign = avgDelta >= 0 ? '+' : '';
-		const deltaStr = `${sign}${avgDelta.toLocaleString()}`;
+		const deltaStr = `avg ${sign}${avgDelta.toLocaleString()}/day`;
 
-		if (avgPct >= gLo && avgPct <= gHi) return { text: `On track (${deltaStr})`, color: 'var(--green, #2d6a4f)' };
-		if (avgPct < gLo) return { text: `Under (${deltaStr})`, color: avgPct < (rule?.amber_lo ?? 75) ? 'var(--under-deep, #2C5F8A)' : 'var(--under-mild, #5B93C4)' };
-		return { text: `Over (${deltaStr})`, color: avgPct > aHi ? 'var(--over, #A13024)' : 'var(--over-mild, #D4874D)' };
+		if (avgPct >= gLo && avgPct <= gHi) return { text: deltaStr, color: 'var(--green, #2d6a4f)' };
+		if (avgPct < gLo) return { text: deltaStr, color: avgPct < (rule?.amber_lo ?? 75) ? 'var(--under-deep, #2C5F8A)' : 'var(--under-mild, #5B93C4)' };
+		return { text: deltaStr, color: avgPct > aHi ? 'var(--over, #A13024)' : 'var(--over-mild, #D4874D)' };
 	}
 
-	const todayStr = new Date().toISOString().slice(0, 10);
-	const todayMon = monday(todayStr);
+	// ── Month navigation ──
 
-	// Group data by week (Mon date as key)
-	interface WeekRow { mon: string; label: string; slots: (CalDay | null)[]; isCurrent: boolean }
-	const weeks = $derived.by((): WeekRow[] => {
-		const weekMap = new Map<string, CalDay[]>();
-		for (const d of data) {
-			const mon = monday(d.date);
-			if (!weekMap.has(mon)) weekMap.set(mon, []);
-			weekMap.get(mon)!.push(d);
+	const today = new Date();
+	let viewYear = $state(today.getFullYear());
+	let viewMonth = $state(today.getMonth()); // 0-indexed
+
+	function prevMonth() {
+		if (viewMonth === 0) { viewMonth = 11; viewYear--; }
+		else viewMonth--;
+	}
+
+	function nextMonth() {
+		if (viewMonth === 11) { viewMonth = 0; viewYear++; }
+		else viewMonth++;
+	}
+
+	const isCurrentMonth = $derived(viewYear === today.getFullYear() && viewMonth === today.getMonth());
+	const todayStr = today.toISOString().slice(0, 10);
+
+	// Build lookup from data
+	const byDate = $derived.by(() => {
+		const map = new Map<string, CalDay>();
+		for (const d of data) map.set(d.date, d);
+		return map;
+	});
+
+	// ── Calendar grid for the viewed month ──
+
+	interface CalWeek {
+		cells: { date: string; day: number; inMonth: boolean; data: CalDay | null; isToday: boolean }[];
+	}
+
+	const calWeeks = $derived.by((): CalWeek[] => {
+		const firstDay = new Date(viewYear, viewMonth, 1);
+		const lastDay = new Date(viewYear, viewMonth + 1, 0);
+		const daysInMonth = lastDay.getDate();
+
+		// Monday-based: 0=Mon, 6=Sun
+		let startDow = firstDay.getDay();
+		startDow = startDow === 0 ? 6 : startDow - 1;
+
+		const weeks: CalWeek[] = [];
+		let currentWeek: CalWeek['cells'] = [];
+
+		// Fill leading empty cells (days from previous month)
+		for (let i = 0; i < startDow; i++) {
+			const d = new Date(viewYear, viewMonth, 1 - (startDow - i));
+			const ds = fmt(d);
+			currentWeek.push({ date: ds, day: d.getDate(), inMonth: false, data: byDate.get(ds) ?? null, isToday: ds === todayStr });
 		}
 
-		const sorted = [...weekMap.entries()]
-			.sort((a, b) => b[0].localeCompare(a[0])); // newest first
+		// Fill month days
+		for (let day = 1; day <= daysInMonth; day++) {
+			const d = new Date(viewYear, viewMonth, day);
+			const ds = fmt(d);
+			currentWeek.push({ date: ds, day, inMonth: true, data: byDate.get(ds) ?? null, isToday: ds === todayStr });
 
-		return sorted.slice(0, 12).map(([mon, days]) => {
-			const slots: (CalDay | null)[] = Array(7).fill(null);
-			for (const d of days) {
-				const dt = new Date(d.date + 'T00:00:00');
-				const dow = dt.getDay();
-				slots[dow === 0 ? 6 : dow - 1] = d;
+			if (currentWeek.length === 7) {
+				weeks.push({ cells: currentWeek });
+				currentWeek = [];
 			}
-			const d = new Date(mon + 'T00:00:00');
-			const label = `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}`;
-			return { mon, label, slots, isCurrent: mon === todayMon };
-		});
+		}
+
+		// Fill trailing empty cells
+		if (currentWeek.length > 0) {
+			let trailing = 1;
+			while (currentWeek.length < 7) {
+				const d = new Date(viewYear, viewMonth + 1, trailing++);
+				const ds = fmt(d);
+				currentWeek.push({ date: ds, day: d.getDate(), inMonth: false, data: byDate.get(ds) ?? null, isToday: ds === todayStr });
+			}
+			weeks.push({ cells: currentWeek });
+		}
+
+		return weeks;
 	});
+
+	function fmt(d: Date): string {
+		const y = d.getFullYear();
+		const m = String(d.getMonth() + 1).padStart(2, '0');
+		const dd = String(d.getDate()).padStart(2, '0');
+		return `${y}-${m}-${dd}`;
+	}
 </script>
 
 {#if !data.length}
 	<div class="no-data">No calorie data yet</div>
 {:else}
+	<!-- Month header with navigation -->
+	<div class="month-nav">
+		<button class="nav-arrow" onclick={prevMonth} aria-label="Previous month">‹</button>
+		<span class="month-title" translate="no">{MONTHS[viewMonth]} {viewYear}</span>
+		<button class="nav-arrow" onclick={nextMonth} aria-label="Next month" disabled={isCurrentMonth}>›</button>
+	</div>
+
 	<!-- DOW header -->
-	<div class="grid-head">
-		<span class="week-label"></span>
+	<div class="cal-head">
 		{#each DOW as d}
 			<span class="dow">{d}</span>
 		{/each}
 		<span class="verdict-col"></span>
 	</div>
 
-	<!-- Week rows -->
-	{#each weeks as week}
-		{@const validDays = week.slots.filter((d): d is CalDay => d !== null)}
-		{@const verdict = weekVerdict(validDays)}
-		<div class="week-row" class:current={week.isCurrent}>
-			<span class="week-label">{week.isCurrent ? 'Now' : week.label}</span>
-			<div class="dots">
-				{#each week.slots as d, i}
-					{#if d}
-						<span class="dot" style="background:{dotColor(d)}" title="{d.kcal} / {d.target} kcal"></span>
+	<!-- Calendar weeks -->
+	{#each calWeeks as week}
+		{@const weekDays = week.cells.filter(c => c.data !== null).map(c => c.data!)}
+		{@const verdict = weekVerdict(weekDays)}
+		<div class="cal-row">
+			<div class="cal-cells">
+				{#each week.cells as cell}
+					{#if cell.data}
+						<span
+							class="dot"
+							class:out={!cell.inMonth}
+							class:today-ring={cell.isToday}
+							style="background:{dotColor(cell.data)}"
+							title="{cell.data.kcal} / {cell.data.target} kcal"
+						></span>
 					{:else}
-						<span class="dot empty"></span>
+						<span class="dot empty" class:out={!cell.inMonth}></span>
 					{/if}
 				{/each}
 			</div>
 			{#if verdict.text}
-				<span class="verdict" style="color:{verdict.color}">{verdict.text}</span>
+				<span class="verdict" style="color:{verdict.color}" translate="no">{verdict.text}</span>
 			{/if}
 		</div>
 	{/each}
@@ -134,63 +193,118 @@
 {/if}
 
 <style>
-	.grid-head {
-		display: flex; align-items: center; gap: 0;
-		padding: 0 0 6px;
+	.month-nav {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 16px;
+		padding: 0 0 10px;
 	}
-	.grid-head .dow {
-		flex: 0 0 28px; text-align: center;
-		font-size: 10px; color: var(--muted); font-weight: 500;
+	.nav-arrow {
+		font-size: 22px;
+		line-height: 1;
+		color: var(--muted);
+		padding: 4px 8px;
+		-webkit-tap-highlight-color: transparent;
+		background: none;
+		border: none;
+		cursor: pointer;
 	}
-	.grid-head .week-label { flex: 0 0 40px; }
-	.grid-head .verdict-col { flex: 1; }
+	.nav-arrow:disabled {
+		opacity: 0.25;
+		cursor: default;
+	}
+	.month-title {
+		font-family: var(--serif);
+		font-size: 15px;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		min-width: 140px;
+		text-align: center;
+	}
 
-	.week-row {
-		display: flex; align-items: center; gap: 0;
-		padding: 4px 0;
+	.cal-head {
+		display: flex;
+		align-items: center;
+		padding: 0 0 4px;
 	}
-	.week-row.current { font-weight: 600; }
-
-	.week-label {
-		flex: 0 0 40px;
-		font-size: 10px; color: var(--muted);
-		white-space: nowrap; overflow: hidden;
+	.cal-head .dow {
+		flex: 1;
+		text-align: center;
+		font-size: 10px;
+		color: var(--muted);
+		font-weight: 500;
+	}
+	.cal-head .verdict-col {
+		flex: 0 0 90px;
 	}
 
-	.dots {
-		display: flex; gap: 0;
+	.cal-row {
+		display: flex;
+		align-items: center;
+		padding: 3px 0;
+	}
+
+	.cal-cells {
+		display: flex;
+		flex: 1;
 	}
 
 	.dot {
-		width: 20px; height: 20px;
+		flex: 1;
+		aspect-ratio: 1;
+		max-width: 28px;
+		margin: 0 2px;
 		border-radius: 5px;
-		margin: 0 4px;
 		transition: background 0.2s;
 	}
 	.dot.empty {
 		background: var(--line-soft, #eee);
-		opacity: 0.3;
+		opacity: 0.2;
+	}
+	.dot.out {
+		opacity: 0.25;
+	}
+	.dot.today-ring {
+		outline: 2px solid var(--gold, #C8973A);
+		outline-offset: 1px;
 	}
 
 	.verdict {
-		flex: 1;
-		font-size: 11px; font-weight: 500;
-		margin-left: 8px;
+		flex: 0 0 90px;
+		font-size: 10px;
+		font-weight: 500;
+		text-align: right;
 		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.legend {
-		display: flex; gap: 14px; justify-content: center;
+		display: flex;
+		gap: 10px;
+		justify-content: center;
 		padding: 10px 0 2px;
+		flex-wrap: wrap;
 	}
 	.leg-item {
-		display: flex; align-items: center; gap: 4px;
-		font-size: 10px; color: var(--muted);
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 9px;
+		color: var(--muted);
 	}
 	.leg-dot {
-		width: 10px; height: 10px; border-radius: 3px;
+		width: 8px;
+		height: 8px;
+		border-radius: 3px;
 		display: inline-block;
 	}
 
-	.no-data { text-align: center; color: var(--muted); font-size: 13px; padding: 30px; }
+	.no-data {
+		text-align: center;
+		color: var(--muted);
+		font-size: 13px;
+		padding: 30px;
+	}
 </style>
